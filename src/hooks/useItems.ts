@@ -9,6 +9,9 @@ interface Item {
   completed: boolean;
   time_frame: string;
   created_at: string;
+  date: string | null;
+  time: string | null;
+  has_date_time: boolean;
 }
 
 export function useItems(userId: string | null) {
