@@ -14,39 +14,17 @@ export function ApiTestButton() {
     const testText = "Frankie has football Tuesday at 4, I need to order a birthday gift for Noah and I've been thinking about a trip to Portugal";
 
     try {
-      const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/categorize-items`;
 
-      if (!apiKey) {
-        setError("API key is missing or incorrect — check your environment variable");
-        setTesting(false);
-        return;
-      }
-
-      if (!apiKey.startsWith('sk-ant-')) {
-        setError("API key is missing or incorrect — check your environment variable");
-        setTesting(false);
-        return;
-      }
-
-      const systemPrompt = "You are an AI assistant helping a parent organise their daily life. When given a voice note or text input, extract all actionable items, reminders, events or ideas mentioned. For each item return a JSON array where each object has: title (short, max 6 words), detail (one sentence), category (one of: Kids, Household, Errands, Me, Ideas, Work, Projects, Other), type (event, task, reminder, or idea), and if time is mentioned: date and time fields. Return only valid JSON, no other text.";
-
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
+      const response = await fetch(apiUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": apiKey,
-          "anthropic-version": "2023-06-01",
+          "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          system: systemPrompt,
-          messages: [
-            {
-              role: "user",
-              content: testText,
-            },
-          ],
+          text: testText,
+          userCategories: ["Kids", "Household", "Errands", "Me", "Ideas", "Work", "Projects", "Other"],
         }),
       });
 
@@ -63,28 +41,32 @@ export function ApiTestButton() {
       }
 
       if (response.status === 500) {
-        setError("Anthropic API server error — try again shortly");
+        const errorData = await response.json();
+        if (errorData.error?.includes("ANTHROPIC_API_KEY")) {
+          setError("API key is missing or incorrect — check your environment variable");
+        } else {
+          setError("Server error — try again shortly");
+        }
         setTesting(false);
         return;
       }
 
       if (!response.ok) {
         const errorData = await response.json();
-        setError(errorData.error?.message || "API request failed");
+        setError(errorData.error || "API request failed");
         setTesting(false);
         return;
       }
 
       const data = await response.json();
 
-      if (!data || !data.content || !data.content[0]) {
+      if (!data || !data.items) {
         setError("No response received — check your internet connection");
         setTesting(false);
         return;
       }
 
-      const responseText = data.content[0].text;
-      setResult(responseText);
+      setResult(JSON.stringify(data.items, null, 2));
     } catch (err) {
       if (err instanceof TypeError && err.message.includes('fetch')) {
         setError("No response received — check your internet connection");
