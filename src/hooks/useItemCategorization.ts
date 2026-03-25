@@ -19,7 +19,10 @@ const client = new Anthropic({
 export function useItemCategorization() {
   const categorizeAndCreateItems = useCallback(
     async (text: string, userId: string, userCategories: string[]) => {
+      console.log("1. categorizeAndCreateItems called with:", { text, userId, userCategories });
+
       try {
+        console.log("2. Calling Claude API...");
         const message = await client.messages.create({
           model: "claude-sonnet-4-20250514",
           max_tokens: 1000,
@@ -28,9 +31,13 @@ export function useItemCategorization() {
         });
 
         const responseText = message.content[0].text;
+        console.log("3. Raw API response:", responseText);
+
         const items = JSON.parse(responseText) as CategorizedItem[];
+        console.log("4. Parsed items:", items);
 
         if (!items || items.length === 0) {
+          console.log("5. No items returned from API");
           return [];
         }
 
@@ -49,6 +56,7 @@ export function useItemCategorization() {
           time_frame: timeFrameMap[item.type] || 'future',
           completed: false,
         }));
+        console.log("6. Items prepared for database:", itemsToInsert);
 
         const { data: createdItems, error } = await supabase
           .from('items')
@@ -56,13 +64,14 @@ export function useItemCategorization() {
           .select();
 
         if (error) {
-          console.error('Supabase insert error:', error);
+          console.error('7. ERROR - Supabase insert error:', error);
           throw new Error('Something didn\'t save — tap to retry');
         }
 
+        console.log("8. Items successfully saved to database:", createdItems);
         return createdItems;
       } catch (err) {
-        console.error('Categorization error:', err);
+        console.error('ERROR at some step:', err);
         throw err;
       }
     },

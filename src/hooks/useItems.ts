@@ -16,12 +16,16 @@ export function useItems(userId: string | null) {
   const [isLoading, setIsLoading] = useState(true);
 
   const loadItems = useCallback(async () => {
+    console.log("17. loadItems called for userId:", userId);
+
     if (!userId) {
+      console.log("18. No userId - skipping load");
       setIsLoading(false);
       return;
     }
 
     try {
+      console.log("19. Fetching items from database...");
       const { data, error } = await supabase
         .from('items')
         .select('*')
@@ -29,8 +33,14 @@ export function useItems(userId: string | null) {
         .eq('completed', false)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("20. ERROR loading items:", error);
+        throw error;
+      }
+
+      console.log("21. Items fetched from database:", data);
       setItems(data || []);
+      console.log("22. State updated with items. New count:", data?.length || 0);
     } catch (err) {
       console.error('Error loading items:', err);
     } finally {

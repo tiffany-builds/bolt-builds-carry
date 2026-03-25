@@ -48,28 +48,41 @@ export function FloatingActionButton({ userId, userCategories, onSubmitSuccess, 
     });
 
   const handleFABClick = () => {
+    console.log("FAB clicked - isBrowserSupported:", isBrowserSupported);
     if (!showInput) {
       setShowInput(true);
       setInputValue('');
+      setInterimTranscript('');
       if (isBrowserSupported) {
+        console.log("Starting listening immediately...");
         startListening();
+      } else {
+        console.log("Browser not supported - text input only");
       }
     }
   };
 
   const handleSubmit = async (text?: string) => {
     const textToSubmit = text || inputValue;
-    if (!textToSubmit.trim() || !userId) return;
+    console.log("9. handleSubmit called with:", textToSubmit);
+
+    if (!textToSubmit.trim() || !userId) {
+      console.log("10. Submission blocked - empty text or no userId");
+      return;
+    }
 
     setIsSubmitting(true);
     setShowError(null);
     setShowSuccess(null);
 
     try {
+      console.log("11. Loading categorization hook...");
       const { useItemCategorization } = await import('../hooks/useItemCategorization');
       const { categorizeAndCreateItems } = useItemCategorization();
 
+      console.log("12. Calling categorizeAndCreateItems...");
       const createdItems = await categorizeAndCreateItems(textToSubmit, userId, userCategories);
+      console.log("13. Items returned from categorization:", createdItems);
 
       stopListening();
       setInputValue('');
@@ -83,12 +96,16 @@ export function FloatingActionButton({ userId, userCategories, onSubmitSuccess, 
         } else {
           message = `Got it — added ${createdItems.length} items`;
         }
+        console.log("14. Setting toast message:", message);
         setToastMessage(message);
       }
 
       setShowInput(false);
+      console.log("15. Calling onSubmitSuccess to refresh items...");
       onSubmitSuccess?.();
+      console.log("16. Process complete!");
     } catch (err) {
+      console.error("ERROR in handleSubmit:", err);
       setShowError("Carry couldn't quite catch that — want to try again?");
     } finally {
       setIsSubmitting(false);
@@ -111,16 +128,21 @@ export function FloatingActionButton({ userId, userCategories, onSubmitSuccess, 
   if (showInput) {
     return (
       <>
-        {(interimTranscript || isSubmitting) && (
-          <div className="fixed left-1/2 -translate-x-1/2 bg-surface border border-border rounded-2xl px-6 py-4 shadow-lg animate-fade-up" style={{ bottom: 'max(10rem, calc(env(safe-area-inset-bottom) + 8.5rem))' }}>
-            <div className="font-ui text-text text-sm">
+        {(isListening || interimTranscript || isSubmitting) && (
+          <div className="fixed left-1/2 -translate-x-1/2 bg-surface border border-border rounded-2xl px-6 py-4 shadow-lg animate-fade-up max-w-sm" style={{ bottom: 'max(10rem, calc(env(safe-area-inset-bottom) + 8.5rem))' }}>
+            <div className="font-ui text-sm">
               {isSubmitting ? (
                 <div className="flex items-center gap-2 text-muted">
                   <div className="w-2 h-2 bg-accent rounded-full animate-pulse"></div>
                   <span>Processing...</span>
                 </div>
+              ) : isListening && !interimTranscript ? (
+                <div className="flex items-center gap-2 text-accent">
+                  <div className="w-2 h-2 bg-accent rounded-full animate-pulse"></div>
+                  <span>Listening...</span>
+                </div>
               ) : (
-                <span className="text-text/80">{interimTranscript}</span>
+                <span className="text-text">{interimTranscript}</span>
               )}
             </div>
           </div>
