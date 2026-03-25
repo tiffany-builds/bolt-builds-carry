@@ -1,5 +1,20 @@
 import { useState } from 'react';
-import { supabase } from '../lib/supabase';
+import Anthropic from '@anthropic-ai/sdk';
+
+const client = new Anthropic({
+  apiKey: import.meta.env.VITE_ANTHROPIC_API_KEY,
+  dangerouslyAllowBrowser: true
+});
+
+async function testCarryIntelligence(input: string) {
+  const message = await client.messages.create({
+    model: "claude-sonnet-4-20250514",
+    max_tokens: 1000,
+    system: "You are Carry, a personal assistant for parents. Extract all items from the input and return ONLY a valid JSON array. Each item must have: title (max 6 words), category (one of: Kids, Household, Errands, Me, Ideas, Work, Projects, Other), type (event, task, reminder or idea). Return valid JSON only — no explanation, no markdown, no code blocks.",
+    messages: [{ role: "user", content: input }]
+  });
+  return message.content[0].text;
+}
 
 export function SimpleApiTest() {
   const [input, setInput] = useState("Remind me to call the dentist tomorrow and Frankie has football Tuesday at 4");
@@ -11,17 +26,8 @@ export function SimpleApiTest() {
     setResponse("");
 
     try {
-      const { data, error } = await supabase.functions.invoke('carry-intelligence', {
-        body: { input }
-      });
-
-      if (error) {
-        setResponse(`ERROR: ${error.message}\n\nFull error:\n${JSON.stringify(error, null, 2)}`);
-        setTesting(false);
-        return;
-      }
-
-      setResponse(`SUCCESS!\n\nFull API Response:\n${JSON.stringify(data, null, 2)}`);
+      const result = await testCarryIntelligence(input);
+      setResponse(`SUCCESS!\n\nRaw Result:\n${result}`);
     } catch (err) {
       setResponse(`ERROR: ${err instanceof Error ? err.message : String(err)}\n\nStack: ${err instanceof Error ? err.stack : 'N/A'}`);
     } finally {
