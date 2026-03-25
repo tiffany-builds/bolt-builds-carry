@@ -16,10 +16,12 @@ import { IntakeFlow } from './components/onboarding/IntakeFlow';
 import { BoxDetailView } from './components/BoxDetailView';
 import { EverythingYouCarry } from './components/EverythingYouCarry';
 import { OnYourMindSection } from './components/OnYourMindSection';
+import { DebugPanel } from './components/DebugPanel';
 import { useAuth } from './hooks/useAuth';
 import { useOnboarding } from './hooks/useOnboarding';
 import { useItems } from './hooks/useItems';
 import { UserProfile, UserCategory, TimelineItem } from './types';
+import { supabase } from './lib/supabase';
 
 type OnboardingStep = 'welcome' | 'name' | 'family' | 'ready' | 'complete';
 type View = 'home' | 'boxDetail' | 'everything';
@@ -34,6 +36,10 @@ function App() {
   const [currentView, setCurrentView] = useState<View>('home');
   const [selectedCategory, setSelectedCategory] = useState<UserCategory | null>(null);
   const [lastWeekCount, setLastWeekCount] = useState(0);
+  const [debugLastInput, setDebugLastInput] = useState('');
+  const [debugApiStatus, setDebugApiStatus] = useState<'idle' | 'calling' | 'success' | 'error'>('idle');
+  const [debugLastResponse, setDebugLastResponse] = useState('');
+  const [debugLastError, setDebugLastError] = useState('');
 
   const { user, isLoading: authLoading } = useAuth();
   const { createUserProfile, getOrCreateUserProfile, updateUserProfile, addUserCategories, completeOnboarding, getUserCategories } = useOnboarding();
@@ -217,6 +223,34 @@ function App() {
   console.log("26. App render - On your mind items:", onYourMindItems.length);
   console.log("27. App render - All items:", items);
 
+  const handleTestItem = async () => {
+    if (!userProfile) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('items')
+        .insert({
+          user_id: userProfile.id,
+          title: 'Test item',
+          category: 'Household',
+          item_type: 'task',
+          completed: false,
+          time_frame: 'anytime'
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Test item error:', error);
+      } else {
+        console.log('Test item created:', data);
+        loadItems();
+      }
+    } catch (err) {
+      console.error('Test item exception:', err);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-cream pb-32">
       <div className="max-w-2xl mx-auto">
@@ -224,6 +258,22 @@ function App() {
 
         <div className="px-5 space-y-8">
           <Header userName={userName} todayCount={items.filter(i => i.time_frame === 'today').length} />
+
+          <DebugPanel
+            lastInput={debugLastInput}
+            apiStatus={debugApiStatus}
+            itemsCount={items.length}
+            lastResponse={debugLastResponse}
+            lastError={debugLastError}
+          />
+
+          <button
+            onClick={handleTestItem}
+            className="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 text-sm font-mono py-2 px-4 rounded transition-colors"
+          >
+            Add Test Item
+          </button>
+
           <AffirmationCard itemCount={lastWeekCount} />
           {onYourMindItems.length > 0 && (
             <OnYourMindSection
@@ -248,6 +298,12 @@ function App() {
         userCategories={userCategories.map(c => c.name)}
         onSubmitSuccess={loadItems}
         onEverythingClick={() => setCurrentView('everything')}
+        onDebugUpdate={(input, status, response, error) => {
+          setDebugLastInput(input);
+          setDebugApiStatus(status);
+          setDebugLastResponse(response);
+          setDebugLastError(error);
+        }}
       />
     </div>
   );

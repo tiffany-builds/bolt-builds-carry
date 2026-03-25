@@ -8,9 +8,10 @@ interface FloatingActionButtonProps {
   userCategories: string[];
   onSubmitSuccess?: () => void;
   onEverythingClick?: () => void;
+  onDebugUpdate?: (input: string, status: 'idle' | 'calling' | 'success' | 'error', response: string, error: string) => void;
 }
 
-export function FloatingActionButton({ userId, userCategories, onSubmitSuccess, onEverythingClick }: FloatingActionButtonProps) {
+export function FloatingActionButton({ userId, userCategories, onSubmitSuccess, onEverythingClick, onDebugUpdate }: FloatingActionButtonProps) {
   const [showInput, setShowInput] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [interimTranscript, setInterimTranscript] = useState('');
@@ -71,6 +72,7 @@ export function FloatingActionButton({ userId, userCategories, onSubmitSuccess, 
       return;
     }
 
+    onDebugUpdate?.(textToSubmit, 'calling', '', '');
     setIsSubmitting(true);
     setShowError(null);
     setShowSuccess(null);
@@ -83,6 +85,8 @@ export function FloatingActionButton({ userId, userCategories, onSubmitSuccess, 
       console.log("12. Calling categorizeAndCreateItems...");
       const createdItems = await categorizeAndCreateItems(textToSubmit, userId, userCategories);
       console.log("13. Items returned from categorization:", createdItems);
+
+      onDebugUpdate?.(textToSubmit, 'success', JSON.stringify(createdItems), '');
 
       stopListening();
       setInputValue('');
@@ -108,6 +112,7 @@ export function FloatingActionButton({ userId, userCategories, onSubmitSuccess, 
       console.log("16. Process complete!");
     } catch (err) {
       console.error("ERROR in handleSubmit:", err);
+      onDebugUpdate?.(textToSubmit, 'error', '', err instanceof Error ? err.message : 'Unknown error');
       setShowError("Carry couldn't quite catch that — want to try again?");
     } finally {
       setIsSubmitting(false);
