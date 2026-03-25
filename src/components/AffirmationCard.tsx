@@ -5,7 +5,7 @@ interface AffirmationCardProps {
 export function AffirmationCard({ itemCount = 0 }: AffirmationCardProps) {
   const getMessage = () => {
     if (itemCount === 0) {
-      return "Ready when you are. Just talk, and Carry will organize the rest.";
+      return "Ready when you are. Just talk, and Carry will organise the rest.";
     } else if (itemCount === 1) {
       return "You carried 1 thing last week. That's not nothing.";
     } else {

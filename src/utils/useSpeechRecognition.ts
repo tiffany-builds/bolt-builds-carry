@@ -34,7 +34,7 @@ export function useSpeechRecognition({
 
     recognition.continuous = false;
     recognition.interimResults = true;
-    recognition.language = 'en-US';
+    recognition.lang = 'en-US';
 
     recognition.onstart = () => {
       setIsListening(true);
@@ -50,7 +50,7 @@ export function useSpeechRecognition({
       let transcript = '';
       let isFinal = false;
 
-      for (let i = event.resultIndex; i < event.results.length; i++) {
+      for (let i = 0; i < event.results.length; i++) {
         const transcriptSegment = event.results[i][0].transcript;
         transcript += transcriptSegment;
         if (event.results[i].isFinal) {
@@ -76,7 +76,10 @@ export function useSpeechRecognition({
     };
 
     recognition.onerror = (event: any) => {
-      if (event.error !== 'no-speech') {
+      setIsListening(false);
+      if (event.error === 'no-speech') {
+        onError?.('no-speech');
+      } else {
         onError?.(event.error);
       }
     };

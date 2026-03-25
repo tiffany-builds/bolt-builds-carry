@@ -50,9 +50,15 @@ export function TimelineSection({ items }: TimelineSectionProps) {
         Today
       </h2>
       <div className="space-y-3">
-        {items.map((item) => (
-          <TimelineItemCard key={item.id} item={item} />
-        ))}
+        {items.length === 0 ? (
+          <p className="font-ui text-sm text-muted font-light py-4">
+            Nothing on today yet — just talk to add something
+          </p>
+        ) : (
+          items.map((item) => (
+            <TimelineItemCard key={item.id} item={item} />
+          ))
+        )}
       </div>
     </div>
   );

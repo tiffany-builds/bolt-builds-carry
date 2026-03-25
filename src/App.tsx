@@ -16,11 +16,10 @@ import { IntakeFlow } from './components/onboarding/IntakeFlow';
 import { BoxDetailView } from './components/BoxDetailView';
 import { EverythingYouCarry } from './components/EverythingYouCarry';
 import { OnYourMindSection } from './components/OnYourMindSection';
-import { timelineItems, nudges } from './data';
 import { useAuth } from './hooks/useAuth';
 import { useOnboarding } from './hooks/useOnboarding';
 import { useItems } from './hooks/useItems';
-import { UserProfile, UserCategory } from './types';
+import { UserProfile, UserCategory, TimelineItem } from './types';
 
 type OnboardingStep = 'welcome' | 'name' | 'family' | 'ready' | 'complete';
 type View = 'home' | 'boxDetail' | 'everything';
@@ -201,6 +200,17 @@ function App() {
   const categoryCounts = getCategoryCounts();
   const onYourMindItems = getOnYourMindItems();
 
+  const todayItems: TimelineItem[] = items
+    .filter(item => item.time_frame === 'today')
+    .map(item => ({
+      id: item.id,
+      time: '—',
+      title: item.title,
+      subtitle: item.description || '',
+      category: item.category,
+      completed: item.completed
+    }));
+
   return (
     <div className="min-h-screen bg-cream pb-32">
       <div className="max-w-2xl mx-auto">
@@ -215,7 +225,7 @@ function App() {
               onItemsChange={loadItems}
             />
           )}
-          <TimelineSection items={timelineItems} />
+          <TimelineSection items={todayItems} />
           <BoxesSection
             categories={userCategories}
             categoryCounts={categoryCounts}
@@ -224,7 +234,6 @@ function App() {
               setCurrentView('boxDetail');
             }}
           />
-          <NudgesSection initialNudges={nudges} />
         </div>
       </div>
 

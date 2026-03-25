@@ -51,9 +51,9 @@ export function FloatingActionButton({ userId, userCategories, onSubmitSuccess, 
     if (!showInput) {
       setShowInput(true);
       setInputValue('');
-      setTimeout(() => {
+      if (isBrowserSupported) {
         startListening();
-      }, 100);
+      }
     }
   };
 
@@ -110,74 +110,80 @@ export function FloatingActionButton({ userId, userCategories, onSubmitSuccess, 
 
   if (showInput) {
     return (
-      <div className="fixed bottom-0 left-0 right-0 bg-surface border-t border-border p-5 shadow-lg animate-fade-up" style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom))' }}>
-        <div className="max-w-2xl mx-auto space-y-3">
-          <div className="flex gap-3">
-            <div className="flex-1">
-              <input
-                type="text"
-                value={inputValue}
-                onChange={(e) => handleTypeInput(e.target.value)}
-                placeholder="Just talk. Carry figures out the rest."
-                className="w-full bg-cream border border-border rounded-xl px-4 py-3 font-ui text-text placeholder:text-muted focus:outline-none focus:border-accent/50 transition-colors"
-                disabled={isListening}
-              />
+      <>
+        {(interimTranscript || isSubmitting) && (
+          <div className="fixed left-1/2 -translate-x-1/2 bg-surface border border-border rounded-2xl px-6 py-4 shadow-lg animate-fade-up" style={{ bottom: 'max(10rem, calc(env(safe-area-inset-bottom) + 8.5rem))' }}>
+            <div className="font-ui text-text text-sm">
+              {isSubmitting ? (
+                <div className="flex items-center gap-2 text-muted">
+                  <div className="w-2 h-2 bg-accent rounded-full animate-pulse"></div>
+                  <span>Processing...</span>
+                </div>
+              ) : (
+                <span className="text-text/80">{interimTranscript}</span>
+              )}
             </div>
-            {inputValue && (
-              <button
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                className="flex-shrink-0 w-12 h-12 bg-accent text-surface rounded-full flex items-center justify-center hover:bg-accent/90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                aria-label="Submit"
-              >
-                {isSubmitting ? (
-                  <div className="w-5 h-5 border-2 border-surface border-t-transparent rounded-full animate-spin"></div>
-                ) : (
-                  <Check size={20} />
-                )}
-              </button>
-            )}
-            <button
-              onClick={handleCancel}
-              className="flex-shrink-0 w-12 h-12 bg-border/50 text-text rounded-full flex items-center justify-center hover:bg-border active:scale-95 transition-all"
-              aria-label="Cancel"
-            >
-              <X size={20} />
-            </button>
           </div>
+        )}
 
-          {isListening && (
-            <div className="flex items-center gap-2 text-sm text-accent">
-              <div className="w-2 h-2 bg-accent rounded-full animate-pulse"></div>
-              <span className="font-ui font-light">Listening...</span>
+        <div className="fixed bottom-0 left-0 right-0 bg-surface border-t border-border p-5 shadow-lg animate-fade-up" style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom))' }}>
+          <div className="max-w-2xl mx-auto space-y-3">
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <input
+                  type="text"
+                  value={inputValue}
+                  onChange={(e) => handleTypeInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && inputValue.trim()) {
+                      handleSubmit();
+                    }
+                  }}
+                  placeholder="Just talk. Carry figures out the rest."
+                  className="w-full bg-cream border border-border rounded-xl px-4 py-3 font-ui text-text placeholder:text-muted focus:outline-none focus:border-accent/50 transition-colors"
+                  disabled={isListening || isSubmitting}
+                  autoFocus={!isBrowserSupported}
+                />
+              </div>
+              {inputValue && !isListening && (
+                <button
+                  onClick={() => handleSubmit()}
+                  disabled={isSubmitting}
+                  className="flex-shrink-0 w-12 h-12 bg-accent text-surface rounded-full flex items-center justify-center hover:bg-accent/90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  aria-label="Submit"
+                >
+                  {isSubmitting ? (
+                    <div className="w-5 h-5 border-2 border-surface border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <Check size={20} />
+                  )}
+                </button>
+              )}
+              <button
+                onClick={handleCancel}
+                disabled={isSubmitting}
+                className="flex-shrink-0 w-12 h-12 bg-border/50 text-text rounded-full flex items-center justify-center hover:bg-border active:scale-95 transition-all disabled:opacity-50"
+                aria-label="Cancel"
+              >
+                <X size={20} />
+              </button>
             </div>
-          )}
 
-          {interimTranscript && isListening && (
-            <div className="text-sm text-text/60 font-ui font-light italic">
-              {interimTranscript}
-            </div>
-          )}
+            {isListening && (
+              <div className="flex items-center gap-2 text-sm text-accent">
+                <div className="w-2 h-2 bg-accent rounded-full animate-pulse"></div>
+                <span className="font-ui font-light">Listening...</span>
+              </div>
+            )}
 
-          {showSuccess && (
-            <div className="bg-accent/10 border border-accent/20 rounded-xl px-4 py-3 text-sm text-accent font-ui font-light animate-fade-up">
-              {showSuccess}
-            </div>
-          )}
-
-          {showError && (
-            <div className="text-sm text-accent/70 font-ui font-light">
-              {showError}
-            </div>
-          )}
-
-          {!isBrowserSupported && (
-            <div className="text-sm text-muted font-ui font-light">
-              Speech recognition not supported in this browser. Type instead.
-            </div>
-          )}
+            {showError && (
+              <div className="text-sm text-accent/70 font-ui font-light">
+                {showError}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
