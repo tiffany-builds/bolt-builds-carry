@@ -9,6 +9,8 @@ import { FloatingActionButton } from './components/FloatingActionButton';
 import { SignIn } from './components/auth/SignIn';
 import { WelcomeScreen } from './components/onboarding/WelcomeScreen';
 import { NameInput } from './components/onboarding/NameInput';
+import { FamilyInput } from './components/onboarding/FamilyInput';
+import { ReadyScreen } from './components/onboarding/ReadyScreen';
 import { CategorySelection } from './components/onboarding/CategorySelection';
 import { IntakeFlow } from './components/onboarding/IntakeFlow';
 import { BoxDetailView } from './components/BoxDetailView';
@@ -21,7 +23,7 @@ import { useOnboarding } from './hooks/useOnboarding';
 import { useItems } from './hooks/useItems';
 import { UserProfile, UserCategory } from './types';
 
-type OnboardingStep = 'welcome' | 'name' | 'categories' | 'intake' | 'complete';
+type OnboardingStep = 'welcome' | 'name' | 'family' | 'ready' | 'complete';
 type View = 'home' | 'boxDetail' | 'everything';
 
 function App() {
@@ -33,10 +35,11 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [currentView, setCurrentView] = useState<View>('home');
   const [selectedCategory, setSelectedCategory] = useState<UserCategory | null>(null);
+  const [lastWeekCount, setLastWeekCount] = useState(0);
 
   const { user, isLoading: authLoading } = useAuth();
-  const { createUserProfile, getOrCreateUserProfile, addUserCategories, completeOnboarding, getUserCategories } = useOnboarding();
-  const { items, isLoading: itemsLoading, loadItems, getCategoryCounts, getOnYourMindItems } = useItems(userProfile?.id || null);
+  const { createUserProfile, getOrCreateUserProfile, updateUserProfile, addUserCategories, completeOnboarding, getUserCategories } = useOnboarding();
+  const { items, isLoading: itemsLoading, loadItems, getCategoryCounts, getOnYourMindItems, getLastWeekItemCount } = useItems(userProfile?.id || null);
 
   useEffect(() => {
     const checkExistingUser = async () => {
@@ -54,10 +57,12 @@ function App() {
 
           if (profile.has_completed_onboarding) {
             setOnboardingStep('complete');
-          } else if (categories.length > 0) {
-            setOnboardingStep('intake');
+            const count = await getLastWeekItemCount(profile.id);
+            setLastWeekCount(count);
+          } else if (profile.family_members && profile.family_members.length >= 0) {
+            setOnboardingStep('ready');
           } else if (profile.name) {
-            setOnboardingStep('categories');
+            setOnboardingStep('family');
           } else {
             setOnboardingStep('name');
           }
@@ -72,7 +77,7 @@ function App() {
     if (!authLoading) {
       checkExistingUser();
     }
-  }, [user, authLoading, getOrCreateUserProfile, getUserCategories]);
+  }, [user, authLoading, getOrCreateUserProfile, getUserCategories, getLastWeekItemCount]);
 
   const handleNameSubmit = async (name: string) => {
     if (!user) return;
@@ -83,7 +88,7 @@ function App() {
       const profile = await createUserProfile(name, user.id);
       setUserName(name);
       setUserProfile(profile);
-      setOnboardingStep('categories');
+      setOnboardingStep('family');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create profile');
     } finally {
@@ -91,23 +96,23 @@ function App() {
     }
   };
 
-  const handleCategoriesSubmit = async (selectedCategories: string[]) => {
+  const handleFamilySubmit = async (familyMembers: string[]) => {
     if (!userProfile) return;
 
     setIsLoading(true);
     setError(null);
     try {
-      const categories = await addUserCategories(userProfile.id, selectedCategories);
-      setUserCategories(categories);
-      setOnboardingStep('intake');
+      const updatedProfile = await updateUserProfile(userProfile.id, { family_members: familyMembers });
+      setUserProfile(updatedProfile);
+      setOnboardingStep('ready');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to set up categories');
+      setError(err instanceof Error ? err.message : 'Failed to save family members');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleIntakeComplete = async () => {
+  const handleReadyComplete = async () => {
     if (!userProfile) return;
 
     setIsLoading(true);
@@ -162,24 +167,12 @@ function App() {
     return <NameInput onNameSubmit={handleNameSubmit} />;
   }
 
-  if (onboardingStep === 'categories') {
-    return (
-      <CategorySelection
-        userName={userName}
-        onCategoriesSubmit={handleCategoriesSubmit}
-      />
-    );
+  if (onboardingStep === 'family') {
+    return <FamilyInput onFamilySubmit={handleFamilySubmit} />;
   }
 
-  if (onboardingStep === 'intake' && userProfile) {
-    return (
-      <IntakeFlow
-        userName={userName}
-        userId={userProfile.id}
-        userCategories={userCategories.map((c) => c.name)}
-        onComplete={handleIntakeComplete}
-      />
-    );
+  if (onboardingStep === 'ready') {
+    return <ReadyScreen onComplete={handleReadyComplete} />;
   }
 
   if (currentView === 'boxDetail' && selectedCategory && userProfile) {
@@ -216,7 +209,7 @@ function App() {
 
         <div className="px-5 space-y-8">
           <Header userName={userName} todayCount={items.filter(i => i.time_frame === 'today').length} />
-          <AffirmationCard />
+          <AffirmationCard itemCount={lastWeekCount} />
           {onYourMindItems.length > 0 && (
             <OnYourMindSection
               items={onYourMindItems}

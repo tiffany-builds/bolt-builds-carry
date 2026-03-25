@@ -9,16 +9,32 @@ interface SignInProps {
 export function SignIn({ onSuccess }: SignInProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
+
+  const handlePasswordChange = (value: string) => {
+    setPassword(value);
+    if (isSignUp && value.length > 0 && value.length < 8) {
+      setPasswordError('Password must be at least 8 characters');
+    } else {
+      setPasswordError(null);
+    }
+  };
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) return;
 
+    if (isSignUp && password.length < 8) {
+      setPasswordError('Password must be at least 8 characters');
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
+    setPasswordError(null);
 
     try {
       if (isSignUp) {
@@ -36,7 +52,11 @@ export function SignIn({ onSuccess }: SignInProps) {
       }
     } catch (err) {
       console.error('Error signing in:', err);
-      setError(err instanceof Error ? err.message : 'Failed to sign in');
+      if (err instanceof Error && (err.message.includes('Invalid login credentials') || err.message.includes('Email not confirmed'))) {
+        setError("We didn't recognise those details — want to try again?");
+      } else {
+        setError(err instanceof Error ? err.message : 'Failed to sign in');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -87,13 +107,18 @@ export function SignIn({ onSuccess }: SignInProps) {
                 id="password"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => handlePasswordChange(e.target.value)}
                 placeholder="••••••••"
                 required
-                minLength={6}
-                className="w-full bg-surface border border-border rounded-xl pl-12 pr-4 py-3 font-ui text-text placeholder:text-muted/50 focus:outline-none focus:border-accent transition-colors"
+                minLength={8}
+                className={`w-full bg-surface border rounded-xl pl-12 pr-4 py-3 font-ui text-text placeholder:text-muted/50 focus:outline-none transition-colors ${
+                  passwordError ? 'border-red-400 focus:border-red-400' : 'border-border focus:border-accent'
+                }`}
               />
             </div>
+            {passwordError && (
+              <p className="font-ui text-sm text-red-600 mt-1">{passwordError}</p>
+            )}
           </div>
 
           <button
@@ -114,6 +139,7 @@ export function SignIn({ onSuccess }: SignInProps) {
             onClick={() => {
               setIsSignUp(!isSignUp);
               setError(null);
+              setPasswordError(null);
             }}
             className="font-ui text-sm text-muted hover:text-text transition-colors"
           >

@@ -30,6 +30,21 @@ export function useOnboarding() {
     []
   );
 
+  const updateUserProfile = useCallback(
+    async (userId: string, updates: Partial<UserProfile>): Promise<UserProfile> => {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .update(updates)
+        .eq('id', userId)
+        .select()
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    },
+    []
+  );
+
   const addUserCategories = useCallback(
     async (userId: string, categoryNames: string[]): Promise<UserCategory[]> => {
       const categories = categoryNames.map((name, index) => {
@@ -88,6 +103,7 @@ export function useOnboarding() {
   return {
     createUserProfile,
     getOrCreateUserProfile,
+    updateUserProfile,
     addUserCategories,
     completeOnboarding,
     getUserCategories,

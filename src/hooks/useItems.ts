@@ -58,6 +58,25 @@ export function useItems(userId: string | null) {
     return items.filter(item => item.category === 'Ideas');
   }, [items]);
 
+  const getLastWeekItemCount = useCallback(async (userId: string) => {
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+    try {
+      const { data, error } = await supabase
+        .from('items')
+        .select('id', { count: 'exact' })
+        .eq('user_id', userId)
+        .gte('created_at', oneWeekAgo.toISOString());
+
+      if (error) throw error;
+      return data?.length || 0;
+    } catch (err) {
+      console.error('Error getting last week count:', err);
+      return 0;
+    }
+  }, []);
+
   return {
     items,
     isLoading,
@@ -65,5 +84,6 @@ export function useItems(userId: string | null) {
     getItemsByCategory,
     getCategoryCounts,
     getOnYourMindItems,
+    getLastWeekItemCount,
   };
 }

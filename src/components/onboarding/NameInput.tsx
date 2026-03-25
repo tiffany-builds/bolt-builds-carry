@@ -47,52 +47,23 @@ export function NameInput({ onNameSubmit }: NameInputProps) {
     <div className="min-h-screen bg-cream flex flex-col items-center justify-center px-5">
       <div className="max-w-md w-full space-y-8 animate-fade-up">
         <div className="space-y-4">
-          <h1 className="font-display italic text-3xl font-light text-text leading-tight">
-            What's your name?
-          </h1>
-          <p className="font-ui text-base text-muted font-light">
-            We'd love to know who we're helping.
-          </p>
-        </div>
-
-        <div className="space-y-3">
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Your first name"
-            className="w-full bg-surface border border-border rounded-xl px-4 py-3 font-ui text-text placeholder:text-muted focus:outline-none focus:border-accent/50 transition-colors"
+            placeholder="What's your first name?"
+            className="w-full bg-surface border border-border rounded-xl px-4 py-4 font-ui text-lg text-text placeholder:text-muted focus:outline-none focus:border-accent transition-colors"
             disabled={isListening}
             autoFocus
           />
-
-          {isBrowserSupported && (
-            <button
-              onClick={handleStartListening}
-              disabled={isListening}
-              className="w-full flex items-center justify-center gap-2 bg-surface border border-border rounded-xl px-4 py-3 text-muted hover:border-accent/30 disabled:border-accent disabled:text-accent transition-all"
-            >
-              <span className="text-lg">🎤</span>
-              <span className="font-ui font-light">
-                {isListening ? 'Listening...' : 'Say your name'}
-              </span>
-            </button>
-          )}
-
-          {showError && (
-            <div className="text-sm text-accent/70 font-ui font-light text-center">
-              {showError}
-            </div>
-          )}
         </div>
 
         <button
           onClick={handleSubmit}
           disabled={!name.trim()}
-          className="w-full bg-accent text-surface rounded-xl py-3 font-ui font-medium hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 transition-all flex items-center justify-center gap-2"
+          className="w-full bg-text text-cream rounded-xl py-4 font-ui font-medium hover:bg-text/90 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 transition-all"
         >
-          <Check size={18} />
           Continue
         </button>
       </div>

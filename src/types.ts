@@ -27,6 +27,7 @@ export interface UserProfile {
   id: string;
   name: string;
   has_completed_onboarding: boolean;
+  family_members?: string[];
   created_at: string;
   updated_at: string;
 }
