@@ -69,6 +69,18 @@ export function useItemCategorization() {
         }
 
         console.log("8. Items successfully saved to database:", createdItems);
+
+        const { data: verifyData, error: verifyError } = await supabase
+          .from('items')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('completed', false)
+          .order('created_at', { ascending: false });
+
+        console.log("8a. VERIFICATION - Query all incomplete items for this user:");
+        console.log("8b. VERIFICATION - Found", verifyData?.length || 0, "items in database");
+        console.log("8c. VERIFICATION - Full query result:", JSON.stringify(verifyData, null, 2));
+
         return createdItems;
       } catch (err) {
         console.error('ERROR at some step:', err);
