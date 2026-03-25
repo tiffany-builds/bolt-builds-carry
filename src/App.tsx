@@ -16,7 +16,7 @@ import { IntakeFlow } from './components/onboarding/IntakeFlow';
 import { BoxDetailView } from './components/BoxDetailView';
 import { EverythingYouCarry } from './components/EverythingYouCarry';
 import { OnYourMindSection } from './components/OnYourMindSection';
-import { ApiTestButton } from './components/ApiTestButton';
+import { SimpleApiTest } from './components/SimpleApiTest';
 import { timelineItems, nudges } from './data';
 import { useAuth } from './hooks/useAuth';
 import { useOnboarding } from './hooks/useOnboarding';
@@ -209,6 +209,7 @@ function App() {
 
         <div className="px-5 space-y-8">
           <Header userName={userName} todayCount={items.filter(i => i.time_frame === 'today').length} />
+          <SimpleApiTest />
           <AffirmationCard itemCount={lastWeekCount} />
           {onYourMindItems.length > 0 && (
             <OnYourMindSection
@@ -228,8 +229,6 @@ function App() {
           <NudgesSection initialNudges={nudges} />
         </div>
       </div>
-
-      <ApiTestButton />
 
       <FloatingActionButton
         userId={userProfile?.id || null}
