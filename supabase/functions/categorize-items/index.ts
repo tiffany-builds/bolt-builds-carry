@@ -67,15 +67,24 @@ Your task is to:
    - Which category it fits best into (must be one of the available categories)
    - The time frame: "today", "this_week", "this_month", or "future"
 
-IMPORTANT: Always pick the most specific and relevant category from their available categories.
+CATEGORIZATION RULES:
+- Anything to do with food preparation or cooking -> Household
+- Common household tasks (cleaning, laundry, maintenance) -> Household
+- School, pickups, drop-offs, children's activities -> Kids
+- Exercise, personal care (haircuts, nails, spa), doctor appointments for the user -> Me
+- Shopping, purchasing, returns, tasks outside the home -> Errands
+- Home maintenance, appointments for tradespeople -> Household
+- Ideas, thoughts, or plans (like "thinking about a trip to Paris") -> Ideas
+- Simple thoughts the user wants to capture -> Ideas
 
-Examples of categorization:
+Examples:
 - "Make lasagna for dinner" -> Household
-- "Drop kids at school" -> Kids
-- "Go for a walk" or "gym" -> Me
-- "Trip to Paris" or "look at train tickets" -> Ideas
-- "Return a package" -> Errands
-- "Make a phone call" -> Ideas or Errands (depending on context)
+- "Pick up kids from soccer practice" -> Kids
+- "Go for a run" or "Book a haircut" -> Me
+- "Trip to Paris" or "look into vacation rentals" -> Ideas
+- "Return Amazon package" or "Buy groceries" -> Errands
+- "Call plumber about sink" -> Household
+- "Maybe plan a birthday party" -> Ideas
 
 Return a JSON array of items in this exact format:
 [

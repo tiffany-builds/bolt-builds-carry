@@ -1,11 +1,20 @@
 import { useState } from 'react';
-import { Mic, Check, X } from 'lucide-react';
+import { Mic, Check, X, Menu, Archive } from 'lucide-react';
 import { useSpeechRecognition } from '../utils/useSpeechRecognition';
 
-export function FloatingActionButton() {
+interface FloatingActionButtonProps {
+  userId: string | null;
+  userCategories: string[];
+  onSubmitSuccess?: () => void;
+  onEverythingClick?: () => void;
+}
+
+export function FloatingActionButton({ userId, userCategories, onSubmitSuccess, onEverythingClick }: FloatingActionButtonProps) {
   const [showInput, setShowInput] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [showError, setShowError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
 
   const handleTranscript = (text: string) => {
     setInputValue(text);
@@ -36,11 +45,27 @@ export function FloatingActionButton() {
     }
   };
 
-  const handleSubmit = () => {
-    stopListening();
-    setInputValue('');
-    setShowInput(false);
+  const handleSubmit = async () => {
+    if (!inputValue.trim() || !userId) return;
+
+    setIsSubmitting(true);
     setShowError(null);
+
+    try {
+      const { useItemCategorization } = await import('../hooks/useItemCategorization');
+      const { categorizeAndCreateItems } = useItemCategorization();
+
+      await categorizeAndCreateItems(inputValue, userId, userCategories);
+
+      stopListening();
+      setInputValue('');
+      setShowInput(false);
+      onSubmitSuccess?.();
+    } catch (err) {
+      setShowError(err instanceof Error ? err.message : 'Failed to save');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCancel = () => {
@@ -72,10 +97,15 @@ export function FloatingActionButton() {
             {inputValue && (
               <button
                 onClick={handleSubmit}
-                className="flex-shrink-0 w-12 h-12 bg-accent text-surface rounded-full flex items-center justify-center hover:bg-accent/90 active:scale-95 transition-all"
+                disabled={isSubmitting}
+                className="flex-shrink-0 w-12 h-12 bg-accent text-surface rounded-full flex items-center justify-center hover:bg-accent/90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 aria-label="Submit"
               >
-                <Check size={20} />
+                {isSubmitting ? (
+                  <div className="w-5 h-5 border-2 border-surface border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <Check size={20} />
+                )}
               </button>
             )}
             <button
@@ -111,21 +141,53 @@ export function FloatingActionButton() {
   }
 
   return (
-    <div className="fixed bottom-8 left-0 right-0 flex items-center justify-center gap-4 animate-fade-up stagger-6">
-      <span className="text-xs text-muted font-ui font-light">
-        {isBrowserSupported ? 'voice' : 'type'}
-      </span>
-      <button
-        onClick={handleFABClick}
-        className="relative w-16 h-16 bg-text rounded-full flex items-center justify-center text-surface shadow-lg hover:scale-105 active:scale-95 transition-transform"
-        aria-label="Add new item"
-      >
-        <div className="absolute inset-0 rounded-full bg-text/40 animate-pulse-ring"></div>
-        <Mic size={24} />
-      </button>
-      <span className="text-xs text-muted font-ui font-light">
-        {isBrowserSupported ? 'or type' : 'only'}
-      </span>
-    </div>
+    <>
+      {showMenu && (
+        <div className="fixed inset-0 bg-text/20 z-40 animate-fade-up" onClick={() => setShowMenu(false)}>
+          <div className="fixed bottom-24 right-8 bg-surface rounded-2xl border border-border shadow-lg p-2 space-y-1 animate-fade-up">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowMenu(false);
+                onEverythingClick?.();
+              }}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-cream transition-all text-left"
+            >
+              <Archive className="w-5 h-5 text-muted" />
+              <span className="font-ui text-text">Everything you Carry</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="fixed bottom-8 left-0 right-0 flex items-center justify-center gap-4 animate-fade-up stagger-6">
+        <button
+          onClick={() => setShowMenu(!showMenu)}
+          className="w-10 h-10 bg-surface border border-border rounded-full flex items-center justify-center hover:border-accent/30 active:scale-95 transition-all"
+          aria-label="Menu"
+        >
+          <Menu size={18} className="text-muted" />
+        </button>
+
+        <div className="flex items-center gap-4">
+          <span className="text-xs text-muted font-ui font-light">
+            {isBrowserSupported ? 'voice' : 'type'}
+          </span>
+          <button
+            onClick={handleFABClick}
+            className="relative w-16 h-16 bg-text rounded-full flex items-center justify-center text-surface shadow-lg hover:scale-105 active:scale-95 transition-transform"
+            aria-label="Add new item"
+          >
+            <div className="absolute inset-0 rounded-full bg-text/40 animate-pulse-ring"></div>
+            <Mic size={24} />
+          </button>
+          <span className="text-xs text-muted font-ui font-light">
+            {isBrowserSupported ? 'or type' : 'only'}
+          </span>
+        </div>
+
+        <div className="w-10"></div>
+      </div>
+    </>
   );
 }

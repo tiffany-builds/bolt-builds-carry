@@ -10,11 +10,16 @@ import { WelcomeScreen } from './components/onboarding/WelcomeScreen';
 import { NameInput } from './components/onboarding/NameInput';
 import { CategorySelection } from './components/onboarding/CategorySelection';
 import { IntakeFlow } from './components/onboarding/IntakeFlow';
-import { timelineItems, boxes, nudges } from './data';
+import { BoxDetailView } from './components/BoxDetailView';
+import { EverythingYouCarry } from './components/EverythingYouCarry';
+import { OnYourMindSection } from './components/OnYourMindSection';
+import { timelineItems, nudges } from './data';
 import { useOnboarding } from './hooks/useOnboarding';
+import { useItems } from './hooks/useItems';
 import { UserProfile, UserCategory } from './types';
 
 type OnboardingStep = 'welcome' | 'name' | 'categories' | 'intake' | 'complete';
+type View = 'home' | 'boxDetail' | 'everything';
 
 function App() {
   const [onboardingStep, setOnboardingStep] = useState<OnboardingStep>('welcome');
@@ -23,17 +28,27 @@ function App() {
   const [userCategories, setUserCategories] = useState<UserCategory[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentView, setCurrentView] = useState<View>('home');
+  const [selectedCategory, setSelectedCategory] = useState<UserCategory | null>(null);
 
   const { createUserProfile, addUserCategories, completeOnboarding } = useOnboarding();
+  const { items, isLoading: itemsLoading, loadItems, getCategoryCounts, getOnYourMindItems } = useItems(userProfile?.id || null);
 
   useEffect(() => {
     const checkExistingUser = async () => {
       try {
-        const stored = localStorage.getItem('carryUserProfile');
-        if (stored) {
-          const profile = JSON.parse(stored);
+        const storedProfile = localStorage.getItem('carryUserProfile');
+        const storedCategories = localStorage.getItem('carryUserCategories');
+
+        if (storedProfile) {
+          const profile = JSON.parse(storedProfile);
           setUserProfile(profile);
           setUserName(profile.name);
+
+          if (storedCategories) {
+            setUserCategories(JSON.parse(storedCategories));
+          }
+
           setOnboardingStep('complete');
         }
       } catch (err) {
@@ -150,6 +165,33 @@ function App() {
     );
   }
 
+  if (currentView === 'boxDetail' && selectedCategory && userProfile) {
+    return (
+      <BoxDetailView
+        categoryName={selectedCategory.name}
+        categoryEmoji={selectedCategory.emoji}
+        userId={userProfile.id}
+        onBack={() => {
+          setCurrentView('home');
+          setSelectedCategory(null);
+          loadItems();
+        }}
+      />
+    );
+  }
+
+  if (currentView === 'everything' && userProfile) {
+    return (
+      <EverythingYouCarry
+        userId={userProfile.id}
+        onBack={() => setCurrentView('home')}
+      />
+    );
+  }
+
+  const categoryCounts = getCategoryCounts();
+  const onYourMindItems = getOnYourMindItems();
+
   return (
     <div className="min-h-screen bg-cream pb-32">
       <div className="max-w-2xl mx-auto">
@@ -158,13 +200,31 @@ function App() {
         <div className="px-5 space-y-8">
           <Header />
           <AffirmationCard />
+          {onYourMindItems.length > 0 && (
+            <OnYourMindSection
+              items={onYourMindItems}
+              onItemsChange={loadItems}
+            />
+          )}
           <TimelineSection items={timelineItems} />
-          <BoxesSection boxes={boxes} />
+          <BoxesSection
+            categories={userCategories}
+            categoryCounts={categoryCounts}
+            onBoxClick={(category) => {
+              setSelectedCategory(category);
+              setCurrentView('boxDetail');
+            }}
+          />
           <NudgesSection initialNudges={nudges} />
         </div>
       </div>
 
-      <FloatingActionButton />
+      <FloatingActionButton
+        userId={userProfile?.id || null}
+        userCategories={userCategories.map(c => c.name)}
+        onSubmitSuccess={loadItems}
+        onEverythingClick={() => setCurrentView('everything')}
+      />
     </div>
   );
 }
