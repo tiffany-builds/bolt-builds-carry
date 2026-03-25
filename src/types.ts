@@ -1,10 +1,12 @@
 export interface TimelineItem {
   id: string;
-  time: string;
+  time: string | null;
   title: string;
   subtitle: string;
-  category: 'Kids' | 'Health' | 'Family' | 'Errands' | 'Me' | 'Ideas';
+  category: string;
   completed?: boolean;
+  date?: string | null;
+  detail?: string | null;
 }
 
 export interface Box {

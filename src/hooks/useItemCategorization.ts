@@ -6,8 +6,9 @@ interface CategorizedItem {
   detail: string;
   category: string;
   type: string;
-  date?: string;
-  time?: string;
+  date?: string | null;
+  time?: string | null;
+  hasDateTime?: boolean;
 }
 
 const client = new Anthropic({
@@ -20,10 +21,38 @@ export async function categorizeAndCreateItems(text: string, userId: string, use
 
   try {
     console.log("2. Calling Claude API...");
+    const todayStr = new Date().toISOString().split('T')[0];
+    const systemPrompt = `You are Carry, a personal assistant for parents.
+Extract all items from the input and return ONLY a valid JSON array.
+
+Each item must have:
+- title: max 6 words
+- category: one of: Kids, Household, Errands, Me, Ideas, Work, Projects, Other
+- type: event, task, reminder or idea
+
+If ANY date or time is mentioned — even relative ones like "tomorrow", "Tuesday", "next week", "Friday at 3" — include these additional fields:
+- date: ISO format YYYY-MM-DD. Today is ${todayStr}. Calculate actual dates from relative terms like "tomorrow" or "Tuesday"
+- time: 24hr format HH:MM if a time was mentioned, otherwise null
+- hasDateTime: true
+
+If no date or time is mentioned:
+- hasDateTime: false
+- date: null
+- time: null
+
+Return valid JSON only — no explanation, no markdown, no code blocks.
+
+Example input: "Frankie has football Tuesday at 4 and I need to call the dentist"
+Example output:
+[
+  {"title": "Frankie football practice", "category": "Kids", "type": "event", "date": "2026-03-31", "time": "16:00", "hasDateTime": true},
+  {"title": "Call the dentist", "category": "Errands", "type": "task", "hasDateTime": false, "date": null, "time": null}
+]`;
+
     const message = await client.messages.create({
       model: "claude-sonnet-4-20250514",
       max_tokens: 1000,
-      system: "You are Carry, a personal assistant for parents. Extract all items from the input and return ONLY a valid JSON array. Each item must have: title (max 6 words), category (one of: Kids, Household, Errands, Me, Ideas, Work, Projects, Other), type (event, task, reminder or idea). Return valid JSON only — no explanation, no markdown, no code blocks.",
+      system: systemPrompt,
       messages: [{ role: "user", content: text }]
     });
 
@@ -52,6 +81,9 @@ export async function categorizeAndCreateItems(text: string, userId: string, use
       category: item.category,
       time_frame: timeFrameMap[item.type] || 'future',
       completed: false,
+      date: item.date || null,
+      time: item.time || null,
+      has_date_time: item.hasDateTime || false,
     }));
     console.log("6. Items prepared for database:", itemsToInsert);
 

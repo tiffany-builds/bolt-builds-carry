@@ -207,14 +207,16 @@ function App() {
   const onYourMindItems = getOnYourMindItems();
 
   const todayItems: TimelineItem[] = items
-    .filter(item => item.time_frame === 'today')
+    .filter(item => item.has_date_time && item.date)
     .map(item => ({
       id: item.id,
-      time: '—',
+      time: item.time || null,
       title: item.title,
       subtitle: item.description || '',
       category: item.category,
-      completed: item.completed
+      completed: item.completed,
+      date: item.date || null,
+      detail: item.description || null,
     }));
 
   console.log("23. App render - Total items:", items.length);
@@ -257,7 +259,7 @@ function App() {
         <StatusBar />
 
         <div className="px-5 space-y-8">
-          <Header userName={userName} todayCount={items.filter(i => i.time_frame === 'today').length} />
+          <Header userName={userName} todayCount={todayItems.filter(i => i.date === new Date().toISOString().split('T')[0]).length} />
 
           <DebugPanel
             lastInput={debugLastInput}

@@ -1,0 +1,29 @@
+export function formatDayLabel(date: Date): string {
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return `${days[date.getDay()]} ${date.getDate()} ${months[date.getMonth()]}`;
+}
+
+export function formatTime(timeStr: string | null): string {
+  if (!timeStr) return '';
+  const [hours, minutes] = timeStr.split(':');
+  const h = parseInt(hours);
+  const ampm = h >= 12 ? 'pm' : 'am';
+  const h12 = h % 12 || 12;
+  return `${h12}:${minutes}${ampm}`;
+}
+
+export function getWeekDays(): Date[] {
+  const today = new Date();
+  const weekDays: Date[] = [];
+  for (let i = 0; i < 7; i++) {
+    const day = new Date(today);
+    day.setDate(today.getDate() + i);
+    weekDays.push(day);
+  }
+  return weekDays;
+}
+
+export function getTodayDateString(): string {
+  return new Date().toISOString().split('T')[0];
+}
