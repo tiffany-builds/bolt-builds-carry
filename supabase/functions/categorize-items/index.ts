@@ -12,10 +12,12 @@ interface ItemInput {
 }
 
 interface CategorizedItem {
-  title: string;
-  detail: string;
-  category: string;
-  type: string;
+  action?: string;
+  matchTitle?: string;
+  title?: string;
+  detail?: string;
+  category?: string;
+  type?: string;
   date?: string;
   time?: string;
   hasDateTime?: boolean;
@@ -56,33 +58,60 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date();
+    const dayName = today.toLocaleDateString('en-GB', { weekday: 'long' });
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const date = String(today.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${date}`;
+
     const systemPrompt = `You are Carry, a personal assistant for parents.
-Extract all items from the input and return ONLY a valid JSON array.
+Today is ${dayName} ${dateStr}.
+When the user says "Saturday" they mean the next upcoming Saturday from today.
+Always calculate dates going FORWARD from today — never backwards.
 
-Each item must have:
-- title: max 6 words
-- detail: one warm conversational sentence describing the item
-- category: one of: Kids, Household, Errands, Me, Ideas, Work, Projects, Other
-- type: event, task, reminder, idea or mind
+IMPORTANT: Detect if the user wants to UPDATE an existing item vs CREATE a new one.
 
-Use type "mind" for longer term plans, wishes, future intentions or anything with a vague or approximate timeframe. Examples: "book swimming lessons in May", "think about a holiday", "look into piano lessons".
+If the user is moving, rescheduling or updating an existing item (e.g., "move the dentist to Thursday", "change football to 4pm", "reschedule the doctor to next week"), return this structure:
 
-Use type "event" or "reminder" for things with a specific date or time.
+{
+  "action": "update",
+  "matchTitle": "dentist",
+  "date": "2026-03-27",
+  "time": "16:00",
+  "category": "Health"
+}
 
-If ANY date or time is mentioned include:
-- date: ISO format YYYY-MM-DD. Today is ${today}. Calculate actual dates from relative terms.
-- time: 24hr format HH:MM if a time was mentioned, otherwise null
-- hasDateTime: true
-- targetMonth: month number 1-12 if a month is mentioned but no specific date, otherwise null
+If creating a NEW item, return this structure:
 
-If no date or time mentioned:
-- hasDateTime: false
-- date: null
-- time: null
-- targetMonth: null
+{
+  "action": "create",
+  "title": "max 6 words",
+  "detail": "one warm conversational sentence",
+  "category": "one of: Kids, Household, Errands, Me, Health, Ideas, Work, Projects, Other",
+  "type": "event, task, reminder, idea or mind",
+  "date": "YYYY-MM-DD or null",
+  "time": "HH:MM or null",
+  "hasDateTime": true or false,
+  "targetMonth": 1-12 or null
+}
 
-Return valid JSON only — no explanation, no markdown, no code blocks.`;
+Categories:
+- Health: doctor, dentist, hospital, medication, physio, therapy, optician, mental health, medical appointments, prescriptions, anything health or body related
+- Me: personal time, self care, exercise, hobbies, things just for the user
+- Errands: shopping, returns, post office, admin tasks, errands outside the home
+- Kids: child activities, school, childcare
+- Household: home maintenance, chores, cleaning
+- Work: work tasks, meetings, projects
+- Ideas: future plans, wishes, dreams
+- Projects: DIY, home projects
+- Other: miscellaneous
+
+Use type "mind" for longer term plans, wishes, future intentions or anything with a vague or approximate timeframe.
+
+If no action field is present assume "create".
+
+Return valid JSON array only — no explanation, no markdown, no code blocks.`;
 
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",

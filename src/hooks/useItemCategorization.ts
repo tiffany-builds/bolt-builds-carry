@@ -2,13 +2,16 @@ import { supabase } from '../lib/supabase';
 import Anthropic from '@anthropic-ai/sdk';
 
 interface CategorizedItem {
-  title: string;
-  detail: string;
-  category: string;
-  type: string;
+  action?: string;
+  matchTitle?: string;
+  title?: string;
+  detail?: string;
+  category?: string;
+  type?: string;
   date?: string | null;
   time?: string | null;
   hasDateTime?: boolean;
+  targetMonth?: number;
 }
 
 const client = new Anthropic({
@@ -21,33 +24,60 @@ export async function categorizeAndCreateItems(text: string, userId: string, use
 
   try {
     console.log("2. Calling Claude API...");
-    const todayStr = new Date().toISOString().split('T')[0];
+    const today = new Date();
+    const dayName = today.toLocaleDateString('en-GB', { weekday: 'long' });
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const date = String(today.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${date}`;
+
     const systemPrompt = `You are Carry, a personal assistant for parents.
-Extract all items from the input and return ONLY a valid JSON array.
+Today is ${dayName} ${dateStr}.
+When the user says "Saturday" they mean the next upcoming Saturday from today.
+Always calculate dates going FORWARD from today — never backwards.
 
-Each item must have:
-- title: max 6 words
-- category: one of: Kids, Household, Errands, Me, Ideas, Work, Projects, Other
-- type: event, task, reminder or idea
+IMPORTANT: Detect if the user wants to UPDATE an existing item vs CREATE a new one.
 
-If ANY date or time is mentioned — even relative ones like "tomorrow", "Tuesday", "next week", "Friday at 3" — include these additional fields:
-- date: ISO format YYYY-MM-DD. Today is ${todayStr}. Calculate actual dates from relative terms like "tomorrow" or "Tuesday"
-- time: 24hr format HH:MM if a time was mentioned, otherwise null
-- hasDateTime: true
+If the user is moving, rescheduling or updating an existing item (e.g., "move the dentist to Thursday", "change football to 4pm", "reschedule the doctor to next week"), return this structure:
 
-If no date or time is mentioned:
-- hasDateTime: false
-- date: null
-- time: null
+{
+  "action": "update",
+  "matchTitle": "dentist",
+  "date": "2026-03-27",
+  "time": "16:00",
+  "category": "Health"
+}
 
-Return valid JSON only — no explanation, no markdown, no code blocks.
+If creating a NEW item, return this structure:
 
-Example input: "Frankie has football Tuesday at 4 and I need to call the dentist"
-Example output:
-[
-  {"title": "Frankie football practice", "category": "Kids", "type": "event", "date": "2026-03-31", "time": "16:00", "hasDateTime": true},
-  {"title": "Call the dentist", "category": "Errands", "type": "task", "hasDateTime": false, "date": null, "time": null}
-]`;
+{
+  "action": "create",
+  "title": "max 6 words",
+  "detail": "one warm conversational sentence",
+  "category": "one of: Kids, Household, Errands, Me, Health, Ideas, Work, Projects, Other",
+  "type": "event, task, reminder, idea or mind",
+  "date": "YYYY-MM-DD or null",
+  "time": "HH:MM or null",
+  "hasDateTime": true or false,
+  "targetMonth": 1-12 or null
+}
+
+Categories:
+- Health: doctor, dentist, hospital, medication, physio, therapy, optician, mental health, medical appointments, prescriptions, anything health or body related
+- Me: personal time, self care, exercise, hobbies, things just for the user
+- Errands: shopping, returns, post office, admin tasks, errands outside the home
+- Kids: child activities, school, childcare
+- Household: home maintenance, chores, cleaning
+- Work: work tasks, meetings, projects
+- Ideas: future plans, wishes, dreams
+- Projects: DIY, home projects
+- Other: miscellaneous
+
+Use type "mind" for longer term plans, wishes, future intentions or anything with a vague or approximate timeframe.
+
+If no action field is present assume "create".
+
+Return valid JSON array only — no explanation, no markdown, no code blocks.`;
 
     const message = await client.messages.create({
       model: "claude-sonnet-4-20250514",
@@ -72,32 +102,71 @@ Example output:
       'task': 'this_week',
       'reminder': 'this_week',
       'idea': 'future',
+      'mind': 'future',
     };
 
-    const itemsToInsert = items.map((item) => ({
-      user_id: userId,
-      title: item.title,
-      description: item.detail || null,
-      category: item.category,
-      time_frame: timeFrameMap[item.type] || 'future',
-      completed: false,
-      date: item.date || null,
-      time: item.time || null,
-      has_date_time: item.hasDateTime || false,
-    }));
-    console.log("6. Items prepared for database:", itemsToInsert);
+    const createdItems = [];
 
-    const { data: createdItems, error } = await supabase
-      .from('items')
-      .insert(itemsToInsert)
-      .select();
+    for (const item of items) {
+      if (item.action === 'update' && item.matchTitle) {
+        // Update existing item
+        const { data: existingItems } = await supabase
+          .from('items')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('completed', false)
+          .ilike('title', `%${item.matchTitle}%`)
+          .limit(1);
 
-    if (error) {
-      console.error('7. ERROR - Supabase insert error:', error);
-      throw new Error('Something didn\'t save — tap to retry');
+        if (existingItems && existingItems.length > 0) {
+          const updateData: any = {};
+          if (item.date !== undefined) updateData.date = item.date;
+          if (item.time !== undefined) updateData.time = item.time;
+          if (item.category !== undefined) updateData.category = item.category;
+          if (item.date) updateData.has_date_time = true;
+
+          const { data: updated, error } = await supabase
+            .from('items')
+            .update(updateData)
+            .eq('id', existingItems[0].id)
+            .select();
+
+          if (error) {
+            console.error('Error updating item:', error);
+          } else if (updated) {
+            createdItems.push(updated[0]);
+          }
+        }
+      } else {
+        // Create new item
+        const itemToInsert = {
+          user_id: userId,
+          title: item.title || '',
+          description: item.detail || null,
+          category: item.category || 'Other',
+          time_frame: timeFrameMap[item.type || 'task'] || 'future',
+          completed: false,
+          date: item.date || null,
+          time: item.time || null,
+          has_date_time: item.hasDateTime || false,
+          type: item.type || 'task',
+          target_month: item.targetMonth || null,
+        };
+
+        const { data: inserted, error } = await supabase
+          .from('items')
+          .insert([itemToInsert])
+          .select();
+
+        if (error) {
+          console.error('Error inserting item:', error);
+        } else if (inserted) {
+          createdItems.push(inserted[0]);
+        }
+      }
     }
 
-    console.log("8. Items successfully saved to database:", createdItems);
+    console.log("8. Items successfully processed:", createdItems);
 
     const { data: verifyData, error: verifyError } = await supabase
       .from('items')

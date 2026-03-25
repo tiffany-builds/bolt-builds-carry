@@ -25,5 +25,38 @@ export function getWeekDays(): Date[] {
 }
 
 export function getTodayDateString(): string {
-  return new Date().toISOString().split('T')[0];
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const date = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${date}`;
+}
+
+export function getDateForDayName(dayName: string): string | null {
+  const days: Record<string, number> = {
+    'monday': 1, 'tuesday': 2, 'wednesday': 3,
+    'thursday': 4, 'friday': 5, 'saturday': 6, 'sunday': 0
+  };
+
+  const today = new Date();
+  const todayDay = today.getDay();
+  const targetDay = days[dayName.toLowerCase()];
+
+  if (targetDay === undefined) return null;
+
+  let daysUntil = targetDay - todayDay;
+  if (daysUntil <= 0) daysUntil += 7; // Always go forward
+
+  const result = new Date(today);
+  result.setDate(today.getDate() + daysUntil);
+
+  // Format as YYYY-MM-DD using local time not UTC
+  const year = result.getFullYear();
+  const month = String(result.getMonth() + 1).padStart(2, '0');
+  const date = String(result.getDate()).padStart(2, '0');
+  return `${year}-${month}-${date}`;
+}
+
+export function getTodayDayName(): string {
+  return new Date().toLocaleDateString('en-GB', { weekday: 'long' });
 }

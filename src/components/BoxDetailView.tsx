@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Check } from 'lucide-react';
+import { ArrowLeft, Check, Mic } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { getContextualEmoji } from '../utils/mindNudges';
+import { useSpeechRecognition } from '../utils/useSpeechRecognition';
+import { categorizeAndCreateItems } from '../hooks/useItemCategorization';
 
 interface Item {
   id: string;
@@ -26,6 +28,9 @@ export function BoxDetailView({ categoryName, categoryEmoji, userId, onBack }: B
   const [swipingItemId, setSwipingItemId] = useState<string | null>(null);
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [touchStart, setTouchStart] = useState(0);
+  const [textInput, setTextInput] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [interimTranscript, setInterimTranscript] = useState('');
 
   useEffect(() => {
     loadItems();
@@ -104,6 +109,42 @@ export function BoxDetailView({ categoryName, categoryEmoji, userId, onBack }: B
     } else {
       setSwipeOffset(0);
       setSwipingItemId(null);
+    }
+  };
+
+  const processInput = async (text: string) => {
+    if (!text.trim()) return;
+
+    setIsProcessing(true);
+    try {
+      await categorizeAndCreateItems(text, userId, [categoryName]);
+      await loadItems();
+      setTextInput('');
+      setInterimTranscript('');
+    } catch (error) {
+      console.error('Error processing input:', error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const { isListening, startListening } = useSpeechRecognition({
+    onTranscript: (transcript) => {
+      processInput(transcript);
+      setInterimTranscript('');
+    },
+    onInterimTranscript: (transcript) => {
+      setInterimTranscript(transcript);
+    },
+    onError: (error) => {
+      console.error('Speech recognition error:', error);
+      setInterimTranscript('');
+    },
+  });
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !isProcessing) {
+      processInput(textInput);
     }
   };
 
@@ -188,6 +229,51 @@ export function BoxDetailView({ categoryName, categoryEmoji, userId, onBack }: B
             ))}
           </div>
         )}
+
+        <div className="fixed bottom-0 left-0 right-0 bg-cream border-t border-border py-6 px-5">
+          <div className="max-w-2xl mx-auto flex items-center justify-center gap-4">
+            <span className="font-ui text-xs text-muted uppercase tracking-wider">type</span>
+
+            <div className="relative flex items-center gap-3">
+              <input
+                type="text"
+                value={textInput}
+                onChange={(e) => setTextInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder={interimTranscript || `Add to ${categoryName}...`}
+                disabled={isProcessing || isListening}
+                className="w-48 px-4 py-2 rounded-full border border-border bg-surface text-text font-ui text-sm focus:outline-none focus:border-accent/50 disabled:opacity-50"
+              />
+
+              <div className="relative">
+                <div
+                  className={`absolute inset-0 rounded-full ${
+                    isListening ? 'animate-ping bg-accent/20' : ''
+                  }`}
+                  style={{
+                    width: '56px',
+                    height: '56px',
+                    left: '-4px',
+                    top: '-4px'
+                  }}
+                />
+                <button
+                  onClick={startListening}
+                  disabled={isProcessing || isListening}
+                  className={`relative w-12 h-12 rounded-full flex items-center justify-center transition-all active:scale-95 disabled:opacity-50 ${
+                    isListening
+                      ? 'bg-accent text-surface shadow-lg'
+                      : 'bg-surface border-2 border-accent text-accent hover:bg-accent hover:text-surface shadow-md'
+                  }`}
+                >
+                  <Mic className="w-5 h-5" strokeWidth={2} />
+                </button>
+              </div>
+            </div>
+
+            <span className="font-ui text-xs text-muted uppercase tracking-wider">voice</span>
+          </div>
+        </div>
       </div>
     </div>
   );
