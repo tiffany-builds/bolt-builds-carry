@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 
 interface UseSpeechRecognitionProps {
   onTranscript: (text: string) => void;
+  onInterimTranscript?: (text: string) => void;
   onStart?: () => void;
   onStop?: () => void;
   onError?: (error: string) => void;
@@ -9,11 +10,13 @@ interface UseSpeechRecognitionProps {
 
 export function useSpeechRecognition({
   onTranscript,
+  onInterimTranscript,
   onStart,
   onStop,
   onError,
 }: UseSpeechRecognitionProps) {
   const recognitionRef = useRef<any>(null);
+  const silenceTimerRef = useRef<number | null>(null);
   const [isListening, setIsListening] = useState(false);
   const [isBrowserSupported, setIsBrowserSupported] = useState(true);
 
@@ -45,14 +48,30 @@ export function useSpeechRecognition({
 
     recognition.onresult = (event: any) => {
       let transcript = '';
+      let isFinal = false;
 
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const transcriptSegment = event.results[i][0].transcript;
         transcript += transcriptSegment;
+        if (event.results[i].isFinal) {
+          isFinal = true;
+        }
       }
 
-      if (event.isFinal) {
-        onTranscript(transcript.trim());
+      const trimmedTranscript = transcript.trim();
+
+      if (isFinal) {
+        if (silenceTimerRef.current) {
+          clearTimeout(silenceTimerRef.current);
+        }
+        silenceTimerRef.current = window.setTimeout(() => {
+          if (trimmedTranscript) {
+            onTranscript(trimmedTranscript);
+            recognition.stop();
+          }
+        }, 1500);
+      } else {
+        onInterimTranscript?.(trimmedTranscript);
       }
     };
 
@@ -63,9 +82,12 @@ export function useSpeechRecognition({
     };
 
     return () => {
+      if (silenceTimerRef.current) {
+        clearTimeout(silenceTimerRef.current);
+      }
       recognition.abort();
     };
-  }, [onTranscript, onStart, onStop, onError]);
+  }, [onTranscript, onInterimTranscript, onStart, onStop, onError]);
 
   const startListening = () => {
     if (recognitionRef.current && !isListening) {

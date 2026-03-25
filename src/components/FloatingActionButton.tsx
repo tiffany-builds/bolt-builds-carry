@@ -12,25 +12,35 @@ interface FloatingActionButtonProps {
 export function FloatingActionButton({ userId, userCategories, onSubmitSuccess, onEverythingClick }: FloatingActionButtonProps) {
   const [showInput, setShowInput] = useState(false);
   const [inputValue, setInputValue] = useState('');
+  const [interimTranscript, setInterimTranscript] = useState('');
   const [showError, setShowError] = useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
 
   const handleTranscript = (text: string) => {
     setInputValue(text);
+    setInterimTranscript('');
+    handleSubmit(text);
+  };
+
+  const handleInterimTranscript = (text: string) => {
+    setInterimTranscript(text);
   };
 
   const { isListening, isBrowserSupported, startListening, stopListening } =
     useSpeechRecognition({
       onTranscript: handleTranscript,
+      onInterimTranscript: handleInterimTranscript,
       onStart: () => {
         setShowError(null);
+        setShowSuccess(null);
       },
       onError: (error) => {
         if (error === 'no-speech') {
-          setShowError('No speech detected. Try again.');
+          setShowError("Carry couldn't quite catch that — want to try again?");
         } else {
-          setShowError(`Error: ${error}`);
+          setShowError("Carry couldn't quite catch that — want to try again?");
         }
       },
     });
@@ -45,24 +55,40 @@ export function FloatingActionButton({ userId, userCategories, onSubmitSuccess, 
     }
   };
 
-  const handleSubmit = async () => {
-    if (!inputValue.trim() || !userId) return;
+  const handleSubmit = async (text?: string) => {
+    const textToSubmit = text || inputValue;
+    if (!textToSubmit.trim() || !userId) return;
 
     setIsSubmitting(true);
     setShowError(null);
+    setShowSuccess(null);
 
     try {
       const { useItemCategorization } = await import('../hooks/useItemCategorization');
       const { categorizeAndCreateItems } = useItemCategorization();
 
-      await categorizeAndCreateItems(inputValue, userId, userCategories);
+      const createdItems = await categorizeAndCreateItems(textToSubmit, userId, userCategories);
 
       stopListening();
       setInputValue('');
-      setShowInput(false);
-      onSubmitSuccess?.();
+      setInterimTranscript('');
+
+      if (createdItems && createdItems.length > 0) {
+        const categories = [...new Set(createdItems.map(item => item.category))];
+        if (categories.length === 1) {
+          setShowSuccess(`Got it — added to ${categories[0]}`);
+        } else {
+          setShowSuccess(`Got it — added ${createdItems.length} items`);
+        }
+      }
+
+      setTimeout(() => {
+        setShowInput(false);
+        setShowSuccess(null);
+        onSubmitSuccess?.();
+      }, 2000);
     } catch (err) {
-      setShowError(err instanceof Error ? err.message : 'Failed to save');
+      setShowError("Carry couldn't quite catch that — want to try again?");
     } finally {
       setIsSubmitting(false);
     }
@@ -72,7 +98,9 @@ export function FloatingActionButton({ userId, userCategories, onSubmitSuccess, 
     stopListening();
     setShowInput(false);
     setInputValue('');
+    setInterimTranscript('');
     setShowError(null);
+    setShowSuccess(null);
   };
 
   const handleTypeInput = (text: string) => {
@@ -121,6 +149,18 @@ export function FloatingActionButton({ userId, userCategories, onSubmitSuccess, 
             <div className="flex items-center gap-2 text-sm text-accent">
               <div className="w-2 h-2 bg-accent rounded-full animate-pulse"></div>
               <span className="font-ui font-light">Listening...</span>
+            </div>
+          )}
+
+          {interimTranscript && isListening && (
+            <div className="text-sm text-text/60 font-ui font-light italic">
+              {interimTranscript}
+            </div>
+          )}
+
+          {showSuccess && (
+            <div className="text-sm text-accent font-ui font-light animate-fade-up">
+              {showSuccess}
             </div>
           )}
 
@@ -175,10 +215,10 @@ export function FloatingActionButton({ userId, userCategories, onSubmitSuccess, 
           </span>
           <button
             onClick={handleFABClick}
-            className="relative w-16 h-16 bg-text rounded-full flex items-center justify-center text-surface shadow-lg hover:scale-105 active:scale-95 transition-transform"
+            className={`relative w-16 h-16 bg-text rounded-full flex items-center justify-center text-surface shadow-lg hover:scale-105 active:scale-95 transition-transform ${isListening ? 'scale-110' : ''}`}
             aria-label="Add new item"
           >
-            <div className="absolute inset-0 rounded-full bg-text/40 animate-pulse-ring"></div>
+            <div className={`absolute inset-0 rounded-full bg-text/40 ${isListening ? 'animate-ping' : 'animate-pulse-ring'}`}></div>
             <Mic size={24} />
           </button>
           <span className="text-xs text-muted font-ui font-light">

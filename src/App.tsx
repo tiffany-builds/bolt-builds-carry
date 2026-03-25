@@ -14,6 +14,7 @@ import { IntakeFlow } from './components/onboarding/IntakeFlow';
 import { BoxDetailView } from './components/BoxDetailView';
 import { EverythingYouCarry } from './components/EverythingYouCarry';
 import { OnYourMindSection } from './components/OnYourMindSection';
+import { ApiTestButton } from './components/ApiTestButton';
 import { timelineItems, nudges } from './data';
 import { useAuth } from './hooks/useAuth';
 import { useOnboarding } from './hooks/useOnboarding';
@@ -234,6 +235,8 @@ function App() {
           <NudgesSection initialNudges={nudges} />
         </div>
       </div>
+
+      <ApiTestButton />
 
       <FloatingActionButton
         userId={userProfile?.id || null}

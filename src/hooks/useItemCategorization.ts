@@ -3,9 +3,11 @@ import { supabase } from '../lib/supabase';
 
 interface CategorizedItem {
   title: string;
-  description?: string;
+  detail: string;
   category: string;
-  timeFrame: string;
+  type: string;
+  date?: string;
+  time?: string;
 }
 
 export function useItemCategorization() {
@@ -33,12 +35,19 @@ export function useItemCategorization() {
       const data = await response.json();
       const items = data.items as CategorizedItem[];
 
+      const timeFrameMap: Record<string, string> = {
+        'event': 'today',
+        'task': 'this_week',
+        'reminder': 'this_week',
+        'idea': 'future',
+      };
+
       const itemsToInsert = items.map((item) => ({
         user_id: userId,
         title: item.title,
-        description: item.description || null,
+        description: item.detail || null,
         category: item.category,
-        time_frame: item.timeFrame,
+        time_frame: timeFrameMap[item.type] || 'future',
         completed: false,
       }));
 
