@@ -4,15 +4,28 @@ import { UserProfile, UserCategory } from '../types';
 
 export function useOnboarding() {
   const createUserProfile = useCallback(
-    async (name: string): Promise<UserProfile> => {
+    async (name: string, authUserId: string): Promise<UserProfile> => {
       const { data, error } = await supabase
         .from('user_profiles')
-        .insert([{ name, has_completed_onboarding: false }])
+        .insert([{ name, auth_user_id: authUserId, has_completed_onboarding: false }])
         .select()
         .maybeSingle();
 
       if (error) throw error;
       return data;
+    },
+    []
+  );
+
+  const getOrCreateUserProfile = useCallback(
+    async (authUserId: string): Promise<UserProfile | null> => {
+      const { data: existingProfile } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('auth_user_id', authUserId)
+        .maybeSingle();
+
+      return existingProfile;
     },
     []
   );
@@ -61,9 +74,22 @@ export function useOnboarding() {
     if (error) throw error;
   }, []);
 
+  const getUserCategories = useCallback(async (userId: string): Promise<UserCategory[]> => {
+    const { data, error } = await supabase
+      .from('user_categories')
+      .select('*')
+      .eq('user_id', userId)
+      .order('order', { ascending: true });
+
+    if (error) throw error;
+    return data || [];
+  }, []);
+
   return {
     createUserProfile,
+    getOrCreateUserProfile,
     addUserCategories,
     completeOnboarding,
+    getUserCategories,
   };
 }

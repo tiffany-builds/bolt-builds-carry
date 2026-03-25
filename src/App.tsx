@@ -6,6 +6,7 @@ import { TimelineSection } from './components/TimelineSection';
 import { BoxesSection } from './components/BoxesSection';
 import { NudgesSection } from './components/NudgesSection';
 import { FloatingActionButton } from './components/FloatingActionButton';
+import { SignIn } from './components/auth/SignIn';
 import { WelcomeScreen } from './components/onboarding/WelcomeScreen';
 import { NameInput } from './components/onboarding/NameInput';
 import { CategorySelection } from './components/onboarding/CategorySelection';
@@ -14,6 +15,7 @@ import { BoxDetailView } from './components/BoxDetailView';
 import { EverythingYouCarry } from './components/EverythingYouCarry';
 import { OnYourMindSection } from './components/OnYourMindSection';
 import { timelineItems, nudges } from './data';
+import { useAuth } from './hooks/useAuth';
 import { useOnboarding } from './hooks/useOnboarding';
 import { useItems } from './hooks/useItems';
 import { UserProfile, UserCategory } from './types';
@@ -31,39 +33,53 @@ function App() {
   const [currentView, setCurrentView] = useState<View>('home');
   const [selectedCategory, setSelectedCategory] = useState<UserCategory | null>(null);
 
-  const { createUserProfile, addUserCategories, completeOnboarding } = useOnboarding();
+  const { user, isLoading: authLoading } = useAuth();
+  const { createUserProfile, getOrCreateUserProfile, addUserCategories, completeOnboarding, getUserCategories } = useOnboarding();
   const { items, isLoading: itemsLoading, loadItems, getCategoryCounts, getOnYourMindItems } = useItems(userProfile?.id || null);
 
   useEffect(() => {
     const checkExistingUser = async () => {
-      try {
-        const storedProfile = localStorage.getItem('carryUserProfile');
-        const storedCategories = localStorage.getItem('carryUserCategories');
+      if (!user) return;
 
-        if (storedProfile) {
-          const profile = JSON.parse(storedProfile);
+      try {
+        const profile = await getOrCreateUserProfile(user.id);
+
+        if (profile) {
           setUserProfile(profile);
           setUserName(profile.name);
 
-          if (storedCategories) {
-            setUserCategories(JSON.parse(storedCategories));
-          }
+          const categories = await getUserCategories(profile.id);
+          setUserCategories(categories);
 
-          setOnboardingStep('complete');
+          if (profile.has_completed_onboarding) {
+            setOnboardingStep('complete');
+          } else if (categories.length > 0) {
+            setOnboardingStep('intake');
+          } else if (profile.name) {
+            setOnboardingStep('categories');
+          } else {
+            setOnboardingStep('name');
+          }
+        } else {
+          setOnboardingStep('name');
         }
       } catch (err) {
         console.error('Error checking existing user:', err);
       }
     };
 
-    checkExistingUser();
-  }, []);
+    if (!authLoading) {
+      checkExistingUser();
+    }
+  }, [user, authLoading, getOrCreateUserProfile, getUserCategories]);
 
   const handleNameSubmit = async (name: string) => {
+    if (!user) return;
+
     setIsLoading(true);
     setError(null);
     try {
-      const profile = await createUserProfile(name);
+      const profile = await createUserProfile(name, user.id);
       setUserName(name);
       setUserProfile(profile);
       setOnboardingStep('categories');
@@ -82,10 +98,6 @@ function App() {
     try {
       const categories = await addUserCategories(userProfile.id, selectedCategories);
       setUserCategories(categories);
-
-      localStorage.setItem('carryUserProfile', JSON.stringify(userProfile));
-      localStorage.setItem('carryUserCategories', JSON.stringify(categories));
-
       setOnboardingStep('intake');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to set up categories');
@@ -109,7 +121,7 @@ function App() {
     }
   };
 
-  if (isLoading) {
+  if (authLoading || isLoading) {
     return (
       <div className="min-h-screen bg-cream flex items-center justify-center">
         <div className="text-center space-y-4">
@@ -118,6 +130,10 @@ function App() {
         </div>
       </div>
     );
+  }
+
+  if (!user) {
+    return <SignIn onSuccess={() => {}} />;
   }
 
   if (error) {
@@ -198,7 +214,7 @@ function App() {
         <StatusBar />
 
         <div className="px-5 space-y-8">
-          <Header />
+          <Header userName={userName} todayCount={items.filter(i => i.time_frame === 'today').length} />
           <AffirmationCard />
           {onYourMindItems.length > 0 && (
             <OnYourMindSection
