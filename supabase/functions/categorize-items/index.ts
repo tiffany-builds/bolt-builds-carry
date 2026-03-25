@@ -18,6 +18,8 @@ interface CategorizedItem {
   type: string;
   date?: string;
   time?: string;
+  hasDateTime?: boolean;
+  targetMonth?: number;
 }
 
 Deno.serve(async (req: Request) => {
@@ -54,7 +56,33 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const systemPrompt = "You are an AI assistant helping a parent organise their daily life. When given a voice note or text input, extract all actionable items, reminders, events or ideas mentioned. For each item return a JSON array where each object has: title (short, max 6 words), detail (one sentence), category (one of: Kids, Household, Errands, Me, Ideas, Work, Projects, Other), type (event, task, reminder, or idea), and if time is mentioned: date and time fields. Return only valid JSON, no other text.";
+    const today = new Date().toISOString().split('T')[0];
+    const systemPrompt = `You are Carry, a personal assistant for parents.
+Extract all items from the input and return ONLY a valid JSON array.
+
+Each item must have:
+- title: max 6 words
+- detail: one warm conversational sentence describing the item
+- category: one of: Kids, Household, Errands, Me, Ideas, Work, Projects, Other
+- type: event, task, reminder, idea or mind
+
+Use type "mind" for longer term plans, wishes, future intentions or anything with a vague or approximate timeframe. Examples: "book swimming lessons in May", "think about a holiday", "look into piano lessons".
+
+Use type "event" or "reminder" for things with a specific date or time.
+
+If ANY date or time is mentioned include:
+- date: ISO format YYYY-MM-DD. Today is ${today}. Calculate actual dates from relative terms.
+- time: 24hr format HH:MM if a time was mentioned, otherwise null
+- hasDateTime: true
+- targetMonth: month number 1-12 if a month is mentioned but no specific date, otherwise null
+
+If no date or time mentioned:
+- hasDateTime: false
+- date: null
+- time: null
+- targetMonth: null
+
+Return valid JSON only — no explanation, no markdown, no code blocks.`;
 
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",

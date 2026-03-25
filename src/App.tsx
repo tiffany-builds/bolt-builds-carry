@@ -206,6 +206,8 @@ function App() {
   const categoryCounts = getCategoryCounts();
   const onYourMindItems = getOnYourMindItems();
 
+  const mindItems = items.filter(item => item.type === 'mind' || item.type === 'idea');
+
   const todayItems: TimelineItem[] = items
     .filter(item => item.has_date_time && item.date)
     .map(item => ({
@@ -217,6 +219,10 @@ function App() {
       completed: item.completed,
       date: item.date || null,
       detail: item.description || null,
+      type: item.type,
+      hasDateTime: item.has_date_time,
+      targetMonth: item.target_month,
+      created_at: item.created_at,
     }));
 
   console.log("23. App render - Total items:", items.length);
@@ -276,13 +282,11 @@ function App() {
             Add Test Item
           </button>
 
-          <AffirmationCard itemCount={lastWeekCount} />
-          {onYourMindItems.length > 0 && (
-            <OnYourMindSection
-              items={onYourMindItems}
-              onItemsChange={loadItems}
-            />
-          )}
+          <AffirmationCard itemCount={lastWeekCount} mindItemCount={mindItems.length} />
+          <OnYourMindSection
+            items={items}
+            onItemsChange={loadItems}
+          />
           <TimelineSection items={todayItems} />
           <BoxesSection
             categories={userCategories}

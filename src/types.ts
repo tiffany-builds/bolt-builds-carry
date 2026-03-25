@@ -7,6 +7,10 @@ export interface TimelineItem {
   completed?: boolean;
   date?: string | null;
   detail?: string | null;
+  type?: string;
+  hasDateTime?: boolean;
+  targetMonth?: number;
+  created_at?: string;
 }
 
 export interface Box {

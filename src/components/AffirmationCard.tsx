@@ -1,9 +1,15 @@
 interface AffirmationCardProps {
   itemCount?: number;
+  mindItemCount?: number;
 }
 
-export function AffirmationCard({ itemCount = 0 }: AffirmationCardProps) {
+export function AffirmationCard({ itemCount = 0, mindItemCount = 0 }: AffirmationCardProps) {
   const getMessage = () => {
+    if (mindItemCount > 0) {
+      const plural = mindItemCount === 1 ? 'thing' : 'things';
+      return `You have ${mindItemCount} ${plural} on your mind. Carry is keeping track.`;
+    }
+
     if (itemCount === 0) {
       return "Ready when you are. Just talk, and Carry will organise the rest.";
     } else if (itemCount === 1) {

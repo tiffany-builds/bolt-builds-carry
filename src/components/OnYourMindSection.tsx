@@ -1,67 +1,77 @@
-import { Check } from 'lucide-react';
+import { X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-
-interface Item {
-  id: string;
-  title: string;
-  description: string | null;
-  completed: boolean;
-}
+import { addNudgesToMindItems, getCategoryEmoji, type MindItem } from '../utils/mindNudges';
 
 interface OnYourMindSectionProps {
-  items: Item[];
+  items: MindItem[];
   onItemsChange: () => void;
 }
 
 export function OnYourMindSection({ items, onItemsChange }: OnYourMindSectionProps) {
-  console.log("31. OnYourMindSection render - items:", items);
+  const mindItems = items.filter(item => item.type === 'mind' || item.type === 'idea');
 
-  const toggleComplete = async (itemId: string, currentCompleted: boolean) => {
+  if (mindItems.length === 0) {
+    return null;
+  }
+
+  const mindItemsWithNudges = addNudgesToMindItems(mindItems);
+
+  const dismissMindItem = async (itemId: string) => {
     try {
       const { error } = await supabase
         .from('items')
-        .update({ completed: !currentCompleted })
+        .delete()
         .eq('id', itemId);
 
       if (error) throw error;
       onItemsChange();
     } catch (err) {
-      console.error('Error toggling item:', err);
+      console.error('Error dismissing mind item:', err);
     }
   };
-
-  if (items.length === 0) {
-    console.log("32. OnYourMindSection - no items, returning null");
-    return null;
-  }
 
   return (
     <div className="animate-fade-up stagger-3">
       <h2 className="text-xs uppercase tracking-wider text-muted font-ui font-medium mb-3">
         On your mind
       </h2>
-      <div className="space-y-2">
-        {items.map((item) => (
+      <div className="space-y-3">
+        {mindItemsWithNudges.map((item) => (
           <div
             key={item.id}
-            className="bg-surface border border-border p-4 rounded-xl"
+            className={`border border-border rounded-xl p-4 ${
+              item.nudgeMessage
+                ? 'bg-[#fef9f7]'
+                : 'bg-surface'
+            }`}
           >
             <div className="flex items-start gap-3">
-              <button
-                onClick={() => toggleComplete(item.id, item.completed)}
-                className="flex-shrink-0 w-6 h-6 rounded-full border-2 border-border hover:border-accent transition-all flex items-center justify-center mt-0.5 active:scale-95"
-              >
-                {item.completed && (
-                  <Check className="w-4 h-4 text-accent" strokeWidth={3} />
-                )}
-              </button>
+              <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center text-xl mt-0.5">
+                {getCategoryEmoji(item.category)}
+              </div>
 
               <div className="flex-1 min-w-0">
-                <h3 className="font-ui font-medium text-text">{item.title}</h3>
-                {item.description && (
-                  <p className="font-ui text-sm text-muted mt-1">{item.description}</p>
+                <h3 className="font-ui font-medium text-text text-[15px]">
+                  {item.title}
+                </h3>
+                {item.detail && (
+                  <p className="font-ui text-sm text-muted mt-1">
+                    {item.detail}
+                  </p>
+                )}
+                {item.nudgeMessage && (
+                  <p className="font-ui text-sm text-[#c17854] mt-2">
+                    {item.nudgeMessage}
+                  </p>
                 )}
               </div>
+
+              <button
+                onClick={() => dismissMindItem(item.id)}
+                className="flex-shrink-0 w-6 h-6 rounded-full hover:bg-border/50 transition-colors flex items-center justify-center text-muted hover:text-text"
+              >
+                <X className="w-4 h-4" strokeWidth={2} />
+              </button>
             </div>
           </div>
         ))}
