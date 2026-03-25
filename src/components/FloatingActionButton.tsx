@@ -81,7 +81,7 @@ export function FloatingActionButton({ userId, userCategories, onSubmitSuccess, 
 
   if (showInput) {
     return (
-      <div className="fixed bottom-0 left-0 right-0 bg-surface border-t border-border p-5 shadow-lg animate-fade-up">
+      <div className="fixed bottom-0 left-0 right-0 bg-surface border-t border-border p-5 shadow-lg animate-fade-up" style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom))' }}>
         <div className="max-w-2xl mx-auto space-y-3">
           <div className="flex gap-3">
             <div className="flex-1">
@@ -144,7 +144,7 @@ export function FloatingActionButton({ userId, userCategories, onSubmitSuccess, 
     <>
       {showMenu && (
         <div className="fixed inset-0 bg-text/20 z-40 animate-fade-up" onClick={() => setShowMenu(false)}>
-          <div className="fixed bottom-24 right-8 bg-surface rounded-2xl border border-border shadow-lg p-2 space-y-1 animate-fade-up">
+          <div className="fixed right-8 bg-surface rounded-2xl border border-border shadow-lg p-2 space-y-1 animate-fade-up" style={{ bottom: 'max(6rem, calc(env(safe-area-inset-bottom) + 4.5rem))' }}>
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -160,7 +160,7 @@ export function FloatingActionButton({ userId, userCategories, onSubmitSuccess, 
         </div>
       )}
 
-      <div className="fixed bottom-8 left-0 right-0 flex items-center justify-center gap-4 animate-fade-up stagger-6">
+      <div className="fixed left-0 right-0 flex items-center justify-center gap-4 animate-fade-up stagger-6" style={{ bottom: 'max(2rem, calc(env(safe-area-inset-bottom) + 0.5rem))' }}>
         <button
           onClick={() => setShowMenu(!showMenu)}
           className="w-10 h-10 bg-surface border border-border rounded-full flex items-center justify-center hover:border-accent/30 active:scale-95 transition-all"

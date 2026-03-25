@@ -19,12 +19,47 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+html {
+  height: 100%;
+  height: -webkit-fill-available;
+}
+
 body {
   margin: 0;
   font-family: var(--font-ui);
   background-color: var(--color-bg);
   color: var(--color-text);
   overflow-x: hidden;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  touch-action: pan-y;
+}
+
+#root {
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+button, input, textarea, select {
+  -webkit-tap-highlight-color: transparent;
+}
+
+input, textarea {
+  font-size: 16px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+button {
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 @keyframes fadeUp {
@@ -71,4 +106,32 @@ body {
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+@supports (-webkit-touch-callout: none) {
+  body {
+    overscroll-behavior-y: none;
+  }
+
+  .prevent-ios-bounce {
+    position: fixed;
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  font-size: 16px;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  button:hover {
+    transform: none;
+  }
+
+  button:active {
+    transform: scale(0.95);
+  }
 }
