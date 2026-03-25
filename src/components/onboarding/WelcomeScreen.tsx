@@ -8,10 +8,10 @@ export function WelcomeScreen({ onContinue }: WelcomeScreenProps) {
       <div className="max-w-md w-full text-center space-y-8 animate-fade-up">
         <div className="space-y-4">
           <h1 className="font-display italic text-5xl font-extralight text-text leading-tight">
-            Hello. Let's set up Carry for you.
+            Hello. Let's set up <span className="text-accent">Carry</span> for you.
           </h1>
           <p className="font-ui text-base text-muted font-light leading-relaxed">
-            Just a few things so Carry can get to know you.
+            Just a few things so <span className="text-accent">Carry</span> can get to know you.
           </p>
         </div>
 
