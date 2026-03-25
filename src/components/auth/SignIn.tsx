@@ -46,7 +46,7 @@ export function SignIn({ onSuccess }: SignInProps) {
     <div className="min-h-screen bg-cream flex items-center justify-center px-5">
       <div className="w-full max-w-md space-y-8 animate-fade-up">
         <div className="text-center space-y-3">
-          <h1 className="font-display italic font-extralight text-5xl text-text">Welcome to Carry</h1>
+          <h1 className="font-display italic font-extralight text-5xl text-text">Welcome to <span className="text-terra">Carry</span></h1>
           <p className="font-ui text-muted font-light">
             {isSignUp ? 'Create your account to get started' : 'Sign in to continue'}
           </p>
