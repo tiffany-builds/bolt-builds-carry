@@ -12,6 +12,9 @@ interface CategorizedItem {
   time?: string | null;
   hasDateTime?: boolean;
   targetMonth?: number;
+  startDate?: string | null;
+  endDate?: string | null;
+  excitement?: string;
 }
 
 const client = new Anthropic({
@@ -55,11 +58,42 @@ If creating a NEW item, return this structure:
   "title": "max 6 words",
   "detail": "one warm conversational sentence",
   "category": "one of: Kids, Household, Errands, Me, Health, Ideas, Work, Projects, Other",
-  "type": "event, task, reminder, idea or mind",
+  "type": "event, task, reminder, idea, mind or lookforward",
   "date": "YYYY-MM-DD or null",
   "time": "HH:MM or null",
   "hasDateTime": true or false,
   "targetMonth": 1-12 or null
+}
+
+Use type "lookforward" for:
+- Any trip, travel, holiday or weekend away
+- Concerts, shows, events the user is attending
+- Reunions, celebrations, things with friends or family
+- Anything the user mentions with excitement or anticipation
+- Multi-day events like "April 28 to May 2"
+- Any item more than 2 weeks away that sounds positive and exciting
+
+For lookforward items also include:
+- startDate: ISO format YYYY-MM-DD for start of event
+- endDate: ISO format YYYY-MM-DD if multi-day, otherwise same as startDate
+- targetMonth: month number 1-12
+- hasDateTime: true
+- excitement: a short warm one-line description of why this is worth looking forward to
+
+Example:
+Input: "I have a trip with Sarah from April 28 to May 2"
+Output:
+{
+  "action": "create",
+  "title": "Trip with Sarah",
+  "detail": "A few days away with a good friend.",
+  "category": "Me",
+  "type": "lookforward",
+  "startDate": "2026-04-28",
+  "endDate": "2026-05-02",
+  "targetMonth": 4,
+  "hasDateTime": true,
+  "excitement": "Something just for you — a proper break with a friend."
 }
 
 Categories:
@@ -139,19 +173,25 @@ Return valid JSON array only — no explanation, no markdown, no code blocks.`;
         }
       } else {
         // Create new item
-        const itemToInsert = {
+        const itemToInsert: any = {
           user_id: userId,
           title: item.title || '',
           description: item.detail || null,
           category: item.category || 'Other',
           time_frame: timeFrameMap[item.type || 'task'] || 'future',
           completed: false,
-          date: item.date || null,
+          date: item.type === 'lookforward' ? item.startDate : item.date || null,
           time: item.time || null,
           has_date_time: item.hasDateTime || false,
           type: item.type || 'task',
           target_month: item.targetMonth || null,
         };
+
+        if (item.type === 'lookforward') {
+          itemToInsert.start_date = item.startDate || null;
+          itemToInsert.end_date = item.endDate || null;
+          itemToInsert.excitement = item.excitement || null;
+        }
 
         const { data: inserted, error } = await supabase
           .from('items')

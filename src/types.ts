@@ -11,6 +11,9 @@ export interface TimelineItem {
   hasDateTime?: boolean;
   targetMonth?: number;
   created_at?: string;
+  start_date?: string | null;
+  end_date?: string | null;
+  excitement?: string | null;
 }
 
 export interface Box {

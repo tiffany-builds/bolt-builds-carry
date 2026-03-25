@@ -1,4 +1,5 @@
 import { UserCategory } from '../types';
+import { getCategoryDisplayName } from '../utils/categoryHelpers';
 
 interface BoxCardProps {
   name: string;
@@ -8,13 +9,14 @@ interface BoxCardProps {
 }
 
 function BoxCard({ name, emoji, count, onClick }: BoxCardProps) {
+  const displayName = getCategoryDisplayName(name);
   return (
     <button
       onClick={onClick}
       className="flex-shrink-0 bg-surface rounded-xl p-5 border border-border w-36 hover:border-accent/30 transition-all active:scale-95"
     >
       <div className="text-3xl mb-3">{emoji}</div>
-      <h3 className="font-ui font-medium text-text mb-1">{name}</h3>
+      <h3 className="font-ui font-medium text-text mb-1">{displayName}</h3>
       <p className="font-ui text-sm text-muted">{count} {count === 1 ? 'item' : 'items'}</p>
     </button>
   );

@@ -14,6 +14,9 @@ interface Item {
   has_date_time: boolean;
   type: string;
   target_month: number | null;
+  start_date?: string | null;
+  end_date?: string | null;
+  excitement?: string | null;
 }
 
 export function useItems(userId: string | null) {

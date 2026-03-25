@@ -16,6 +16,7 @@ import { IntakeFlow } from './components/onboarding/IntakeFlow';
 import { BoxDetailView } from './components/BoxDetailView';
 import { EverythingYouCarry } from './components/EverythingYouCarry';
 import { OnYourMindSection } from './components/OnYourMindSection';
+import { LookForwardSection } from './components/LookForwardSection';
 import { DebugPanel } from './components/DebugPanel';
 import { useAuth } from './hooks/useAuth';
 import { useOnboarding } from './hooks/useOnboarding';
@@ -214,21 +215,38 @@ function App() {
   );
 
   const todayItems: TimelineItem[] = items
-    .filter(item => item.has_date_time && item.date)
+    .filter(item => (item.has_date_time && item.date) || (item.type === 'lookforward' && item.start_date))
     .map(item => ({
       id: item.id,
       time: item.time || null,
-      title: item.title,
+      title: item.type === 'lookforward' ? `${item.title} begins` : item.title,
       subtitle: item.description || '',
       category: item.category,
       completed: item.completed,
-      date: item.date || null,
+      date: item.date || item.start_date || null,
       detail: item.description || null,
       type: item.type,
       hasDateTime: item.has_date_time,
       targetMonth: item.target_month,
       created_at: item.created_at,
+      start_date: item.start_date || null,
+      end_date: item.end_date || null,
+      excitement: item.excitement || null,
     }));
+
+  const handleRemoveItem = async (itemId: string) => {
+    try {
+      const { error } = await supabase
+        .from('items')
+        .delete()
+        .eq('id', itemId);
+
+      if (error) throw error;
+      loadItems();
+    } catch (err) {
+      console.error('Error removing item:', err);
+    }
+  };
 
   console.log("23. App render - Total items:", items.length);
   console.log("24. App render - Today items:", todayItems.length);
@@ -302,6 +320,10 @@ function App() {
           <OnYourMindSection
             items={items}
             onItemsChange={loadItems}
+          />
+          <LookForwardSection
+            items={todayItems}
+            onRemoveItem={handleRemoveItem}
           />
         </div>
       </div>

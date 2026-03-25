@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { getContextualEmoji } from '../utils/mindNudges';
 import { useSpeechRecognition } from '../utils/useSpeechRecognition';
 import { categorizeAndCreateItems } from '../hooks/useItemCategorization';
+import { getCategoryDisplayName } from '../utils/categoryHelpers';
 
 interface Item {
   id: string;
@@ -150,6 +151,8 @@ export function BoxDetailView({ categoryName, categoryEmoji, userId, onBack }: B
 
   const activeItems = items.filter(item => !item.completed);
 
+  const displayName = getCategoryDisplayName(categoryName);
+
   return (
     <div className="min-h-screen bg-cream">
       <div className="max-w-2xl mx-auto px-5 py-6 space-y-6">
@@ -162,7 +165,7 @@ export function BoxDetailView({ categoryName, categoryEmoji, userId, onBack }: B
           </button>
           <div>
             <div className="text-3xl mb-1">{categoryEmoji}</div>
-            <h1 className="font-ui font-medium text-2xl text-text">{categoryName}</h1>
+            <h1 className="font-ui font-medium text-2xl text-text">{displayName}</h1>
             <p className="font-ui text-sm text-muted">
               {activeItems.length} {activeItems.length === 1 ? 'item' : 'items'}
             </p>
@@ -240,7 +243,7 @@ export function BoxDetailView({ categoryName, categoryEmoji, userId, onBack }: B
                 value={textInput}
                 onChange={(e) => setTextInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder={interimTranscript || `Add to ${categoryName}...`}
+                placeholder={interimTranscript || `Add to ${displayName}...`}
                 disabled={isProcessing || isListening}
                 className="w-48 px-4 py-2 rounded-full border border-border bg-surface text-text font-ui text-sm focus:outline-none focus:border-accent/50 disabled:opacity-50"
               />

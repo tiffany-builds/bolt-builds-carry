@@ -22,6 +22,9 @@ interface CategorizedItem {
   time?: string;
   hasDateTime?: boolean;
   targetMonth?: number;
+  startDate?: string;
+  endDate?: string;
+  excitement?: string;
 }
 
 Deno.serve(async (req: Request) => {
@@ -89,11 +92,42 @@ If creating a NEW item, return this structure:
   "title": "max 6 words",
   "detail": "one warm conversational sentence",
   "category": "one of: Kids, Household, Errands, Me, Health, Ideas, Work, Projects, Other",
-  "type": "event, task, reminder, idea or mind",
+  "type": "event, task, reminder, idea, mind or lookforward",
   "date": "YYYY-MM-DD or null",
   "time": "HH:MM or null",
   "hasDateTime": true or false,
   "targetMonth": 1-12 or null
+}
+
+Use type "lookforward" for:
+- Any trip, travel, holiday or weekend away
+- Concerts, shows, events the user is attending
+- Reunions, celebrations, things with friends or family
+- Anything the user mentions with excitement or anticipation
+- Multi-day events like "April 28 to May 2"
+- Any item more than 2 weeks away that sounds positive and exciting
+
+For lookforward items also include:
+- startDate: ISO format YYYY-MM-DD for start of event
+- endDate: ISO format YYYY-MM-DD if multi-day, otherwise same as startDate
+- targetMonth: month number 1-12
+- hasDateTime: true
+- excitement: a short warm one-line description of why this is worth looking forward to
+
+Example:
+Input: "I have a trip with Sarah from April 28 to May 2"
+Output:
+{
+  "action": "create",
+  "title": "Trip with Sarah",
+  "detail": "A few days away with a good friend.",
+  "category": "Me",
+  "type": "lookforward",
+  "startDate": "2026-04-28",
+  "endDate": "2026-05-02",
+  "targetMonth": 4,
+  "hasDateTime": true,
+  "excitement": "Something just for you — a proper break with a friend."
 }
 
 Categories:
