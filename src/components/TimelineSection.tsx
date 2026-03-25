@@ -1,7 +1,7 @@
 import { TimelineItem } from '../types';
 import { getCategoryColor } from '../utils/categoryColors';
 import { formatDayLabel, formatTime, getWeekDays, getTodayDateString } from '../utils/dateFormatting';
-import { getCategoryEmoji } from '../utils/mindNudges';
+import { getContextualEmoji } from '../utils/mindNudges';
 
 interface TimelineItemProps {
   item: TimelineItem;
@@ -25,7 +25,7 @@ function TimelineItemCard({ item }: TimelineItemProps) {
       </div>
       <div className="flex-1">
         <h3 className={`font-ui font-medium text-text mb-1 ${isCompleted ? 'line-through' : ''}`}>
-          {getCategoryEmoji(item.category)} {item.title}
+          {getContextualEmoji(item.title, item.category)} {item.title}
         </h3>
         {item.detail && (
           <p className="font-ui text-sm text-muted font-light">{item.detail}</p>

@@ -1,6 +1,6 @@
 import { X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { addNudgesToMindItems, getCategoryEmoji, type MindItem } from '../utils/mindNudges';
+import { addNudgesToMindItems, getContextualEmoji, type MindItem } from '../utils/mindNudges';
 
 interface OnYourMindSectionProps {
   items: MindItem[];
@@ -55,7 +55,7 @@ export function OnYourMindSection({ items, onItemsChange }: OnYourMindSectionPro
           >
             <div className="flex items-start gap-3">
               <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center text-xl mt-0.5">
-                {getCategoryEmoji(item.category)}
+                {getContextualEmoji(item.title, item.category)}
               </div>
 
               <div className="flex-1 min-w-0">
