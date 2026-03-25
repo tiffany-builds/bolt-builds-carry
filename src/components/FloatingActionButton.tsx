@@ -102,7 +102,9 @@ export function FloatingActionButton({ userId, userCategories, onSubmitSuccess, 
 
       setShowInput(false);
       console.log("15. Calling onSubmitSuccess to refresh items...");
+      console.log("15a. Time before refresh:", new Date().toISOString());
       onSubmitSuccess?.();
+      console.log("15b. Time after refresh call:", new Date().toISOString());
       console.log("16. Process complete!");
     } catch (err) {
       console.error("ERROR in handleSubmit:", err);
