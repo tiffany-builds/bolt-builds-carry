@@ -14,6 +14,8 @@ interface OnYourMindSectionProps {
 }
 
 export function OnYourMindSection({ items, onItemsChange }: OnYourMindSectionProps) {
+  console.log("31. OnYourMindSection render - items:", items);
+
   const toggleComplete = async (itemId: string, currentCompleted: boolean) => {
     try {
       const { error } = await supabase
@@ -28,7 +30,10 @@ export function OnYourMindSection({ items, onItemsChange }: OnYourMindSectionPro
     }
   };
 
-  if (items.length === 0) return null;
+  if (items.length === 0) {
+    console.log("32. OnYourMindSection - no items, returning null");
+    return null;
+  }
 
   return (
     <div className="animate-fade-up stagger-3">

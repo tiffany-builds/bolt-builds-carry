@@ -44,6 +44,8 @@ interface TimelineSectionProps {
 }
 
 export function TimelineSection({ items }: TimelineSectionProps) {
+  console.log("28. TimelineSection render - items:", items);
+
   return (
     <div className="animate-fade-up stagger-3">
       <h2 className="text-xs uppercase tracking-wider text-muted font-ui font-medium mb-3">

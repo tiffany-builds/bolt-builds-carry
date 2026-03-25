@@ -211,6 +211,12 @@ function App() {
       completed: item.completed
     }));
 
+  console.log("23. App render - Total items:", items.length);
+  console.log("24. App render - Today items:", todayItems.length);
+  console.log("25. App render - Category counts:", categoryCounts);
+  console.log("26. App render - On your mind items:", onYourMindItems.length);
+  console.log("27. App render - All items:", items);
+
   return (
     <div className="min-h-screen bg-cream pb-32">
       <div className="max-w-2xl mx-auto">
