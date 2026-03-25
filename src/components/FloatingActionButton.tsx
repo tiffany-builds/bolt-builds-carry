@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Mic, Check, X, Menu, Archive } from 'lucide-react';
 import { useSpeechRecognition } from '../utils/useSpeechRecognition';
 import { Toast } from './Toast';
+import { getCategoryEmoji } from '../utils/mindNudges';
 
 interface FloatingActionButtonProps {
   userId: string | null;
@@ -92,12 +93,11 @@ export function FloatingActionButton({ userId, userCategories, onSubmitSuccess, 
       setInterimTranscript('');
 
       if (createdItems && createdItems.length > 0) {
-        const categories = [...new Set(createdItems.map(item => item.category))];
         let message: string;
-        if (categories.length === 1) {
-          message = `Got it — added to ${categories[0]}`;
+        if (createdItems.length === 1) {
+          message = `${getCategoryEmoji(createdItems[0].category)} Got it — added to ${createdItems[0].category}`;
         } else {
-          message = `Got it — added ${createdItems.length} items`;
+          message = `✨ Got it — ${createdItems.length} things added to Carry`;
         }
         console.log("14. Setting toast message:", message);
         setToastMessage(message);

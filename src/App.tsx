@@ -206,7 +206,12 @@ function App() {
   const categoryCounts = getCategoryCounts();
   const onYourMindItems = getOnYourMindItems();
 
-  const mindItems = items.filter(item => item.type === 'mind' || item.type === 'idea');
+  const mindItems = items.filter(item =>
+    item.type === 'mind' ||
+    item.type === 'idea' ||
+    item.type === 'Ideas' ||
+    (!item.has_date_time && item.category === 'Ideas')
+  );
 
   const todayItems: TimelineItem[] = items
     .filter(item => item.has_date_time && item.date)
@@ -230,6 +235,8 @@ function App() {
   console.log("25. App render - Category counts:", categoryCounts);
   console.log("26. App render - On your mind items:", onYourMindItems.length);
   console.log("27. App render - All items:", items);
+  console.log("28. Mind items filtered:", mindItems);
+  console.log("29. Items by type:", items.map(i => ({ id: i.id, type: i.type, category: i.category, hasDateTime: i.has_date_time })));
 
   const handleTestItem = async () => {
     if (!userProfile) return;
@@ -283,10 +290,6 @@ function App() {
           </button>
 
           <AffirmationCard itemCount={lastWeekCount} mindItemCount={mindItems.length} />
-          <OnYourMindSection
-            items={items}
-            onItemsChange={loadItems}
-          />
           <TimelineSection items={todayItems} />
           <BoxesSection
             categories={userCategories}
@@ -295,6 +298,10 @@ function App() {
               setSelectedCategory(category);
               setCurrentView('boxDetail');
             }}
+          />
+          <OnYourMindSection
+            items={items}
+            onItemsChange={loadItems}
           />
         </div>
       </div>

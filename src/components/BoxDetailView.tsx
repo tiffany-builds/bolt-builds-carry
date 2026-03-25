@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Check } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { getCategoryEmoji } from '../utils/mindNudges';
 
 interface Item {
   id: string;
@@ -169,7 +170,9 @@ export function BoxDetailView({ categoryName, categoryEmoji, userId, onBack }: B
                     </button>
 
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-ui font-medium text-text">{item.title}</h3>
+                      <h3 className="font-ui font-medium text-text">
+                        {getCategoryEmoji(item.category)} {item.title}
+                      </h3>
                       {item.description && (
                         <p className="font-ui text-sm text-muted mt-1">{item.description}</p>
                       )}

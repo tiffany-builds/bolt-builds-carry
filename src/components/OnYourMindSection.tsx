@@ -8,7 +8,15 @@ interface OnYourMindSectionProps {
 }
 
 export function OnYourMindSection({ items, onItemsChange }: OnYourMindSectionProps) {
-  const mindItems = items.filter(item => item.type === 'mind' || item.type === 'idea');
+  const mindItems = items.filter(item =>
+    item.type === 'mind' ||
+    item.type === 'idea' ||
+    item.type === 'Ideas' ||
+    (!item.hasDateTime && item.category === 'Ideas')
+  );
+
+  console.log("OnYourMindSection - Total items:", items.length);
+  console.log("OnYourMindSection - Mind items:", mindItems);
 
   if (mindItems.length === 0) {
     return null;
