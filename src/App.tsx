@@ -9,11 +9,12 @@ import { FloatingActionButton } from './components/FloatingActionButton';
 import { WelcomeScreen } from './components/onboarding/WelcomeScreen';
 import { NameInput } from './components/onboarding/NameInput';
 import { CategorySelection } from './components/onboarding/CategorySelection';
+import { IntakeFlow } from './components/onboarding/IntakeFlow';
 import { timelineItems, boxes, nudges } from './data';
 import { useOnboarding } from './hooks/useOnboarding';
 import { UserProfile, UserCategory } from './types';
 
-type OnboardingStep = 'welcome' | 'name' | 'categories' | 'complete';
+type OnboardingStep = 'welcome' | 'name' | 'categories' | 'intake' | 'complete';
 
 function App() {
   const [onboardingStep, setOnboardingStep] = useState<OnboardingStep>('welcome');
@@ -66,14 +67,28 @@ function App() {
     try {
       const categories = await addUserCategories(userProfile.id, selectedCategories);
       setUserCategories(categories);
-      await completeOnboarding(userProfile.id);
 
       localStorage.setItem('carryUserProfile', JSON.stringify(userProfile));
       localStorage.setItem('carryUserCategories', JSON.stringify(categories));
 
-      setOnboardingStep('complete');
+      setOnboardingStep('intake');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to set up categories');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleIntakeComplete = async () => {
+    if (!userProfile) return;
+
+    setIsLoading(true);
+    setError(null);
+    try {
+      await completeOnboarding(userProfile.id);
+      setOnboardingStep('complete');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to complete onboarding');
     } finally {
       setIsLoading(false);
     }
@@ -120,6 +135,17 @@ function App() {
       <CategorySelection
         userName={userName}
         onCategoriesSubmit={handleCategoriesSubmit}
+      />
+    );
+  }
+
+  if (onboardingStep === 'intake' && userProfile) {
+    return (
+      <IntakeFlow
+        userName={userName}
+        userId={userProfile.id}
+        userCategories={userCategories.map((c) => c.name)}
+        onComplete={handleIntakeComplete}
       />
     );
   }
