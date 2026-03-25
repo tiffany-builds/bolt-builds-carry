@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Mic, Check, X, Menu, Archive } from 'lucide-react';
 import { useSpeechRecognition } from '../utils/useSpeechRecognition';
+import { Toast } from './Toast';
 
 interface FloatingActionButtonProps {
   userId: string | null;
@@ -17,6 +18,7 @@ export function FloatingActionButton({ userId, userCategories, onSubmitSuccess, 
   const [showSuccess, setShowSuccess] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const handleTranscript = (text: string) => {
     setInputValue(text);
@@ -75,18 +77,17 @@ export function FloatingActionButton({ userId, userCategories, onSubmitSuccess, 
 
       if (createdItems && createdItems.length > 0) {
         const categories = [...new Set(createdItems.map(item => item.category))];
+        let message: string;
         if (categories.length === 1) {
-          setShowSuccess(`Got it — added to ${categories[0]}`);
+          message = `Got it — added to ${categories[0]}`;
         } else {
-          setShowSuccess(`Got it — added ${createdItems.length} items`);
+          message = `Got it — added ${createdItems.length} items`;
         }
+        setToastMessage(message);
       }
 
-      setTimeout(() => {
-        setShowInput(false);
-        setShowSuccess(null);
-        onSubmitSuccess?.();
-      }, 2000);
+      setShowInput(false);
+      onSubmitSuccess?.();
     } catch (err) {
       setShowError("Carry couldn't quite catch that — want to try again?");
     } finally {
@@ -159,7 +160,7 @@ export function FloatingActionButton({ userId, userCategories, onSubmitSuccess, 
           )}
 
           {showSuccess && (
-            <div className="text-sm text-accent font-ui font-light animate-fade-up">
+            <div className="bg-accent/10 border border-accent/20 rounded-xl px-4 py-3 text-sm text-accent font-ui font-light animate-fade-up">
               {showSuccess}
             </div>
           )}
@@ -182,6 +183,13 @@ export function FloatingActionButton({ userId, userCategories, onSubmitSuccess, 
 
   return (
     <>
+      {toastMessage && (
+        <Toast
+          message={toastMessage}
+          onClose={() => setToastMessage(null)}
+        />
+      )}
+
       {showMenu && (
         <div className="fixed inset-0 bg-text/20 z-40 animate-fade-up" onClick={() => setShowMenu(false)}>
           <div className="fixed right-8 bg-surface rounded-2xl border border-border shadow-lg p-2 space-y-1 animate-fade-up" style={{ bottom: 'max(6rem, calc(env(safe-area-inset-bottom) + 4.5rem))' }}>

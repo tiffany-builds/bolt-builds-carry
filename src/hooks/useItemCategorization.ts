@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import Anthropic from '@anthropic-ai/sdk';
 
 interface CategorizedItem {
   title: string;
@@ -10,31 +11,24 @@ interface CategorizedItem {
   time?: string;
 }
 
+const client = new Anthropic({
+  apiKey: import.meta.env.VITE_ANTHROPIC_API_KEY,
+  dangerouslyAllowBrowser: true
+});
+
 export function useItemCategorization() {
   const categorizeAndCreateItems = useCallback(
     async (text: string, userId: string, userCategories: string[]) => {
       try {
-        const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/categorize-items`;
-
-        const response = await fetch(apiUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          },
-          body: JSON.stringify({
-            text,
-            userCategories,
-          }),
+        const message = await client.messages.create({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          system: "You are Carry, a personal assistant for parents. Extract all items from the input and return ONLY a valid JSON array. Each item must have: title (max 6 words), category (one of: Kids, Household, Errands, Me, Ideas, Work, Projects, Other), type (event, task, reminder or idea). Return valid JSON only — no explanation, no markdown, no code blocks.",
+          messages: [{ role: "user", content: text }]
         });
 
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || 'Failed to categorize items');
-        }
-
-        const data = await response.json();
-        const items = data.items as CategorizedItem[];
+        const responseText = message.content[0].text;
+        const items = JSON.parse(responseText) as CategorizedItem[];
 
         if (!items || items.length === 0) {
           return [];
