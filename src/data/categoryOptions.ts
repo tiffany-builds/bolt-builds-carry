@@ -1,0 +1,13 @@
+import { CategoryOption } from '../types';
+
+export const categoryOptions: CategoryOption[] = [
+  { name: 'Household', emoji: '🏠', description: 'Home maintenance & chores' },
+  { name: 'Kids', emoji: '🧒', description: 'Kid activities & care' },
+  { name: 'Family', emoji: '👨‍👩‍👧‍👦', description: 'Family time & plans' },
+  { name: 'Work', emoji: '💼', description: 'Work tasks & projects' },
+  { name: 'Ideas', emoji: '✈️', description: 'Dreams & future plans' },
+  { name: 'Errands', emoji: '🛍', description: 'Shopping & to-do' },
+  { name: 'Me', emoji: '🏃‍♀️', description: 'Personal wellness' },
+  { name: 'Projects', emoji: '🛠', description: 'DIY & projects' },
+  { name: 'Other', emoji: '📌', description: 'Miscellaneous' },
+];
