@@ -76,9 +76,8 @@ export function FloatingActionButton({ userId, userCategories, onSubmitSuccess, 
     setShowSuccess(null);
 
     try {
-      console.log("11. Loading categorization hook...");
-      const { useItemCategorization } = await import('../hooks/useItemCategorization');
-      const { categorizeAndCreateItems } = useItemCategorization();
+      console.log("11. Loading categorization function...");
+      const { categorizeAndCreateItems } = await import('../utils/itemCategorization');
 
       console.log("12. Calling categorizeAndCreateItems...");
       const createdItems = await categorizeAndCreateItems(textToSubmit, userId, userCategories);
