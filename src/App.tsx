@@ -195,9 +195,9 @@ function App() {
           setUserName(name);
 
           // Always set default categories after onboarding
-          const selectedCategories = onboardingData.selectedCategories || DEFAULT_CATEGORIES.map(c => c.name);
-          const userCats = DEFAULT_CATEGORIES.filter(c => selectedCategories.includes(c.name));
-          setUserCategories(userCats);
+          const selectedCats = onboardingData.selectedCategories || DEFAULT_CATEGORIES.map(c => c.name);
+          const userCats = DEFAULT_CATEGORIES.filter(c => selectedCats.includes(c.name));
+          setUserCategories(userCats.length >= 3 ? userCats : DEFAULT_CATEGORIES);
 
           // Try to save to Supabase but don't block on failure
           try {
@@ -338,17 +338,15 @@ function App() {
 
 
   return (
-    <div className="min-h-screen bg-cream pb-32">
+    <div className="min-h-screen bg-[#E8DDD0] pb-32">
       <div className="max-w-2xl mx-auto">
         <StatusBar />
-
         <div className="px-5 space-y-8">
           <Header
             userName={userName}
             todayCount={todayItems.filter(i => i.date === new Date().toISOString().split('T')[0]).length}
             isBirthday={isBirthday}
           />
-
           <AffirmationCard
             itemCount={lastWeekCount}
             mindItemCount={mindItems.length}
@@ -356,7 +354,7 @@ function App() {
           />
           <TimelineSection items={todayItems} />
           <BoxesSection
-            categories={userCategories}
+            categories={userCategories.length > 0 ? userCategories : DEFAULT_CATEGORIES}
             categoryCounts={categoryCounts}
             onBoxClick={(category) => {
               setSelectedCategory(category);
@@ -373,16 +371,11 @@ function App() {
           />
         </div>
       </div>
-
       <FloatingActionButton
         userId={user?.id || null}
-        userCategories={
-          userCategories.length > 0
-            ? userCategories.map(c => c.name)
-            : DEFAULT_CATEGORIES.map(c => c.name)
-        }
-        onItemsAdded={addItemsToLocalState}
+        userCategories={userCategories.length > 0 ? userCategories.map(c => c.name) : DEFAULT_CATEGORIES.map(c => c.name)}
         onSubmitSuccess={loadItems}
+        onItemsAdded={addItemsToLocalState}
         onEverythingClick={() => setCurrentView('everything')}
       />
     </div>
