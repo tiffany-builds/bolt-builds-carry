@@ -34,11 +34,11 @@ export type Category = 'Kids' | 'Health' | 'Family' | 'Errands' | 'Me' | 'Ideas'
 
 export interface UserProfile {
   id: string;
-  name: string;
-  has_completed_onboarding: boolean;
+  first_name: string;
+  onboarding_complete: boolean;
   family_members?: string[];
   created_at: string;
-  updated_at: string;
+  updated_at?: string;
   birthday_day?: number;
   birthday_month?: number;
   household?: string[];
@@ -48,7 +48,6 @@ export interface UserProfile {
   day_start_time?: string;
   priority_areas?: string[];
   nudge_preference?: string;
-  onboarding_complete?: boolean;
 }
 
 export interface UserCategory {

@@ -7,7 +7,7 @@ export function useOnboarding() {
     async (name: string, authUserId: string): Promise<UserProfile> => {
       const { data, error } = await supabase
         .from('profiles')
-        .insert([{ name, auth_user_id: authUserId, has_completed_onboarding: false }])
+        .insert([{ first_name: name, auth_user_id: authUserId, onboarding_complete: false }])
         .select()
         .maybeSingle();
 
@@ -83,7 +83,7 @@ export function useOnboarding() {
   const completeOnboarding = useCallback(async (userId: string) => {
     const { error } = await supabase
       .from('profiles')
-      .update({ has_completed_onboarding: true })
+      .update({ onboarding_complete: true })
       .eq('id', userId);
 
     if (error) throw error;

@@ -61,13 +61,13 @@ function App() {
 
         if (profile) {
           setUserProfile(profile);
-          setUserName(profile.name);
+          setUserName(profile.first_name);
           setIsBirthday(checkBirthday(profile));
 
           const categories = await getUserCategories(profile.id);
           setUserCategories(categories);
 
-          if (profile.onboarding_complete || profile.has_completed_onboarding) {
+          if (profile.onboarding_complete) {
             setOnboardingStep('complete');
             const count = await getLastWeekItemCount(profile.id);
             setLastWeekCount(count);
@@ -149,7 +149,10 @@ function App() {
           <p className="font-ui text-accent font-light">Something went wrong</p>
           <p className="font-ui text-muted font-light">{error}</p>
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => {
+              setError(null);
+              setIsLoading(false);
+            }}
             className="bg-accent text-surface rounded-xl px-6 py-3 font-ui font-medium hover:bg-accent/90 transition-all"
           >
             Try again
@@ -166,9 +169,12 @@ function App() {
         onComplete={async (onboardingData: OnboardingData) => {
           try {
             setIsLoading(true);
+            console.log("Onboarding data received:", onboardingData);
+            console.log("User ID:", user.id);
 
             const profileUpdate = {
-              name: onboardingData.name,
+              id: user.id,
+              first_name: onboardingData.name,
               birthday_day: onboardingData.birthdayDay,
               birthday_month: onboardingData.birthdayMonth,
               household: onboardingData.household,
@@ -179,22 +185,28 @@ function App() {
               priority_areas: onboardingData.priorityAreas,
               nudge_preference: onboardingData.nudgePreference,
               onboarding_complete: true,
-              has_completed_onboarding: true,
             };
+
+            console.log("Attempting to save profile:", profileUpdate);
 
             const { data: updatedProfile, error } = await supabase
               .from('profiles')
-              .upsert({
-                id: user.id,
-                ...profileUpdate,
-              })
+              .upsert(profileUpdate)
               .select()
               .single();
 
-            if (error) throw error;
+            console.log("Supabase response - data:", updatedProfile);
+            console.log("Supabase response - error:", error);
+
+            if (error) {
+              console.error("Profile save failed:", error.message, error.details, error.hint);
+              throw error;
+            }
+
+            console.log("Profile saved successfully");
 
             setUserProfile(updatedProfile);
-            setUserName(updatedProfile.name);
+            setUserName(updatedProfile.first_name);
             setIsBirthday(checkBirthday(updatedProfile));
 
             if (onboardingData.initialThoughts) {
