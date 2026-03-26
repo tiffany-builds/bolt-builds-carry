@@ -63,10 +63,9 @@ export function OnboardingReady({ userName, household, children, priorityAreas, 
 
           <div className="space-y-6">
             <p className="font-ui font-light text-lg text-text">
-              Hi {userName}. Carry knows you're carrying for {getHouseholdSummary()}.
-              {children.length > 0 && (
-                <> {getChildrenSummary()} {children.length === 1 ? 'is' : 'are'} in good hands.</>
-              )}
+              Hi {userName}. It looks like you're carrying a lot.
+              <br />
+              Carry is here to help wherever it can.
             </p>
 
             {topPriority && (
