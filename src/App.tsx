@@ -56,7 +56,7 @@ function App() {
 
   const { user, isLoading: authLoading } = useAuth();
   const { createUserProfile, getOrCreateUserProfile, updateUserProfile, addUserCategories, completeOnboarding, getUserCategories } = useOnboarding();
-  const { items, isLoading: itemsLoading, loadItems, getCategoryCounts, getOnYourMindItems, getLastWeekItemCount, addItemsToLocalState } = useItems(userProfile?.id || null);
+  const { items, isLoading: itemsLoading, loadItems, getCategoryCounts, getOnYourMindItems, getLastWeekItemCount, addItemsToLocalState } = useItems(user?.id || null);
 
   const checkBirthday = (profile: UserProfile | null) => {
     if (!profile?.birthday_day || !profile?.birthday_month) return false;
@@ -375,13 +375,13 @@ function App() {
       </div>
 
       <FloatingActionButton
-        userId={userProfile?.id || null}
+        userId={user?.id || null}
         userCategories={
           userCategories.length > 0
             ? userCategories.map(c => c.name)
             : DEFAULT_CATEGORIES.map(c => c.name)
         }
-        onItemsCreated={addItemsToLocalState}
+        onItemsAdded={addItemsToLocalState}
         onSubmitSuccess={loadItems}
         onEverythingClick={() => setCurrentView('everything')}
       />
