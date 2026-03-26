@@ -72,19 +72,6 @@ function App() {
       // Don't overwrite if user just completed onboarding
       if (hasCompletedOnboardingThisSession) return;
 
-      // Check localStorage first before hitting Supabase
-      const locallyOnboarded = localStorage.getItem(`carry_onboarded_${user.id}`);
-      if (locallyOnboarded === 'true') {
-        const localName = localStorage.getItem(`carry_name_${user.id}`) || 'there';
-        const localCatsRaw = localStorage.getItem(`carry_categories_${user.id}`);
-        const localCats = localCatsRaw ? JSON.parse(localCatsRaw) : DEFAULT_CATEGORIES;
-        setUserName(localName);
-        setUserCategories(localCats);
-        setOnboardingStep('complete');
-        setHasCompletedOnboardingThisSession(true);
-        return; // Skip Supabase check
-      }
-
       try {
         const profile = await getOrCreateUserProfile(user.id);
 
@@ -93,16 +80,40 @@ function App() {
           setUserName(profile.name);
           setIsBirthday(checkBirthday(profile));
 
-          const categories = await getUserCategories(profile.id);
-          if (categories && categories.length > 0) {
-            setUserCategories(categories);
+          // After confirming user is onboarded, load their categories from database
+          const { data: savedCategories } = await supabase
+            .from('user_categories')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('order', { ascending: true });
+
+          if (savedCategories && savedCategories.length > 0) {
+            // Map to UserCategory format
+            const cats = savedCategories.map(c => ({
+              id: c.id || c.name,
+              user_id: user.id,
+              name: c.name,
+              emoji: c.emoji,
+              color: '#C4714A',
+              order_index: c.order || 0
+            }));
+            setUserCategories(cats);
+            // Also update localStorage
+            localStorage.setItem(`carry_categories_${user.id}`, JSON.stringify(cats));
           } else {
-            // Use defaults if no saved categories
-            setUserCategories(DEFAULT_CATEGORIES);
+            // Fall back to localStorage
+            const localCatsRaw = localStorage.getItem(`carry_categories_${user.id}`);
+            if (localCatsRaw) {
+              setUserCategories(JSON.parse(localCatsRaw));
+            } else {
+              setUserCategories(DEFAULT_CATEGORIES);
+            }
           }
 
           if (profile.onboarding_complete) {
             setOnboardingStep('complete');
+            localStorage.setItem(`carry_onboarded_${user.id}`, 'true');
+            localStorage.setItem(`carry_name_${user.id}`, profile.name);
             const count = await getLastWeekItemCount(profile.id);
             setLastWeekCount(count);
           } else {
@@ -118,7 +129,7 @@ function App() {
     if (!authLoading) {
       checkExistingUser();
     }
-  }, [user, authLoading, hasCompletedOnboardingThisSession, getOrCreateUserProfile, getUserCategories, getLastWeekItemCount]);
+  }, [user, authLoading, hasCompletedOnboardingThisSession, getOrCreateUserProfile, getLastWeekItemCount]);
 
   const handleNameSubmit = async (name: string) => {
     if (!user) return;
