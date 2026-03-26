@@ -55,13 +55,11 @@ export function FloatingActionButton({ userId, onItemsAdded, onSubmitSuccess, on
       if (!Array.isArray(parsedItems)) throw new Error('Response is not an array');
 
       const newItems = parsedItems.map((item: any) => ({
-        id: crypto.randomUUID(),
         title: item.title || 'Untitled',
         description: item.detail || '',
         category: item.category || 'Other',
         completed: false,
         time_frame: 'anytime',
-        created_at: new Date().toISOString(),
         date: item.date || null,
         time: item.time || null,
         has_date_time: item.hasDateTime || false,
@@ -72,19 +70,16 @@ export function FloatingActionButton({ userId, onItemsAdded, onSubmitSuccess, on
         excitement: item.excitement || null,
       }));
 
-      // Add items to local state immediately
-      if (onItemsAdded) {
-        onItemsAdded(newItems);
-      }
-
       // Show toast
       showToast(`✓ Got it — added ${newItems.length} thing${newItems.length > 1 ? 's' : ''} to Carry`);
 
-      // Save to Supabase in background
+      // Save to Supabase and get real items back
+      const savedItems = [];
+
       if (userId) {
         for (const item of newItems) {
           try {
-            await supabase.from('items').insert({
+            const { data: inserted } = await supabase.from('items').insert({
               user_id: userId,
               title: item.title,
               description: item.description,
@@ -99,16 +94,25 @@ export function FloatingActionButton({ userId, onItemsAdded, onSubmitSuccess, on
               start_date: item.start_date,
               end_date: item.end_date,
               excitement: item.excitement,
-            });
+            }).select().single();
+
+            if (inserted) {
+              savedItems.push(inserted);
+            } else {
+              savedItems.push({ ...item, id: crypto.randomUUID(), created_at: new Date().toISOString(), user_id: userId });
+            }
           } catch (saveErr) {
             console.log('Item save failed but kept locally:', saveErr);
+            savedItems.push({ ...item, id: crypto.randomUUID(), created_at: new Date().toISOString(), user_id: userId });
           }
         }
+      } else {
+        savedItems.push(...newItems.map(item => ({ ...item, id: crypto.randomUUID(), created_at: new Date().toISOString() })));
+      }
 
-        // Add delay to ensure Supabase has time to save before reloading
-        setTimeout(() => {
-          if (onSubmitSuccess) onSubmitSuccess();
-        }, 1500);
+      // Update state with real items (no temp IDs)
+      if (onItemsAdded) {
+        onItemsAdded(savedItems);
       }
 
     } catch (err) {

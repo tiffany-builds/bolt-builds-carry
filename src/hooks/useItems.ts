@@ -93,7 +93,11 @@ export function useItems(userId: string | null) {
   }, []);
 
   const addItemsToLocalState = useCallback((newItems: Item[]) => {
-    setItems(prev => [...newItems, ...prev]);
+    setItems(prev => {
+      // Remove any temp items and add the new ones at the top
+      const withoutTemps = prev.filter(item => !item.id.startsWith('temp-'));
+      return [...newItems, ...withoutTemps];
+    });
   }, []);
 
   return {
