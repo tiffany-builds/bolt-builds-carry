@@ -66,13 +66,13 @@ function App() {
 
         if (profile) {
           setUserProfile(profile);
-          setUserName(profile.name);
+          setUserName(profile.first_name || '');
           setIsBirthday(checkBirthday(profile));
 
           if (profile.onboarding_complete) {
             setOnboardingStep('complete');
             localStorage.setItem(`carry_onboarded_${user.id}`, 'true');
-            localStorage.setItem(`carry_name_${user.id}`, profile.name);
+            localStorage.setItem(`carry_name_${user.id}`, profile.first_name || '');
             const count = await getLastWeekItemCount(profile.id);
             setLastWeekCount(count);
           } else {
@@ -184,23 +184,16 @@ function App() {
           // Try to save to Supabase but don't block on failure
           try {
             const profileUpdate = {
-              auth_user_id: user.id,
-              name: name,
+              id: user.id,
+              first_name: name,
               birthday_day: onboardingData.birthdayDay,
               birthday_month: onboardingData.birthdayMonth,
-              household: onboardingData.household,
-              has_children: onboardingData.hasChildren,
-              children: onboardingData.children,
-              week_structure: onboardingData.weekStructure,
-              day_start_time: onboardingData.dayStartTime,
-              priority_areas: onboardingData.priorityAreas,
-              nudge_preference: onboardingData.nudgePreference,
               onboarding_complete: true,
             };
 
             const { data: updatedProfile, error } = await supabase
-              .from('user_profiles')
-              .upsert(profileUpdate, { onConflict: 'auth_user_id' })
+              .from('profiles')
+              .upsert(profileUpdate, { onConflict: 'id' })
               .select()
               .maybeSingle();
 
@@ -233,12 +226,12 @@ function App() {
     );
   }
 
-  if (currentView === 'boxDetail' && selectedCategory && userProfile) {
+  if (currentView === 'boxDetail' && selectedCategory && user) {
     return (
       <BoxDetailView
         categoryName={selectedCategory.name}
         categoryEmoji={selectedCategory.emoji}
-        userId={userProfile.id}
+        userId={user.id}
         onBack={() => {
           setCurrentView('home');
           setSelectedCategory(null);
@@ -248,10 +241,10 @@ function App() {
     );
   }
 
-  if (currentView === 'everything' && userProfile) {
+  if (currentView === 'everything' && user) {
     return (
       <EverythingYouCarry
-        userId={userProfile.id}
+        userId={user.id}
         onBack={() => setCurrentView('home')}
       />
     );

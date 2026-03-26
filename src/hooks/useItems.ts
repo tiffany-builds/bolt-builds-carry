@@ -71,7 +71,7 @@ export function useItems(userId: string | null) {
   }, [items]);
 
   const getOnYourMindItems = useCallback(() => {
-    return items.filter(item => item.category === 'Ideas');
+    return items.filter(item => item.type === 'mind' || item.type === 'idea');
   }, [items]);
 
   const getLastWeekItemCount = useCallback(async (userId: string) => {
