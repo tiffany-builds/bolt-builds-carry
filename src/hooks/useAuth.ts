@@ -50,9 +50,35 @@ export function useAuth() {
     }
   };
 
+  const resetOnboarding = async () => {
+    try {
+      const userId = user?.id;
+      if (!userId) return;
+
+      // Update database to mark onboarding as incomplete
+      await supabase
+        .from('user_profiles')
+        .update({ onboarding_complete: false })
+        .eq('auth_user_id', userId);
+
+      // Clear all user-specific localStorage
+      localStorage.removeItem(`carry_onboarded_${userId}`);
+      localStorage.removeItem(`carry_name_${userId}`);
+      localStorage.removeItem(`carry_categories_${userId}`);
+      localStorage.removeItem('carryUserProfile');
+      localStorage.removeItem('carryUserCategories');
+
+      // Reload the page to restart onboarding
+      window.location.reload();
+    } catch (err) {
+      console.error('Error resetting onboarding:', err);
+    }
+  };
+
   return {
     user,
     isLoading,
     signOut,
+    resetOnboarding,
   };
 }
