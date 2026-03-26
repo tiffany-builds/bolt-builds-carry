@@ -19,6 +19,7 @@ import { EverythingYouCarry } from './components/EverythingYouCarry';
 import { OnYourMindSection } from './components/OnYourMindSection';
 import { LookForwardSection } from './components/LookForwardSection';
 import { FullOnboardingFlow, OnboardingData } from './components/onboarding/FullOnboardingFlow';
+import { Toast } from './components/Toast';
 import { useAuth } from './hooks/useAuth';
 import { useOnboarding } from './hooks/useOnboarding';
 import { useItems } from './hooks/useItems';
@@ -42,10 +43,11 @@ function App() {
   const [lastWeekCount, setLastWeekCount] = useState(0);
   const [isBirthday, setIsBirthday] = useState(false);
   const [hasCompletedOnboardingThisSession, setHasCompletedOnboardingThisSession] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const { user, isLoading: authLoading } = useAuth();
   const { createUserProfile, getOrCreateUserProfile, updateUserProfile, completeOnboarding } = useOnboarding();
-  const { items, isLoading: itemsLoading, loadItems, getCategoryCounts, getOnYourMindItems, getLastWeekItemCount, addItemsToLocalState } = useItems(user?.id || null);
+  const { items, isLoading: itemsLoading, loadItems, getCategoryCounts, getOnYourMindItems, getLastWeekItemCount, addItemsToLocalState, removeItemFromState } = useItems(user?.id || null);
 
   const checkBirthday = (profile: UserProfile | null) => {
     if (!profile?.birthday_day || !profile?.birthday_month) return false;
@@ -350,7 +352,11 @@ function App() {
             mindItemCount={mindItems.length}
             isBirthday={isBirthday}
           />
-          <TimelineSection items={todayItems} />
+          <TimelineSection
+            items={todayItems}
+            onItemComplete={removeItemFromState}
+            onShowToast={setToastMessage}
+          />
           <BoxesSection
             categoryCounts={categoryCounts}
             onBoxClick={(category) => {
@@ -374,6 +380,12 @@ function App() {
         onItemsAdded={addItemsToLocalState}
         onEverythingClick={() => setCurrentView('everything')}
       />
+      {toastMessage && (
+        <Toast
+          message={toastMessage}
+          onClose={() => setToastMessage(null)}
+        />
+      )}
     </div>
   );
 }

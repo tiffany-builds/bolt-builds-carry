@@ -100,6 +100,10 @@ export function useItems(userId: string | null) {
     });
   }, []);
 
+  const removeItemFromState = useCallback((itemId: string) => {
+    setItems(prev => prev.filter(item => item.id !== itemId));
+  }, []);
+
   return {
     items,
     isLoading,
@@ -109,5 +113,6 @@ export function useItems(userId: string | null) {
     getOnYourMindItems,
     getLastWeekItemCount,
     addItemsToLocalState,
+    removeItemFromState,
   };
 }

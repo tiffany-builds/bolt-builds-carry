@@ -2,14 +2,30 @@ import { TimelineItem } from '../types';
 import { getCategoryColor } from '../utils/categoryColors';
 import { formatDayLabel, formatTime, getWeekDays, getTodayDateString } from '../utils/dateFormatting';
 import { getContextualEmoji } from '../utils/mindNudges';
+import { supabase } from '../lib/supabase';
+import { Check } from 'lucide-react';
 
 interface TimelineItemProps {
   item: TimelineItem;
+  onComplete: (itemId: string) => void;
 }
 
-function TimelineItemCard({ item }: TimelineItemProps) {
+function TimelineItemCard({ item, onComplete }: TimelineItemProps) {
   const borderColor = getCategoryColor(item.category);
   const isCompleted = item.completed;
+
+  const handleComplete = async () => {
+    try {
+      await supabase
+        .from('items')
+        .update({ completed: true })
+        .eq('id', item.id);
+
+      onComplete(item.id);
+    } catch (err) {
+      console.error('Error completing item:', err);
+    }
+  };
 
   return (
     <div
@@ -18,10 +34,21 @@ function TimelineItemCard({ item }: TimelineItemProps) {
       }`}
       style={{ borderLeftColor: borderColor }}
     >
-      <div className="flex-shrink-0 w-12">
+      <div className="flex-shrink-0 w-12 flex flex-col items-center gap-2">
         <p className={`font-ui text-sm font-medium ${isCompleted ? 'line-through' : ''}`}>
           {item.time ? formatTime(item.time) : '—'}
         </p>
+        <button
+          onClick={handleComplete}
+          className="w-5 h-5 rounded-full border-[1.5px] flex items-center justify-center transition-all duration-200 ease-in-out"
+          style={{
+            borderColor: isCompleted ? '#C4714A' : 'rgba(44,36,32,0.2)',
+            backgroundColor: isCompleted ? '#C4714A' : 'transparent',
+          }}
+          aria-label="Mark as complete"
+        >
+          {isCompleted && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+        </button>
       </div>
       <div className="flex-1">
         <h3 className={`font-ui font-medium text-text mb-1 ${isCompleted ? 'line-through' : ''}`}>
@@ -45,6 +72,8 @@ function TimelineItemCard({ item }: TimelineItemProps) {
 
 interface TimelineSectionProps {
   items: TimelineItem[];
+  onItemComplete: (itemId: string) => void;
+  onShowToast: (message: string) => void;
 }
 
 interface DayGroup {
@@ -54,7 +83,7 @@ interface DayGroup {
   items: TimelineItem[];
 }
 
-export function TimelineSection({ items }: TimelineSectionProps) {
+export function TimelineSection({ items, onItemComplete, onShowToast }: TimelineSectionProps) {
   //("28. TimelineSection render - items:", items);
 
   const weekDays = getWeekDays();
@@ -77,6 +106,11 @@ export function TimelineSection({ items }: TimelineSectionProps) {
 
   const visibleDays = itemsByDay.filter(d => d.isToday || d.items.length > 0);
 
+  const handleComplete = (itemId: string) => {
+    onItemComplete(itemId);
+    onShowToast('Done — one less thing to carry');
+  };
+
   return (
     <div className="animate-fade-up stagger-3">
       {visibleDays.map((day, index) => (
@@ -91,7 +125,7 @@ export function TimelineSection({ items }: TimelineSectionProps) {
               </p>
             ) : (
               day.items.map((item) => (
-                <TimelineItemCard key={item.id} item={item} />
+                <TimelineItemCard key={item.id} item={item} onComplete={handleComplete} />
               ))
             )}
           </div>
