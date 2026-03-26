@@ -191,12 +191,21 @@ Return valid JSON array only — no explanation, no markdown, no code blocks.`;
           itemToInsert.excitement = item.excitement || null;
         }
 
+        // Try to save to Supabase
         const { data: inserted, error } = await supabase
           .from('items')
           .insert([itemToInsert])
           .select();
 
         if (error) {
+          console.log('Item save failed but kept in local state:', error);
+          // Create local item with temporary ID if Supabase fails
+          const localItem = {
+            ...itemToInsert,
+            id: `temp-${Date.now()}-${Math.random()}`,
+            created_at: new Date().toISOString(),
+          };
+          createdItems.push(localItem);
         } else if (inserted) {
           createdItems.push(inserted[0]);
         }

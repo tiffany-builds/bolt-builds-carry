@@ -7,12 +7,13 @@ import { getCategoryEmoji } from '../utils/mindNudges';
 interface FloatingActionButtonProps {
   userId: string | null;
   userCategories: string[];
+  onItemsCreated?: (items: any[]) => void;
   onSubmitSuccess?: () => void;
   onEverythingClick?: () => void;
   onDebugUpdate?: (input: string, status: 'idle' | 'calling' | 'success' | 'error', response: string, error: string) => void;
 }
 
-export function FloatingActionButton({ userId, userCategories, onSubmitSuccess, onEverythingClick, onDebugUpdate }: FloatingActionButtonProps) {
+export function FloatingActionButton({ userId, userCategories, onItemsCreated, onSubmitSuccess, onEverythingClick, onDebugUpdate }: FloatingActionButtonProps) {
   const [showInput, setShowInput] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [interimTranscript, setInterimTranscript] = useState('');
@@ -79,11 +80,10 @@ export function FloatingActionButton({ userId, userCategories, onSubmitSuccess, 
 
       onDebugUpdate?.(textToSubmit, 'success', JSON.stringify(createdItems), '');
 
-      stopListening();
-      setInputValue('');
-      setInterimTranscript('');
-
+      // Add items to local state immediately
       if (createdItems && createdItems.length > 0) {
+        onItemsCreated?.(createdItems);
+
         let message: string;
         if (createdItems.length === 1) {
           message = `${getCategoryEmoji(createdItems[0].category)} Got it — added to ${createdItems[0].category}`;
@@ -93,6 +93,9 @@ export function FloatingActionButton({ userId, userCategories, onSubmitSuccess, 
         setToastMessage(message);
       }
 
+      stopListening();
+      setInputValue('');
+      setInterimTranscript('');
       setShowInput(false);
       onSubmitSuccess?.();
     } catch (err) {

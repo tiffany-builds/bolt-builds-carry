@@ -56,7 +56,7 @@ function App() {
 
   const { user, isLoading: authLoading } = useAuth();
   const { createUserProfile, getOrCreateUserProfile, updateUserProfile, addUserCategories, completeOnboarding, getUserCategories } = useOnboarding();
-  const { items, isLoading: itemsLoading, loadItems, getCategoryCounts, getOnYourMindItems, getLastWeekItemCount } = useItems(userProfile?.id || null);
+  const { items, isLoading: itemsLoading, loadItems, getCategoryCounts, getOnYourMindItems, getLastWeekItemCount, addItemsToLocalState } = useItems(userProfile?.id || null);
 
   const checkBirthday = (profile: UserProfile | null) => {
     if (!profile?.birthday_day || !profile?.birthday_month) return false;
@@ -68,6 +68,9 @@ function App() {
   useEffect(() => {
     const checkExistingUser = async () => {
       if (!user) return;
+
+      // Don't overwrite if user just completed onboarding
+      if (hasCompletedOnboardingThisSession) return;
 
       try {
         const profile = await getOrCreateUserProfile(user.id);
@@ -102,7 +105,7 @@ function App() {
     if (!authLoading) {
       checkExistingUser();
     }
-  }, [user, authLoading, getOrCreateUserProfile, getUserCategories, getLastWeekItemCount]);
+  }, [user, authLoading, hasCompletedOnboardingThisSession, getOrCreateUserProfile, getUserCategories, getLastWeekItemCount]);
 
   const handleNameSubmit = async (name: string) => {
     if (!user) return;
@@ -373,7 +376,12 @@ function App() {
 
       <FloatingActionButton
         userId={userProfile?.id || null}
-        userCategories={userCategories.map(c => c.name)}
+        userCategories={
+          userCategories.length > 0
+            ? userCategories.map(c => c.name)
+            : DEFAULT_CATEGORIES.map(c => c.name)
+        }
+        onItemsCreated={addItemsToLocalState}
         onSubmitSuccess={loadItems}
         onEverythingClick={() => setCurrentView('everything')}
       />

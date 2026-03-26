@@ -89,6 +89,10 @@ export function useItems(userId: string | null) {
     }
   }, []);
 
+  const addItemsToLocalState = useCallback((newItems: Item[]) => {
+    setItems(prev => [...newItems, ...prev]);
+  }, []);
+
   return {
     items,
     isLoading,
@@ -97,5 +101,6 @@ export function useItems(userId: string | null) {
     getCategoryCounts,
     getOnYourMindItems,
     getLastWeekItemCount,
+    addItemsToLocalState,
   };
 }
