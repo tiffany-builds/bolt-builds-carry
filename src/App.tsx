@@ -85,8 +85,32 @@ function App() {
       }
     };
 
+    const fixOldCategories = async () => {
+      if (!user?.id) return;
+
+      const categoryMap: Record<string, string> = {
+        'Ideas': 'Me',
+        'Other': 'Errands',
+        'Projects': 'Work',
+        'Household': 'Home',
+        'Household Tasks': 'Home',
+        'Family': 'Kids',
+        'Shopping': 'Errands',
+        'Exercise': 'Me',
+      };
+
+      for (const [oldCat, newCat] of Object.entries(categoryMap)) {
+        await supabase
+          .from('items')
+          .update({ category: newCat })
+          .eq('user_id', user.id)
+          .eq('category', oldCat);
+      }
+    };
+
     if (!authLoading) {
       checkExistingUser();
+      fixOldCategories();
     }
   }, [user, authLoading, hasCompletedOnboardingThisSession, getOrCreateUserProfile, getLastWeekItemCount]);
 
@@ -228,16 +252,33 @@ function App() {
 
   if (currentView === 'boxDetail' && selectedCategory && user) {
     return (
-      <BoxDetailView
-        categoryName={selectedCategory.name}
-        categoryEmoji={selectedCategory.emoji}
-        userId={user.id}
-        onBack={() => {
-          setCurrentView('home');
-          setSelectedCategory(null);
-          loadItems();
-        }}
-      />
+      <>
+        <BoxDetailView
+          categoryName={selectedCategory.name}
+          categoryEmoji={selectedCategory.emoji}
+          userId={user.id}
+          onBack={() => {
+            setCurrentView('home');
+            setSelectedCategory(null);
+            loadItems();
+          }}
+          items={items.filter(i => i.category === selectedCategory.name && !i.completed)}
+          onItemComplete={async (itemId) => {
+            await supabase.from('items').update({ completed: true }).eq('id', itemId);
+            loadItems();
+          }}
+          onItemDelete={async (itemId) => {
+            await supabase.from('items').delete().eq('id', itemId);
+            loadItems();
+          }}
+        />
+        <FloatingActionButton
+          userId={user.id}
+          onSubmitSuccess={loadItems}
+          onItemsAdded={addItemsToLocalState}
+          onEverythingClick={() => setCurrentView('everything')}
+        />
+      </>
     );
   }
 

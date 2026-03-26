@@ -80,7 +80,7 @@ export function FloatingActionButton({ userId, onItemsAdded, onSubmitSuccess, on
       // Show toast
       showToast(`✓ Got it — added ${newItems.length} thing${newItems.length > 1 ? 's' : ''} to Carry`);
 
-      // Save to Supabase in background — don't call loadItems after
+      // Save to Supabase in background
       if (userId) {
         for (const item of newItems) {
           try {
@@ -104,7 +104,11 @@ export function FloatingActionButton({ userId, onItemsAdded, onSubmitSuccess, on
             console.log('Item save failed but kept locally:', saveErr);
           }
         }
-        // Do NOT call onSubmitSuccess here
+
+        // Add delay to ensure Supabase has time to save before reloading
+        setTimeout(() => {
+          if (onSubmitSuccess) onSubmitSuccess();
+        }, 1500);
       }
 
     } catch (err) {

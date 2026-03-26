@@ -1,9 +1,6 @@
-import { useState, useEffect } from 'react';
-import { ArrowLeft, Check, Mic } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { useState } from 'react';
+import { ArrowLeft, Check } from 'lucide-react';
 import { getContextualEmoji } from '../utils/mindNudges';
-import { useSpeechRecognition } from '../utils/useSpeechRecognition';
-import { categorizeAndCreateItems } from '../hooks/useItemCategorization';
 import { getCategoryDisplayName } from '../utils/categoryHelpers';
 
 interface Item {
@@ -21,74 +18,15 @@ interface BoxDetailViewProps {
   categoryEmoji: string;
   userId: string;
   onBack: () => void;
+  items: Item[];
+  onItemComplete: (itemId: string) => void;
+  onItemDelete: (itemId: string) => void;
 }
 
-export function BoxDetailView({ categoryName, categoryEmoji, userId, onBack }: BoxDetailViewProps) {
-  const [items, setItems] = useState<Item[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onItemComplete, onItemDelete }: BoxDetailViewProps) {
   const [swipingItemId, setSwipingItemId] = useState<string | null>(null);
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [touchStart, setTouchStart] = useState(0);
-  const [textInput, setTextInput] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [interimTranscript, setInterimTranscript] = useState('');
-
-  useEffect(() => {
-    loadItems();
-  }, [categoryName, userId]);
-
-  const loadItems = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('items')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('category', categoryName)
-        .eq('completed', false)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setItems(data || []);
-    } catch (err) {
-      //('Error loading items:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const toggleComplete = async (itemId: string, currentCompleted: boolean) => {
-    try {
-      const { error } = await supabase
-        .from('items')
-        .update({ completed: !currentCompleted })
-        .eq('id', itemId);
-
-      if (error) throw error;
-
-      setItems(items.map(item =>
-        item.id === itemId ? { ...item, completed: !currentCompleted } : item
-      ));
-    } catch (err) {
-      //('Error toggling item:', err);
-    }
-  };
-
-  const deleteItem = async (itemId: string) => {
-    try {
-      const { error } = await supabase
-        .from('items')
-        .delete()
-        .eq('id', itemId);
-
-      if (error) throw error;
-
-      setItems(items.filter(item => item.id !== itemId));
-      setSwipingItemId(null);
-      setSwipeOffset(0);
-    } catch (err) {
-      //('Error deleting item:', err);
-    }
-  };
 
   const handleTouchStart = (e: React.TouchEvent, itemId: string) => {
     setTouchStart(e.touches[0].clientX);
@@ -106,55 +44,19 @@ export function BoxDetailView({ categoryName, categoryEmoji, userId, onBack }: B
 
   const handleTouchEnd = () => {
     if (swipeOffset > 60 && swipingItemId) {
-      deleteItem(swipingItemId);
+      onItemDelete(swipingItemId);
+      setSwipingItemId(null);
+      setSwipeOffset(0);
     } else {
       setSwipeOffset(0);
       setSwipingItemId(null);
     }
   };
 
-  const processInput = async (text: string) => {
-    if (!text.trim()) return;
-
-    setIsProcessing(true);
-    try {
-      await categorizeAndCreateItems(text, userId, [categoryName]);
-      await loadItems();
-      setTextInput('');
-      setInterimTranscript('');
-    } catch (error) {
-      //('Error processing input:', error);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const { isListening, startListening } = useSpeechRecognition({
-    onTranscript: (transcript) => {
-      processInput(transcript);
-      setInterimTranscript('');
-    },
-    onInterimTranscript: (transcript) => {
-      setInterimTranscript(transcript);
-    },
-    onError: (error) => {
-      //('Speech recognition error:', error);
-      setInterimTranscript('');
-    },
-  });
-
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && !isProcessing) {
-      processInput(textInput);
-    }
-  };
-
-  const activeItems = items.filter(item => !item.completed);
-
   const displayName = getCategoryDisplayName(categoryName);
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-cream pb-32">
       <div className="max-w-2xl mx-auto px-5 py-6 space-y-6">
         <div className="flex items-center gap-4">
           <button
@@ -167,16 +69,12 @@ export function BoxDetailView({ categoryName, categoryEmoji, userId, onBack }: B
             <div className="text-3xl mb-1">{categoryEmoji}</div>
             <h1 className="font-ui font-medium text-2xl text-text">{displayName}</h1>
             <p className="font-ui text-sm text-muted">
-              {activeItems.length} {activeItems.length === 1 ? 'item' : 'items'}
+              {items.length} {items.length === 1 ? 'item' : 'items'}
             </p>
           </div>
         </div>
 
-        {isLoading ? (
-          <div className="text-center py-12">
-            <div className="w-8 h-8 border-4 border-border border-t-accent rounded-full animate-spin mx-auto"></div>
-          </div>
-        ) : activeItems.length === 0 ? (
+        {items.length === 0 ? (
           <div className="text-center py-12 space-y-3">
             <p className="font-ui text-muted font-light">Nothing in this box yet</p>
             <p className="font-ui text-sm text-muted/70">
@@ -185,7 +83,7 @@ export function BoxDetailView({ categoryName, categoryEmoji, userId, onBack }: B
           </div>
         ) : (
           <div className="space-y-3">
-            {activeItems.map((item) => (
+            {items.map((item) => (
               <div
                 key={item.id}
                 className="relative overflow-hidden rounded-xl"
@@ -205,7 +103,7 @@ export function BoxDetailView({ categoryName, categoryEmoji, userId, onBack }: B
                 >
                   <div className="flex items-start gap-3">
                     <button
-                      onClick={() => toggleComplete(item.id, item.completed)}
+                      onClick={() => onItemComplete(item.id)}
                       className="flex-shrink-0 w-6 h-6 rounded-full border-2 border-border hover:border-accent transition-all flex items-center justify-center mt-0.5 active:scale-95"
                     >
                       {item.completed && (
@@ -232,51 +130,6 @@ export function BoxDetailView({ categoryName, categoryEmoji, userId, onBack }: B
             ))}
           </div>
         )}
-
-        <div className="fixed bottom-0 left-0 right-0 bg-cream border-t border-border py-6 px-5">
-          <div className="max-w-2xl mx-auto flex items-center justify-center gap-4">
-            <span className="font-ui text-xs text-muted uppercase tracking-wider">type</span>
-
-            <div className="relative flex items-center gap-3">
-              <input
-                type="text"
-                value={textInput}
-                onChange={(e) => setTextInput(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder={interimTranscript || `Add to ${displayName}...`}
-                disabled={isProcessing || isListening}
-                className="w-48 px-4 py-2 rounded-full border border-border bg-surface text-text font-ui text-sm focus:outline-none focus:border-accent/50 disabled:opacity-50"
-              />
-
-              <div className="relative">
-                <div
-                  className={`absolute inset-0 rounded-full ${
-                    isListening ? 'animate-ping bg-accent/20' : ''
-                  }`}
-                  style={{
-                    width: '56px',
-                    height: '56px',
-                    left: '-4px',
-                    top: '-4px'
-                  }}
-                />
-                <button
-                  onClick={startListening}
-                  disabled={isProcessing || isListening}
-                  className={`relative w-12 h-12 rounded-full flex items-center justify-center transition-all active:scale-95 disabled:opacity-50 ${
-                    isListening
-                      ? 'bg-accent text-surface shadow-lg'
-                      : 'bg-surface border-2 border-accent text-accent hover:bg-accent hover:text-surface shadow-md'
-                  }`}
-                >
-                  <Mic className="w-5 h-5" strokeWidth={2} />
-                </button>
-              </div>
-            </div>
-
-            <span className="font-ui text-xs text-muted uppercase tracking-wider">voice</span>
-          </div>
-        </div>
       </div>
     </div>
   );
