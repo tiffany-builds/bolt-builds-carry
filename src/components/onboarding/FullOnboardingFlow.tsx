@@ -5,6 +5,7 @@ import { OnboardingFamily } from './OnboardingFamily';
 import { OnboardingWeek } from './OnboardingWeek';
 import { OnboardingPriorities } from './OnboardingPriorities';
 import { OnboardingNudges } from './OnboardingNudges';
+import { OnboardingBoxes } from './OnboardingBoxes';
 import { OnboardingInitialThoughts } from './OnboardingInitialThoughts';
 import { OnboardingReady } from './OnboardingReady';
 
@@ -24,6 +25,7 @@ export interface OnboardingData {
   dayStartTime: string;
   priorityAreas: string[];
   nudgePreference: string;
+  selectedCategories?: string[];
   initialThoughts?: string;
 }
 
@@ -65,13 +67,18 @@ export function FullOnboardingFlow({ userId, onComplete }: FullOnboardingFlowPro
     setStep(6);
   };
 
-  const handleInitialThoughts = (thoughts: string) => {
-    setData({ ...data, initialThoughts: thoughts });
+  const handleBoxes = (selectedCategories: string[]) => {
+    setData({ ...data, selectedCategories });
     setStep(7);
   };
 
+  const handleInitialThoughts = (thoughts: string) => {
+    setData({ ...data, initialThoughts: thoughts });
+    setStep(8);
+  };
+
   const handleSkip = () => {
-    setStep(7);
+    setStep(8);
   };
 
   const handleComplete = () => {
@@ -86,14 +93,15 @@ export function FullOnboardingFlow({ userId, onComplete }: FullOnboardingFlowPro
       {step === 3 && <OnboardingWeek onContinue={handleWeek} />}
       {step === 4 && <OnboardingPriorities onContinue={handlePriorities} />}
       {step === 5 && <OnboardingNudges onContinue={handleNudges} />}
-      {step === 6 && (
+      {step === 6 && <OnboardingBoxes onContinue={handleBoxes} />}
+      {step === 7 && (
         <OnboardingInitialThoughts
           userId={userId}
           onContinue={handleInitialThoughts}
           onSkip={handleSkip}
         />
       )}
-      {step === 7 && (
+      {step === 8 && (
         <OnboardingReady
           userName={data.name || ''}
           household={data.household || []}

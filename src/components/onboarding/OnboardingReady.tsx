@@ -53,7 +53,7 @@ export function OnboardingReady({ userName, household, children, priorityAreas, 
 
   return (
     <div className="min-h-screen bg-cream flex flex-col">
-      <ProgressDots total={8} current={7} />
+      <ProgressDots total={9} current={8} />
 
       <div className="flex-1 flex items-center justify-center px-8 py-8">
         <div className="w-full max-w-md space-y-12 text-center">

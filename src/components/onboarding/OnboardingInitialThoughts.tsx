@@ -19,7 +19,7 @@ export function OnboardingInitialThoughts({ onContinue, onSkip }: OnboardingInit
 
   return (
     <div className="min-h-screen bg-cream flex flex-col">
-      <ProgressDots total={8} current={6} />
+      <ProgressDots total={9} current={7} />
 
       <div className="flex-1 flex items-center justify-center px-8 py-8">
         <div className="w-full max-w-md space-y-8">
