@@ -76,12 +76,15 @@ export function FloatingActionButton({ userId, userCategories, onItemsAdded, onS
         excitement: item.excitement || null,
       }));
 
+      // Add items to local state immediately
       if (onItemsAdded) {
         onItemsAdded(newItems);
       }
 
+      // Show toast
       showToast(`✓ Got it — added ${newItems.length} thing${newItems.length > 1 ? 's' : ''} to Carry`);
 
+      // Save to Supabase in background — don't call loadItems after
       if (userId) {
         for (const item of newItems) {
           try {
@@ -102,12 +105,10 @@ export function FloatingActionButton({ userId, userCategories, onItemsAdded, onS
               excitement: item.excitement,
             });
           } catch (saveErr) {
-            console.log('Item save to Supabase failed but kept locally:', saveErr);
+            console.log('Item save failed but kept locally:', saveErr);
           }
         }
-        if (onSubmitSuccess) {
-          onSubmitSuccess();
-        }
+        // Do NOT call onSubmitSuccess here
       }
 
     } catch (err) {

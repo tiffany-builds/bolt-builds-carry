@@ -29,7 +29,7 @@ export function useItems(userId: string | null) {
   const loadItems = useCallback(async () => {
     if (!userId) {
       setIsLoading(false);
-      return;
+      return; // Don't wipe existing items
     }
 
     try {
@@ -40,12 +40,15 @@ export function useItems(userId: string | null) {
         .eq('completed', false)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
-      setItems(data || []);
+      // Only update if we got data back
+      if (data !== null) {
+        setItems(data);
+      }
     } catch (err) {
+      console.log('loadItems error:', err);
+      // Don't wipe state on error
     } finally {
       setIsLoading(false);
     }
