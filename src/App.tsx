@@ -55,7 +55,7 @@ function App() {
   const [hasCompletedOnboardingThisSession, setHasCompletedOnboardingThisSession] = useState(false);
 
   const { user, isLoading: authLoading } = useAuth();
-  const { createUserProfile, getOrCreateUserProfile, updateUserProfile, addUserCategories, completeOnboarding, getUserCategories } = useOnboarding();
+  const { createUserProfile, getOrCreateUserProfile, updateUserProfile, completeOnboarding } = useOnboarding();
   const { items, isLoading: itemsLoading, loadItems, getCategoryCounts, getOnYourMindItems, getLastWeekItemCount, addItemsToLocalState } = useItems(user?.id || null);
 
   const checkBirthday = (profile: UserProfile | null) => {
@@ -80,34 +80,12 @@ function App() {
           setUserName(profile.name);
           setIsBirthday(checkBirthday(profile));
 
-          // After confirming user is onboarded, load their categories from database
-          const { data: savedCategories } = await supabase
-            .from('user_categories')
-            .select('*')
-            .eq('user_id', user.id)
-            .order('order', { ascending: true });
-
-          if (savedCategories && savedCategories.length > 0) {
-            // Map to UserCategory format
-            const cats = savedCategories.map(c => ({
-              id: c.id || c.name,
-              user_id: user.id,
-              name: c.name,
-              emoji: c.emoji,
-              color: '#C4714A',
-              order_index: c.order || 0
-            }));
-            setUserCategories(cats);
-            // Also update localStorage
-            localStorage.setItem(`carry_categories_${user.id}`, JSON.stringify(cats));
+          // Load categories from localStorage
+          const localCatsRaw = localStorage.getItem(`carry_categories_${user.id}`);
+          if (localCatsRaw) {
+            setUserCategories(JSON.parse(localCatsRaw));
           } else {
-            // Fall back to localStorage
-            const localCatsRaw = localStorage.getItem(`carry_categories_${user.id}`);
-            if (localCatsRaw) {
-              setUserCategories(JSON.parse(localCatsRaw));
-            } else {
-              setUserCategories(DEFAULT_CATEGORIES);
-            }
+            setUserCategories(DEFAULT_CATEGORIES);
           }
 
           if (profile.onboarding_complete) {
@@ -229,7 +207,7 @@ function App() {
           setUserCategories(userCats);
           console.log('userCategories set to:', userCats.map(c => c.name));
 
-          // Persist to localStorage so reload doesn't trigger onboarding again
+          // Persist to localStorage immediately after onboarding
           localStorage.setItem(`carry_onboarded_${user.id}`, 'true');
           localStorage.setItem(`carry_name_${user.id}`, name);
           localStorage.setItem(`carry_categories_${user.id}`, JSON.stringify(userCats));
@@ -251,6 +229,7 @@ function App() {
               priority_areas: onboardingData.priorityAreas,
               nudge_preference: onboardingData.nudgePreference,
               onboarding_complete: true,
+              selected_categories: userCats.map(c => c.name),
             };
 
             const { data: updatedProfile, error } = await supabase
@@ -265,20 +244,6 @@ function App() {
               console.log("Profile saved successfully");
               setUserProfile(updatedProfile);
               setIsBirthday(checkBirthday(updatedProfile));
-            }
-
-            // Try to save categories to Supabase in background
-            if (user?.id) {
-              for (const cat of userCats) {
-                await supabase
-                  .from('user_categories')
-                  .upsert({
-                    user_id: user.id,
-                    name: cat.name,
-                    emoji: cat.emoji,
-                    order: cat.order_index || 0
-                  }, { onConflict: 'user_id,name' });
-              }
             }
 
             if (onboardingData.initialThoughts) {
