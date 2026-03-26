@@ -23,10 +23,7 @@ const client = new Anthropic({
 });
 
 export async function categorizeAndCreateItems(text: string, userId: string, userCategories: string[]) {
-  console.log("1. categorizeAndCreateItems called with:", { text, userId, userCategories });
-
   try {
-    console.log("2. Calling Claude API...");
     const today = new Date();
     const dayName = today.toLocaleDateString('en-GB', { weekday: 'long' });
     const year = today.getFullYear();
@@ -121,13 +118,10 @@ Return valid JSON array only — no explanation, no markdown, no code blocks.`;
     });
 
     const responseText = message.content[0].text;
-    console.log("3. Raw API response:", responseText);
 
     const items = JSON.parse(responseText) as CategorizedItem[];
-    console.log("4. Parsed items:", items);
 
     if (!items || items.length === 0) {
-      console.log("5. No items returned from API");
       return [];
     }
 
@@ -166,7 +160,6 @@ Return valid JSON array only — no explanation, no markdown, no code blocks.`;
             .select();
 
           if (error) {
-            console.error('Error updating item:', error);
           } else if (updated) {
             createdItems.push(updated[0]);
           }
@@ -199,29 +192,14 @@ Return valid JSON array only — no explanation, no markdown, no code blocks.`;
           .select();
 
         if (error) {
-          console.error('Error inserting item:', error);
         } else if (inserted) {
           createdItems.push(inserted[0]);
         }
       }
     }
 
-    console.log("8. Items successfully processed:", createdItems);
-
-    const { data: verifyData, error: verifyError } = await supabase
-      .from('items')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('completed', false)
-      .order('created_at', { ascending: false });
-
-    console.log("8a. VERIFICATION - Query all incomplete items for this user:");
-    console.log("8b. VERIFICATION - Found", verifyData?.length || 0, "items in database");
-    console.log("8c. VERIFICATION - Full query result:", JSON.stringify(verifyData, null, 2));
-
     return createdItems;
   } catch (err) {
-    console.error('ERROR at some step:', err);
     throw err;
   }
 }

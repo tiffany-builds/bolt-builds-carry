@@ -15,8 +15,8 @@ export function OnYourMindSection({ items, onItemsChange }: OnYourMindSectionPro
     (!item.hasDateTime && item.category === 'Ideas')
   );
 
-  console.log("OnYourMindSection - Total items:", items.length);
-  console.log("OnYourMindSection - Mind items:", mindItems);
+  //("OnYourMindSection - Total items:", items.length);
+  //("OnYourMindSection - Mind items:", mindItems);
 
   if (mindItems.length === 0) {
     return null;
@@ -34,7 +34,7 @@ export function OnYourMindSection({ items, onItemsChange }: OnYourMindSectionPro
       if (error) throw error;
       onItemsChange();
     } catch (err) {
-      console.error('Error dismissing mind item:', err);
+      //('Error dismissing mind item:', err);
     }
   };
 

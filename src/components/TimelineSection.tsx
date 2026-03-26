@@ -55,7 +55,7 @@ interface DayGroup {
 }
 
 export function TimelineSection({ items }: TimelineSectionProps) {
-  console.log("28. TimelineSection render - items:", items);
+  //("28. TimelineSection render - items:", items);
 
   const weekDays = getWeekDays();
   const todayStr = getTodayDateString();

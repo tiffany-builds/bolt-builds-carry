@@ -50,7 +50,7 @@ export function BoxDetailView({ categoryName, categoryEmoji, userId, onBack }: B
       if (error) throw error;
       setItems(data || []);
     } catch (err) {
-      console.error('Error loading items:', err);
+      //('Error loading items:', err);
     } finally {
       setIsLoading(false);
     }
@@ -69,7 +69,7 @@ export function BoxDetailView({ categoryName, categoryEmoji, userId, onBack }: B
         item.id === itemId ? { ...item, completed: !currentCompleted } : item
       ));
     } catch (err) {
-      console.error('Error toggling item:', err);
+      //('Error toggling item:', err);
     }
   };
 
@@ -86,7 +86,7 @@ export function BoxDetailView({ categoryName, categoryEmoji, userId, onBack }: B
       setSwipingItemId(null);
       setSwipeOffset(0);
     } catch (err) {
-      console.error('Error deleting item:', err);
+      //('Error deleting item:', err);
     }
   };
 
@@ -123,7 +123,7 @@ export function BoxDetailView({ categoryName, categoryEmoji, userId, onBack }: B
       setTextInput('');
       setInterimTranscript('');
     } catch (error) {
-      console.error('Error processing input:', error);
+      //('Error processing input:', error);
     } finally {
       setIsProcessing(false);
     }
@@ -138,7 +138,7 @@ export function BoxDetailView({ categoryName, categoryEmoji, userId, onBack }: B
       setInterimTranscript(transcript);
     },
     onError: (error) => {
-      console.error('Speech recognition error:', error);
+      //('Speech recognition error:', error);
       setInterimTranscript('');
     },
   });

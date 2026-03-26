@@ -18,7 +18,6 @@ import { BoxDetailView } from './components/BoxDetailView';
 import { EverythingYouCarry } from './components/EverythingYouCarry';
 import { OnYourMindSection } from './components/OnYourMindSection';
 import { LookForwardSection } from './components/LookForwardSection';
-import { DebugPanel } from './components/DebugPanel';
 import { FullOnboardingFlow, OnboardingData } from './components/onboarding/FullOnboardingFlow';
 import { useAuth } from './hooks/useAuth';
 import { useOnboarding } from './hooks/useOnboarding';
@@ -40,10 +39,6 @@ function App() {
   const [currentView, setCurrentView] = useState<View>('home');
   const [selectedCategory, setSelectedCategory] = useState<UserCategory | null>(null);
   const [lastWeekCount, setLastWeekCount] = useState(0);
-  const [debugLastInput, setDebugLastInput] = useState('');
-  const [debugApiStatus, setDebugApiStatus] = useState<'idle' | 'calling' | 'success' | 'error'>('idle');
-  const [debugLastResponse, setDebugLastResponse] = useState('');
-  const [debugLastError, setDebugLastError] = useState('');
   const [isBirthday, setIsBirthday] = useState(false);
 
   const { user, isLoading: authLoading } = useAuth();
@@ -83,7 +78,6 @@ function App() {
           setOnboardingStep('welcome');
         }
       } catch (err) {
-        console.error('Error checking existing user:', err);
       }
     };
 
@@ -189,7 +183,7 @@ function App() {
             };
 
             const { data: updatedProfile, error } = await supabase
-              .from('user_profiles')
+              .from('profiles')
               .upsert({
                 id: user.id,
                 ...profileUpdate,
@@ -216,7 +210,6 @@ function App() {
             setOnboardingStep('complete');
             await loadItems();
           } catch (err) {
-            console.error('Error completing onboarding:', err);
             setError(err instanceof Error ? err.message : 'Failed to complete onboarding');
           } finally {
             setIsLoading(false);
@@ -290,45 +283,9 @@ function App() {
       if (error) throw error;
       loadItems();
     } catch (err) {
-      console.error('Error removing item:', err);
     }
   };
 
-  console.log("23. App render - Total items:", items.length);
-  console.log("24. App render - Today items:", todayItems.length);
-  console.log("25. App render - Category counts:", categoryCounts);
-  console.log("26. App render - On your mind items:", onYourMindItems.length);
-  console.log("27. App render - All items:", items);
-  console.log("28. Mind items filtered:", mindItems);
-  console.log("29. Items by type:", items.map(i => ({ id: i.id, type: i.type, category: i.category, hasDateTime: i.has_date_time })));
-
-  const handleTestItem = async () => {
-    if (!userProfile) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('items')
-        .insert({
-          user_id: userProfile.id,
-          title: 'Test item',
-          category: 'Household',
-          item_type: 'task',
-          completed: false,
-          time_frame: 'anytime'
-        })
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Test item error:', error);
-      } else {
-        console.log('Test item created:', data);
-        loadItems();
-      }
-    } catch (err) {
-      console.error('Test item exception:', err);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-cream pb-32">
@@ -341,21 +298,6 @@ function App() {
             todayCount={todayItems.filter(i => i.date === new Date().toISOString().split('T')[0]).length}
             isBirthday={isBirthday}
           />
-
-          <DebugPanel
-            lastInput={debugLastInput}
-            apiStatus={debugApiStatus}
-            itemsCount={items.length}
-            lastResponse={debugLastResponse}
-            lastError={debugLastError}
-          />
-
-          <button
-            onClick={handleTestItem}
-            className="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 text-sm font-mono py-2 px-4 rounded transition-colors"
-          >
-            Add Test Item
-          </button>
 
           <AffirmationCard
             itemCount={lastWeekCount}
@@ -387,12 +329,6 @@ function App() {
         userCategories={userCategories.map(c => c.name)}
         onSubmitSuccess={loadItems}
         onEverythingClick={() => setCurrentView('everything')}
-        onDebugUpdate={(input, status, response, error) => {
-          setDebugLastInput(input);
-          setDebugApiStatus(status);
-          setDebugLastResponse(response);
-          setDebugLastError(error);
-        }}
       />
     </div>
   );

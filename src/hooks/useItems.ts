@@ -24,23 +24,15 @@ export function useItems(userId: string | null) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    console.log("33. useItems - items state changed. New count:", items.length);
-    console.log("34. useItems - items state value:", items);
   }, [items]);
 
   const loadItems = useCallback(async () => {
-    console.log("17. loadItems called for userId:", userId);
-    console.log("17a. Time at loadItems start:", new Date().toISOString());
-
     if (!userId) {
-      console.log("18. No userId - skipping load");
       setIsLoading(false);
       return;
     }
 
     try {
-      console.log("19. Fetching items from database...");
-      console.log("19a. Query filters: user_id =", userId, ", completed = false");
       const { data, error } = await supabase
         .from('items')
         .select('*')
@@ -48,20 +40,12 @@ export function useItems(userId: string | null) {
         .eq('completed', false)
         .order('created_at', { ascending: false });
 
-      console.log("19b. Time after database query:", new Date().toISOString());
-
       if (error) {
-        console.error("20. ERROR loading items:", error);
         throw error;
       }
 
-      console.log("21. Items fetched from database:", data);
-      console.log("21a. Raw database result count:", data?.length || 0);
-      console.log("21b. Full database items:", JSON.stringify(data, null, 2));
       setItems(data || []);
-      console.log("22. State updated with items. New count:", data?.length || 0);
     } catch (err) {
-      console.error('Error loading items:', err);
     } finally {
       setIsLoading(false);
     }
@@ -101,7 +85,6 @@ export function useItems(userId: string | null) {
       if (error) throw error;
       return data?.length || 0;
     } catch (err) {
-      console.error('Error getting last week count:', err);
       return 0;
     }
   }, []);

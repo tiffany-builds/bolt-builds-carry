@@ -12,7 +12,6 @@ export function useAuth() {
         const { data: { session } } = await supabase.auth.getSession();
         setUser(session?.user ?? null);
       } catch (err) {
-        console.error('Error getting session:', err);
       } finally {
         setIsLoading(false);
       }
@@ -39,7 +38,6 @@ export function useAuth() {
       localStorage.removeItem('carryUserCategories');
       setUser(null);
     } catch (err) {
-      console.error('Error signing out:', err);
     }
   };
 

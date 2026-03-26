@@ -50,26 +50,20 @@ export function FloatingActionButton({ userId, userCategories, onSubmitSuccess, 
     });
 
   const handleFABClick = () => {
-    console.log("FAB clicked - isBrowserSupported:", isBrowserSupported);
     if (!showInput) {
       setShowInput(true);
       setInputValue('');
       setInterimTranscript('');
       if (isBrowserSupported) {
-        console.log("Starting listening immediately...");
         startListening();
-      } else {
-        console.log("Browser not supported - text input only");
       }
     }
   };
 
   const handleSubmit = async (text?: string) => {
     const textToSubmit = text || inputValue;
-    console.log("9. handleSubmit called with:", textToSubmit);
 
     if (!textToSubmit.trim() || !userId) {
-      console.log("10. Submission blocked - empty text or no userId");
       return;
     }
 
@@ -79,12 +73,9 @@ export function FloatingActionButton({ userId, userCategories, onSubmitSuccess, 
     setShowSuccess(null);
 
     try {
-      console.log("11. Loading categorization function...");
       const { categorizeAndCreateItems } = await import('../hooks/useItemCategorization');
 
-      console.log("12. Calling categorizeAndCreateItems...");
       const createdItems = await categorizeAndCreateItems(textToSubmit, userId, userCategories);
-      console.log("13. Items returned from categorization:", createdItems);
 
       onDebugUpdate?.(textToSubmit, 'success', JSON.stringify(createdItems), '');
 
@@ -99,18 +90,12 @@ export function FloatingActionButton({ userId, userCategories, onSubmitSuccess, 
         } else {
           message = `✨ Got it — ${createdItems.length} things added to Carry`;
         }
-        console.log("14. Setting toast message:", message);
         setToastMessage(message);
       }
 
       setShowInput(false);
-      console.log("15. Calling onSubmitSuccess to refresh items...");
-      console.log("15a. Time before refresh:", new Date().toISOString());
       onSubmitSuccess?.();
-      console.log("15b. Time after refresh call:", new Date().toISOString());
-      console.log("16. Process complete!");
     } catch (err) {
-      console.error("ERROR in handleSubmit:", err);
       onDebugUpdate?.(textToSubmit, 'error', '', err instanceof Error ? err.message : 'Unknown error');
       setShowError("Carry couldn't quite catch that — want to try again?");
     } finally {

@@ -61,91 +61,45 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const today = new Date();
-    const dayName = today.toLocaleDateString('en-GB', { weekday: 'long' });
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const date = String(today.getDate()).padStart(2, '0');
-    const dateStr = `${year}-${month}-${date}`;
+    const today = new Date()
+    const dayName = today.toLocaleDateString('en-GB', { weekday: 'long' })
+    const dateStr = today.toISOString().split('T')[0]
 
     const systemPrompt = `You are Carry, a personal assistant for parents.
 Today is ${dayName} ${dateStr}.
-When the user says "Saturday" they mean the next upcoming Saturday from today.
-Always calculate dates going FORWARD from today — never backwards.
 
-IMPORTANT: Detect if the user wants to UPDATE an existing item vs CREATE a new one.
+Extract all items from the input and return ONLY a valid JSON array.
 
-If the user is moving, rescheduling or updating an existing item (e.g., "move the dentist to Thursday", "change football to 4pm", "reschedule the doctor to next week"), return this structure:
+Each item must have:
+- title: max 6 words
+- detail: one warm conversational sentence
+- category: one of: Kids, Household, Errands, Me, Health, Ideas, Work, Projects, Other
+- type: event, task, reminder, idea, mind or lookforward
 
-{
-  "action": "update",
-  "matchTitle": "dentist",
-  "date": "2026-03-27",
-  "time": "16:00",
-  "category": "Health"
-}
-
-If creating a NEW item, return this structure:
-
-{
-  "action": "create",
-  "title": "max 6 words",
-  "detail": "one warm conversational sentence",
-  "category": "one of: Kids, Household, Errands, Me, Health, Ideas, Work, Projects, Other",
-  "type": "event, task, reminder, idea, mind or lookforward",
-  "date": "YYYY-MM-DD or null",
-  "time": "HH:MM or null",
-  "hasDateTime": true or false,
-  "targetMonth": 1-12 or null
-}
-
-Use type "lookforward" for:
-- Any trip, travel, holiday or weekend away
-- Concerts, shows, events the user is attending
-- Reunions, celebrations, things with friends or family
-- Anything the user mentions with excitement or anticipation
-- Multi-day events like "April 28 to May 2"
-- Any item more than 2 weeks away that sounds positive and exciting
+Use type "mind" for longer term plans, wishes or vague future intentions.
+Use type "lookforward" for trips, travel, holidays, concerts, reunions or anything the user is excited about and anticipating.
+Use category "Health" for: doctor, dentist, hospital, medication, physio, therapy, optician, anything health or body related.
 
 For lookforward items also include:
-- startDate: ISO format YYYY-MM-DD for start of event
+- startDate: ISO format YYYY-MM-DD
 - endDate: ISO format YYYY-MM-DD if multi-day, otherwise same as startDate
 - targetMonth: month number 1-12
 - hasDateTime: true
 - excitement: a short warm one-line description of why this is worth looking forward to
 
-Example:
-Input: "I have a trip with Sarah from April 28 to May 2"
-Output:
-{
-  "action": "create",
-  "title": "Trip with Sarah",
-  "detail": "A few days away with a good friend.",
-  "category": "Me",
-  "type": "lookforward",
-  "startDate": "2026-04-28",
-  "endDate": "2026-05-02",
-  "targetMonth": 4,
-  "hasDateTime": true,
-  "excitement": "Something just for you — a proper break with a friend."
-}
+If ANY date or time is mentioned include:
+- date: ISO format YYYY-MM-DD. Today is ${dateStr}. Calculate actual dates from relative terms like "tomorrow", "Tuesday", "next week". Always go FORWARD from today, never backwards.
+- time: 24hr format HH:MM if a time was mentioned, otherwise null
+- hasDateTime: true
+- targetMonth: month number 1-12 if a month is mentioned but no specific date
 
-Categories:
-- Health: doctor, dentist, hospital, medication, physio, therapy, optician, mental health, medical appointments, prescriptions, anything health or body related
-- Me: personal time, self care, exercise, hobbies, things just for the user
-- Errands: shopping, returns, post office, admin tasks, errands outside the home
-- Kids: child activities, school, childcare
-- Household: home maintenance, chores, cleaning
-- Work: work tasks, meetings, projects
-- Ideas: future plans, wishes, dreams
-- Projects: DIY, home projects
-- Other: miscellaneous
+If no date or time mentioned:
+- hasDateTime: false
+- date: null
+- time: null
+- targetMonth: null
 
-Use type "mind" for longer term plans, wishes, future intentions or anything with a vague or approximate timeframe.
-
-If no action field is present assume "create".
-
-Return valid JSON array only — no explanation, no markdown, no code blocks.`;
+Return valid JSON only — no explanation, no markdown, no code blocks.`;
 
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",

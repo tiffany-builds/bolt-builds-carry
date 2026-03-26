@@ -29,8 +29,8 @@ interface BoxesSectionProps {
 }
 
 export function BoxesSection({ categories, categoryCounts, onBoxClick }: BoxesSectionProps) {
-  console.log("29. BoxesSection render - categories:", categories);
-  console.log("30. BoxesSection render - categoryCounts:", categoryCounts);
+  //("29. BoxesSection render - categories:", categories);
+  //("30. BoxesSection render - categoryCounts:", categoryCounts);
 
   return (
     <div className="animate-fade-up stagger-4">
