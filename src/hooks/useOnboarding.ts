@@ -6,8 +6,8 @@ export function useOnboarding() {
   const createUserProfile = useCallback(
     async (name: string, authUserId: string): Promise<UserProfile> => {
       const { data, error } = await supabase
-        .from('profiles')
-        .insert([{ first_name: name, auth_user_id: authUserId, onboarding_complete: false }])
+        .from('user_profiles')
+        .insert([{ id: authUserId, first_name: name, onboarding_complete: false }])
         .select()
         .maybeSingle();
 
@@ -20,9 +20,9 @@ export function useOnboarding() {
   const getOrCreateUserProfile = useCallback(
     async (authUserId: string): Promise<UserProfile | null> => {
       const { data: existingProfile } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .select('*')
-        .eq('auth_user_id', authUserId)
+        .eq('id', authUserId)
         .maybeSingle();
 
       return existingProfile;
@@ -33,7 +33,7 @@ export function useOnboarding() {
   const updateUserProfile = useCallback(
     async (userId: string, updates: Partial<UserProfile>): Promise<UserProfile> => {
       const { data, error } = await supabase
-        .from('profiles')
+        .from('user_profiles')
         .update(updates)
         .eq('id', userId)
         .select()
@@ -82,7 +82,7 @@ export function useOnboarding() {
 
   const completeOnboarding = useCallback(async (userId: string) => {
     const { error } = await supabase
-      .from('profiles')
+      .from('user_profiles')
       .update({ onboarding_complete: true })
       .eq('id', userId);
 
