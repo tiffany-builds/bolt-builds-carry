@@ -68,6 +68,7 @@ export function FullOnboardingFlow({ userId, onComplete }: FullOnboardingFlowPro
   };
 
   const handleBoxes = (selectedCategories: string[]) => {
+    console.log('handleBoxes called with:', selectedCategories);
     setData({ ...data, selectedCategories });
     setStep(7);
   };
@@ -82,6 +83,7 @@ export function FullOnboardingFlow({ userId, onComplete }: FullOnboardingFlowPro
   };
 
   const handleComplete = () => {
+    console.log('handleComplete called with data:', data);
     onComplete(data as OnboardingData);
   };
 

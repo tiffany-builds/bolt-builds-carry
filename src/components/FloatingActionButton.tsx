@@ -156,9 +156,7 @@ export function FloatingActionButton({ userId, userCategories, onItemsAdded, onS
 
   const handleSubmit = async (text?: string) => {
     const textToSubmit = text || inputText;
-    if (!textToSubmit.trim() || !userId) {
-      return;
-    }
+    if (!textToSubmit.trim()) return;
     await processInput(textToSubmit);
   };
 

@@ -195,8 +195,10 @@ function App() {
           setUserName(name);
 
           // Always set default categories after onboarding
+          console.log('selectedCategories from onboarding:', onboardingData.selectedCategories);
           const selectedCats = onboardingData.selectedCategories || DEFAULT_CATEGORIES.map(c => c.name);
           const userCats = DEFAULT_CATEGORIES.filter(c => selectedCats.includes(c.name));
+          console.log('userCats after filter:', userCats);
           setUserCategories(userCats.length >= 3 ? userCats : DEFAULT_CATEGORIES);
 
           // Try to save to Supabase but don't block on failure
