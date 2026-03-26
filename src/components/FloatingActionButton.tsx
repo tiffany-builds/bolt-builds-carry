@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mic, Check, X, Menu, Archive } from 'lucide-react';
+import { Mic, Check, X, Menu, Archive, Calendar } from 'lucide-react';
 import Anthropic from '@anthropic-ai/sdk';
 import { useSpeechRecognition } from '../utils/useSpeechRecognition';
 import { Toast } from './Toast';
@@ -15,9 +15,10 @@ interface FloatingActionButtonProps {
   onItemsAdded?: (items: any[]) => void;
   onSubmitSuccess?: () => void;
   onEverythingClick?: () => void;
+  onCalendarClick?: () => void;
 }
 
-export function FloatingActionButton({ userId, onItemsAdded, onSubmitSuccess, onEverythingClick }: FloatingActionButtonProps) {
+export function FloatingActionButton({ userId, onItemsAdded, onSubmitSuccess, onEverythingClick, onCalendarClick }: FloatingActionButtonProps) {
   const [showInput, setShowInput] = useState(false);
   const [inputText, setInputText] = useState('');
   const [liveTranscript, setLiveTranscript] = useState('');
@@ -266,6 +267,17 @@ export function FloatingActionButton({ userId, onItemsAdded, onSubmitSuccess, on
       {showMenu && (
         <div className="fixed inset-0 bg-text/20 z-40 animate-fade-up" onClick={() => setShowMenu(false)}>
           <div className="fixed right-8 bg-surface rounded-2xl border border-border shadow-lg p-2 space-y-1 animate-fade-up" style={{ bottom: 'max(6rem, calc(env(safe-area-inset-bottom) + 4.5rem))' }}>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowMenu(false);
+                onCalendarClick?.();
+              }}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-cream transition-all text-left"
+            >
+              <Calendar className="w-5 h-5 text-muted" />
+              <span className="font-ui text-text">Calendar</span>
+            </button>
             <button
               onClick={(e) => {
                 e.stopPropagation();

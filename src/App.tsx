@@ -18,6 +18,7 @@ import { BoxDetailView } from './components/BoxDetailView';
 import { EverythingYouCarry } from './components/EverythingYouCarry';
 import { OnYourMindSection } from './components/OnYourMindSection';
 import { LookForwardSection } from './components/LookForwardSection';
+import { CalendarView } from './components/CalendarView';
 import { FullOnboardingFlow, OnboardingData } from './components/onboarding/FullOnboardingFlow';
 import { Toast } from './components/Toast';
 import { useAuth } from './hooks/useAuth';
@@ -28,7 +29,7 @@ import { supabase } from './lib/supabase';
 import { categorizeAndCreateItems } from './hooks/useItemCategorization';
 
 type OnboardingStep = 'welcome' | 'name' | 'family' | 'ready' | 'complete';
-type View = 'home' | 'boxDetail' | 'everything';
+type View = 'home' | 'boxDetail' | 'everything' | 'calendar';
 
 import { DEFAULT_CATEGORIES } from './data/defaultCategories';
 
@@ -279,6 +280,7 @@ function App() {
           onSubmitSuccess={loadItems}
           onItemsAdded={addItemsToLocalState}
           onEverythingClick={() => setCurrentView('everything')}
+          onCalendarClick={() => setCurrentView('calendar')}
         />
       </>
     );
@@ -289,6 +291,40 @@ function App() {
       <EverythingYouCarry
         userId={user.id}
         onBack={() => setCurrentView('home')}
+      />
+    );
+  }
+
+  if (currentView === 'calendar' && user) {
+    const todayItems: TimelineItem[] = items
+      .filter(item => (item.has_date_time && item.date) || (item.type === 'lookforward' && item.start_date))
+      .map(item => ({
+        id: item.id,
+        time: item.time || null,
+        title: item.type === 'lookforward' ? `${item.title} begins` : item.title,
+        subtitle: item.description || '',
+        category: item.category,
+        completed: item.completed,
+        date: item.date || item.start_date || null,
+        detail: item.description || null,
+        type: item.type,
+        hasDateTime: item.has_date_time,
+        targetMonth: item.target_month,
+        created_at: item.created_at,
+        start_date: item.start_date || null,
+        end_date: item.end_date || null,
+        excitement: item.excitement || null,
+      }));
+
+    return (
+      <CalendarView
+        userId={user.id}
+        items={todayItems}
+        onBack={() => setCurrentView('home')}
+        onItemComplete={(itemId) => {
+          removeItemFromState(itemId);
+        }}
+        onShowToast={(message) => setToastMessage(message)}
       />
     );
   }
@@ -379,6 +415,7 @@ function App() {
         onSubmitSuccess={loadItems}
         onItemsAdded={addItemsToLocalState}
         onEverythingClick={() => setCurrentView('everything')}
+        onCalendarClick={() => setCurrentView('calendar')}
       />
       {toastMessage && (
         <Toast
