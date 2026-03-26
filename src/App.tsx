@@ -7,6 +7,7 @@ import { BoxesSection } from './components/BoxesSection';
 import { NudgesSection } from './components/NudgesSection';
 import { FloatingActionButton } from './components/FloatingActionButton';
 import { SignIn } from './components/auth/SignIn';
+import { LoadingScreen } from './components/LoadingScreen';
 import { WelcomeScreen } from './components/onboarding/WelcomeScreen';
 import { NameInput } from './components/onboarding/NameInput';
 import { FamilyInput } from './components/onboarding/FamilyInput';
@@ -140,14 +141,7 @@ function App() {
   };
 
   if (authLoading || isLoading) {
-    return (
-      <div className="min-h-screen bg-cream flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="w-12 h-12 border-4 border-border border-t-accent rounded-full animate-spin mx-auto"></div>
-          <p className="font-ui text-muted font-light">Setting things up...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   if (!user) {
