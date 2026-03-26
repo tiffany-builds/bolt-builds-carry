@@ -33,9 +33,18 @@ export function useAuth() {
 
   const signOut = async () => {
     try {
+      const userId = user?.id;
       await supabase.auth.signOut();
+
+      // Clear all user-specific localStorage
+      if (userId) {
+        localStorage.removeItem(`carry_onboarded_${userId}`);
+        localStorage.removeItem(`carry_name_${userId}`);
+        localStorage.removeItem(`carry_categories_${userId}`);
+      }
       localStorage.removeItem('carryUserProfile');
       localStorage.removeItem('carryUserCategories');
+
       setUser(null);
     } catch (err) {
     }

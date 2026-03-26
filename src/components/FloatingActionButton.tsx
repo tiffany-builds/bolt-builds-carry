@@ -273,6 +273,21 @@ export function FloatingActionButton({ userId, userCategories, onItemsAdded, onS
               <Archive className="w-5 h-5 text-muted" />
               <span className="font-ui text-text">Everything you Carry</span>
             </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (userId) {
+                  localStorage.removeItem(`carry_onboarded_${userId}`);
+                  localStorage.removeItem(`carry_name_${userId}`);
+                  localStorage.removeItem(`carry_categories_${userId}`);
+                }
+                window.location.reload();
+              }}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-cream transition-all text-left"
+            >
+              <X className="w-5 h-5 text-muted" />
+              <span className="font-ui text-text">Reset & re-onboard</span>
+            </button>
           </div>
         </div>
       )}
