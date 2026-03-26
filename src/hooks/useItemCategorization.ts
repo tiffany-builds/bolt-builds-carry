@@ -22,7 +22,7 @@ const client = new Anthropic({
   dangerouslyAllowBrowser: true
 });
 
-export async function categorizeAndCreateItems(text: string, userId: string, userCategories: string[]) {
+export async function categorizeAndCreateItems(text: string, userId: string, userCategories: string[] = []) {
   try {
     const today = new Date();
     const dayName = today.toLocaleDateString('en-GB', { weekday: 'long' });
@@ -31,8 +31,13 @@ export async function categorizeAndCreateItems(text: string, userId: string, use
     const date = String(today.getDate()).padStart(2, '0');
     const dateStr = `${year}-${month}-${date}`;
 
+    const DEFAULT_CATEGORIES = ['Kids', 'Household', 'Health', 'Errands', 'Me', 'Ideas', 'Work', 'Projects'];
+    const categoriesToUse = userCategories.length > 0 ? userCategories : DEFAULT_CATEGORIES;
+    const categoryNames = categoriesToUse.join(', ');
+
     const systemPrompt = `You are Carry, a personal assistant for parents.
 Today is ${dayName} ${dateStr}.
+The user has these categories: ${categoryNames}.
 When the user says "Saturday" they mean the next upcoming Saturday from today.
 Always calculate dates going FORWARD from today — never backwards.
 
@@ -54,7 +59,7 @@ If creating a NEW item, return this structure:
   "action": "create",
   "title": "max 6 words",
   "detail": "one warm conversational sentence",
-  "category": "one of: Kids, Household, Errands, Me, Health, Ideas, Work, Projects, Other",
+  "category": "one of: ${categoryNames}",
   "type": "event, task, reminder, idea, mind or lookforward",
   "date": "YYYY-MM-DD or null",
   "time": "HH:MM or null",
