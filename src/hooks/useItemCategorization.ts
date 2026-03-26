@@ -125,6 +125,25 @@ Return valid JSON array only — no explanation, no markdown, no code blocks.`;
       return [];
     }
 
+    const validCategories = ['Kids', 'Home', 'Health', 'Errands', 'Me', 'Work'];
+    const fallbackMap: Record<string, string> = {
+      'Ideas': 'Me',
+      'Other': 'Errands',
+      'Projects': 'Work',
+      'Household': 'Home',
+      'Family': 'Kids',
+      'Shopping': 'Errands',
+      'Exercise': 'Me',
+      'Personal': 'Me',
+      'Finance': 'Work',
+    };
+
+    for (const item of items) {
+      if (item.category && !validCategories.includes(item.category)) {
+        item.category = fallbackMap[item.category] || 'Errands';
+      }
+    }
+
     const timeFrameMap: Record<string, string> = {
       'event': 'today',
       'task': 'this_week',

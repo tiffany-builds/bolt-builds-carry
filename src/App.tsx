@@ -45,6 +45,7 @@ function App() {
   const [isBirthday, setIsBirthday] = useState(false);
   const [hasCompletedOnboardingThisSession, setHasCompletedOnboardingThisSession] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [autoOpenFAB, setAutoOpenFAB] = useState(false);
 
   const { user, isLoading: authLoading } = useAuth();
   const { createUserProfile, getOrCreateUserProfile, updateUserProfile, completeOnboarding } = useOnboarding();
@@ -116,6 +117,12 @@ function App() {
       fixOldCategories();
     }
   }, [user, authLoading, hasCompletedOnboardingThisSession, getOrCreateUserProfile, getLastWeekItemCount]);
+
+  useEffect(() => {
+    if (hasCompletedOnboardingThisSession) {
+      setAutoOpenFAB(true);
+    }
+  }, [hasCompletedOnboardingThisSession]);
 
   const handleNameSubmit = async (name: string) => {
     if (!user) return;
@@ -232,7 +239,10 @@ function App() {
             }
 
             if (onboardingData.initialThoughts) {
-              await categorizeAndCreateItems(onboardingData.initialThoughts, user.id);
+              const newItems = await categorizeAndCreateItems(onboardingData.initialThoughts, user.id);
+              if (newItems && newItems.length > 0) {
+                addItemsToLocalState(newItems);
+              }
             }
 
             const count = await getLastWeekItemCount(user.id);
@@ -245,8 +255,8 @@ function App() {
           }
 
           // Always proceed to home screen
-          setHasCompletedOnboardingThisSession(true);
           setIsLoading(false);
+          setHasCompletedOnboardingThisSession(true);
           setOnboardingStep('complete');
         }}
       />
@@ -281,6 +291,8 @@ function App() {
           onItemsAdded={addItemsToLocalState}
           onEverythingClick={() => setCurrentView('everything')}
           onCalendarClick={() => setCurrentView('calendar')}
+          autoOpenFAB={autoOpenFAB}
+          onAutoOpenComplete={() => setAutoOpenFAB(false)}
         />
       </>
     );
@@ -416,6 +428,8 @@ function App() {
         onItemsAdded={addItemsToLocalState}
         onEverythingClick={() => setCurrentView('everything')}
         onCalendarClick={() => setCurrentView('calendar')}
+        autoOpenFAB={autoOpenFAB}
+        onAutoOpenComplete={() => setAutoOpenFAB(false)}
       />
       {toastMessage && (
         <Toast

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Mic, Check, X, Menu, Archive, Calendar } from 'lucide-react';
 import Anthropic from '@anthropic-ai/sdk';
 import { useSpeechRecognition } from '../utils/useSpeechRecognition';
@@ -16,9 +16,11 @@ interface FloatingActionButtonProps {
   onSubmitSuccess?: () => void;
   onEverythingClick?: () => void;
   onCalendarClick?: () => void;
+  autoOpenFAB?: boolean;
+  onAutoOpenComplete?: () => void;
 }
 
-export function FloatingActionButton({ userId, onItemsAdded, onSubmitSuccess, onEverythingClick, onCalendarClick }: FloatingActionButtonProps) {
+export function FloatingActionButton({ userId, onItemsAdded, onSubmitSuccess, onEverythingClick, onCalendarClick, autoOpenFAB, onAutoOpenComplete }: FloatingActionButtonProps) {
   const [showInput, setShowInput] = useState(false);
   const [inputText, setInputText] = useState('');
   const [liveTranscript, setLiveTranscript] = useState('');
@@ -177,6 +179,16 @@ export function FloatingActionButton({ userId, onItemsAdded, onSubmitSuccess, on
     setInputText(text);
   };
 
+  useEffect(() => {
+    if (autoOpenFAB) {
+      const timer = setTimeout(() => {
+        handleFABClick();
+        onAutoOpenComplete?.();
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [autoOpenFAB]);
+
   if (showInput) {
     return (
       <>
@@ -213,7 +225,7 @@ export function FloatingActionButton({ userId, onItemsAdded, onSubmitSuccess, on
                       handleSubmit();
                     }
                   }}
-                  placeholder="Just talk. Carry figures out the rest."
+                  placeholder={autoOpenFAB ? "What's on your plate this week?" : "Just talk. Carry figures out the rest."}
                   className="w-full bg-cream border border-border rounded-xl px-4 py-3 font-ui text-text placeholder:text-muted focus:outline-none focus:border-accent/50 transition-colors"
                   disabled={isListening || isProcessing}
                   autoFocus={!isBrowserSupported}
