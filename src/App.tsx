@@ -190,7 +190,7 @@ function App() {
             console.log("Attempting to save profile:", profileUpdate);
 
             const { data: updatedProfile, error } = await supabase
-              .from('user_profiles')
+              .from('profiles')
               .upsert(profileUpdate)
               .select()
               .single();
