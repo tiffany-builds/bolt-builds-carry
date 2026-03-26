@@ -74,17 +74,14 @@ function App() {
 
       // Check localStorage first before hitting Supabase
       const locallyOnboarded = localStorage.getItem(`carry_onboarded_${user.id}`);
-      const localName = localStorage.getItem(`carry_name_${user.id}`);
-      const localCats = localStorage.getItem(`carry_categories_${user.id}`);
-
       if (locallyOnboarded === 'true') {
-        setUserName(localName || 'there');
-        if (localCats) {
-          setUserCategories(JSON.parse(localCats));
-        } else {
-          setUserCategories(DEFAULT_CATEGORIES);
-        }
+        const localName = localStorage.getItem(`carry_name_${user.id}`) || 'there';
+        const localCatsRaw = localStorage.getItem(`carry_categories_${user.id}`);
+        const localCats = localCatsRaw ? JSON.parse(localCatsRaw) : DEFAULT_CATEGORIES;
+        setUserName(localName);
+        setUserCategories(localCats);
         setOnboardingStep('complete');
+        setHasCompletedOnboardingThisSession(true);
         return; // Skip Supabase check
       }
 
@@ -211,17 +208,20 @@ function App() {
           setUserName(name);
 
           // Always set default categories after onboarding
-          console.log('selectedCategories from onboarding:', onboardingData.selectedCategories);
-          const selectedCats = onboardingData.selectedCategories || DEFAULT_CATEGORIES.map(c => c.name);
+          console.log('RAW selectedCategories:', onboardingData.selectedCategories);
+          const selectedCats = onboardingData.selectedCategories && onboardingData.selectedCategories.length > 0
+            ? onboardingData.selectedCategories
+            : DEFAULT_CATEGORIES.map(c => c.name);
+          console.log('selectedCats after fallback:', selectedCats);
           const userCats = DEFAULT_CATEGORIES.filter(c => selectedCats.includes(c.name));
           console.log('userCats after filter:', userCats);
-          const finalCategories = userCats.length >= 3 ? userCats : DEFAULT_CATEGORIES;
-          setUserCategories(finalCategories);
+          setUserCategories(userCats);
+          console.log('userCategories set to:', userCats.map(c => c.name));
 
           // Persist to localStorage so reload doesn't trigger onboarding again
           localStorage.setItem(`carry_onboarded_${user.id}`, 'true');
           localStorage.setItem(`carry_name_${user.id}`, name);
-          localStorage.setItem(`carry_categories_${user.id}`, JSON.stringify(finalCategories));
+          localStorage.setItem(`carry_categories_${user.id}`, JSON.stringify(userCats));
 
           // Try to save to Supabase but don't block on failure
           try {
