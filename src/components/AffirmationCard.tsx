@@ -1,10 +1,15 @@
 interface AffirmationCardProps {
   itemCount?: number;
   mindItemCount?: number;
+  isBirthday?: boolean;
 }
 
-export function AffirmationCard({ itemCount = 0, mindItemCount = 0 }: AffirmationCardProps) {
+export function AffirmationCard({ itemCount = 0, mindItemCount = 0, isBirthday = false }: AffirmationCardProps) {
   const getMessage = () => {
+    if (isBirthday) {
+      return "Today is yours. Carry's got everything else.";
+    }
+
     if (mindItemCount > 0) {
       const plural = mindItemCount === 1 ? 'thing' : 'things';
       return `You have ${mindItemCount} ${plural} on your mind. Carry is keeping track.`;

@@ -18,11 +18,13 @@ import { EverythingYouCarry } from './components/EverythingYouCarry';
 import { OnYourMindSection } from './components/OnYourMindSection';
 import { LookForwardSection } from './components/LookForwardSection';
 import { DebugPanel } from './components/DebugPanel';
+import { FullOnboardingFlow, OnboardingData } from './components/onboarding/FullOnboardingFlow';
 import { useAuth } from './hooks/useAuth';
 import { useOnboarding } from './hooks/useOnboarding';
 import { useItems } from './hooks/useItems';
 import { UserProfile, UserCategory, TimelineItem } from './types';
 import { supabase } from './lib/supabase';
+import { categorizeAndCreateItems } from './hooks/useItemCategorization';
 
 type OnboardingStep = 'welcome' | 'name' | 'family' | 'ready' | 'complete';
 type View = 'home' | 'boxDetail' | 'everything';
@@ -41,10 +43,18 @@ function App() {
   const [debugApiStatus, setDebugApiStatus] = useState<'idle' | 'calling' | 'success' | 'error'>('idle');
   const [debugLastResponse, setDebugLastResponse] = useState('');
   const [debugLastError, setDebugLastError] = useState('');
+  const [isBirthday, setIsBirthday] = useState(false);
 
   const { user, isLoading: authLoading } = useAuth();
   const { createUserProfile, getOrCreateUserProfile, updateUserProfile, addUserCategories, completeOnboarding, getUserCategories } = useOnboarding();
   const { items, isLoading: itemsLoading, loadItems, getCategoryCounts, getOnYourMindItems, getLastWeekItemCount } = useItems(userProfile?.id || null);
+
+  const checkBirthday = (profile: UserProfile | null) => {
+    if (!profile?.birthday_day || !profile?.birthday_month) return false;
+    const today = new Date();
+    return today.getDate() === profile.birthday_day &&
+           (today.getMonth() + 1) === profile.birthday_month;
+  };
 
   useEffect(() => {
     const checkExistingUser = async () => {
@@ -56,23 +66,20 @@ function App() {
         if (profile) {
           setUserProfile(profile);
           setUserName(profile.name);
+          setIsBirthday(checkBirthday(profile));
 
           const categories = await getUserCategories(profile.id);
           setUserCategories(categories);
 
-          if (profile.has_completed_onboarding) {
+          if (profile.onboarding_complete || profile.has_completed_onboarding) {
             setOnboardingStep('complete');
             const count = await getLastWeekItemCount(profile.id);
             setLastWeekCount(count);
-          } else if (profile.family_members && profile.family_members.length >= 0) {
-            setOnboardingStep('ready');
-          } else if (profile.name) {
-            setOnboardingStep('family');
           } else {
-            setOnboardingStep('name');
+            setOnboardingStep('welcome');
           }
         } else {
-          setOnboardingStep('name');
+          setOnboardingStep('welcome');
         }
       } catch (err) {
         console.error('Error checking existing user:', err);
@@ -164,20 +171,65 @@ function App() {
     );
   }
 
-  if (onboardingStep === 'welcome') {
-    return <WelcomeScreen onContinue={() => setOnboardingStep('name')} />;
-  }
+  if (onboardingStep === 'welcome' && user) {
+    return (
+      <FullOnboardingFlow
+        userId={user.id}
+        onComplete={async (onboardingData: OnboardingData) => {
+          try {
+            setIsLoading(true);
 
-  if (onboardingStep === 'name') {
-    return <NameInput onNameSubmit={handleNameSubmit} />;
-  }
+            const profileUpdate = {
+              name: onboardingData.name,
+              birthday_day: onboardingData.birthdayDay,
+              birthday_month: onboardingData.birthdayMonth,
+              household: onboardingData.household,
+              has_children: onboardingData.hasChildren,
+              children: onboardingData.children,
+              week_structure: onboardingData.weekStructure,
+              day_start_time: onboardingData.dayStartTime,
+              priority_areas: onboardingData.priorityAreas,
+              nudge_preference: onboardingData.nudgePreference,
+              onboarding_complete: true,
+              has_completed_onboarding: true,
+            };
 
-  if (onboardingStep === 'family') {
-    return <FamilyInput onFamilySubmit={handleFamilySubmit} />;
-  }
+            const { data: updatedProfile, error } = await supabase
+              .from('user_profiles')
+              .upsert({
+                id: user.id,
+                ...profileUpdate,
+              })
+              .select()
+              .single();
 
-  if (onboardingStep === 'ready') {
-    return <ReadyScreen onComplete={handleReadyComplete} />;
+            if (error) throw error;
+
+            setUserProfile(updatedProfile);
+            setUserName(updatedProfile.name);
+            setIsBirthday(checkBirthday(updatedProfile));
+
+            if (onboardingData.initialThoughts) {
+              await categorizeAndCreateItems(onboardingData.initialThoughts, user.id);
+            }
+
+            const categories = await getUserCategories(user.id);
+            setUserCategories(categories);
+
+            const count = await getLastWeekItemCount(user.id);
+            setLastWeekCount(count);
+
+            setOnboardingStep('complete');
+            await loadItems();
+          } catch (err) {
+            console.error('Error completing onboarding:', err);
+            setError(err instanceof Error ? err.message : 'Failed to complete onboarding');
+          } finally {
+            setIsLoading(false);
+          }
+        }}
+      />
+    );
   }
 
   if (currentView === 'boxDetail' && selectedCategory && userProfile) {
@@ -290,7 +342,11 @@ function App() {
         <StatusBar />
 
         <div className="px-5 space-y-8">
-          <Header userName={userName} todayCount={todayItems.filter(i => i.date === new Date().toISOString().split('T')[0]).length} />
+          <Header
+            userName={userName}
+            todayCount={todayItems.filter(i => i.date === new Date().toISOString().split('T')[0]).length}
+            isBirthday={isBirthday}
+          />
 
           <DebugPanel
             lastInput={debugLastInput}
@@ -307,7 +363,11 @@ function App() {
             Add Test Item
           </button>
 
-          <AffirmationCard itemCount={lastWeekCount} mindItemCount={mindItems.length} />
+          <AffirmationCard
+            itemCount={lastWeekCount}
+            mindItemCount={mindItems.length}
+            isBirthday={isBirthday}
+          />
           <TimelineSection items={todayItems} />
           <BoxesSection
             categories={userCategories}

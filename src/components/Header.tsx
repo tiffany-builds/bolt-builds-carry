@@ -4,9 +4,10 @@ import { useAuth } from '../hooks/useAuth';
 interface HeaderProps {
   userName?: string;
   todayCount?: number;
+  isBirthday?: boolean;
 }
 
-export function Header({ userName = 'Tiffany', todayCount = 0 }: HeaderProps) {
+export function Header({ userName = 'Tiffany', todayCount = 0, isBirthday = false }: HeaderProps) {
   const { signOut } = useAuth();
   const currentDate = new Date();
   const dayName = currentDate.toLocaleDateString('en-US', { weekday: 'long' });
@@ -16,11 +17,19 @@ export function Header({ userName = 'Tiffany', todayCount = 0 }: HeaderProps) {
     month: 'long'
   });
 
+  const greeting = isBirthday
+    ? `Happy Birthday, ${userName}. 🎂`
+    : `${dayName} looks manageable, ${userName}.`;
+
   return (
     <div className="animate-fade-up stagger-1">
       <div className="flex items-start justify-between gap-4 mb-2">
         <h1 className="font-display italic text-3xl font-light text-text leading-tight">
-          {dayName} looks manageable, <em style={{color: '#C4714A', fontStyle: 'italic'}}>{userName}</em>.
+          {isBirthday ? (
+            greeting
+          ) : (
+            <>{dayName} looks manageable, <em style={{color: '#C4714A', fontStyle: 'italic'}}>{userName}</em>.</>
+          )}
         </h1>
         <button
           onClick={signOut}

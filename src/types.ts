@@ -39,6 +39,16 @@ export interface UserProfile {
   family_members?: string[];
   created_at: string;
   updated_at: string;
+  birthday_day?: number;
+  birthday_month?: number;
+  household?: string[];
+  has_children?: boolean;
+  children?: Array<{ name: string; age: number }>;
+  week_structure?: string;
+  day_start_time?: string;
+  priority_areas?: string[];
+  nudge_preference?: string;
+  onboarding_complete?: boolean;
 }
 
 export interface UserCategory {
