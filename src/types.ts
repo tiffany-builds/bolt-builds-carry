@@ -34,7 +34,8 @@ export type Category = 'Kids' | 'Health' | 'Family' | 'Errands' | 'Me' | 'Ideas'
 
 export interface UserProfile {
   id: string;
-  first_name: string;
+  name: string;
+  auth_user_id?: string;
   onboarding_complete: boolean;
   family_members?: string[];
   created_at: string;
@@ -51,12 +52,14 @@ export interface UserProfile {
 }
 
 export interface UserCategory {
-  id: string;
-  user_id: string;
+  id?: string;
+  user_id?: string;
   name: string;
   emoji: string;
-  order: number;
-  created_at: string;
+  order?: number;
+  order_index?: number;
+  color?: string;
+  created_at?: string;
 }
 
 export interface CategoryOption {

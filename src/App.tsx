@@ -90,7 +90,7 @@ function App() {
 
         if (profile) {
           setUserProfile(profile);
-          setUserName(profile.first_name);
+          setUserName(profile.name);
           setIsBirthday(checkBirthday(profile));
 
           const categories = await getUserCategories(profile.id);
@@ -228,8 +228,8 @@ function App() {
             console.log("Attempting to save profile:", onboardingData);
 
             const profileUpdate = {
-              id: user.id,
-              first_name: name,
+              auth_user_id: user.id,
+              name: name,
               birthday_day: onboardingData.birthdayDay,
               birthday_month: onboardingData.birthdayMonth,
               household: onboardingData.household,
@@ -243,10 +243,10 @@ function App() {
             };
 
             const { data: updatedProfile, error } = await supabase
-              .from('profiles')
-              .upsert(profileUpdate, { onConflict: 'id' })
+              .from('user_profiles')
+              .upsert(profileUpdate, { onConflict: 'auth_user_id' })
               .select()
-              .single();
+              .maybeSingle();
 
             if (error) {
               console.log('Profile save attempted but failed:', error);
@@ -265,8 +265,7 @@ function App() {
                     user_id: user.id,
                     name: cat.name,
                     emoji: cat.emoji,
-                    color: cat.color,
-                    order_index: cat.order_index
+                    order: cat.order_index || 0
                   }, { onConflict: 'user_id,name' });
               }
             }
