@@ -5,7 +5,6 @@ import { OnboardingFamily } from './OnboardingFamily';
 import { OnboardingWeek } from './OnboardingWeek';
 import { OnboardingPriorities } from './OnboardingPriorities';
 import { OnboardingNudges } from './OnboardingNudges';
-import { OnboardingBoxes } from './OnboardingBoxes';
 import { OnboardingInitialThoughts } from './OnboardingInitialThoughts';
 import { OnboardingReady } from './OnboardingReady';
 
@@ -25,7 +24,6 @@ export interface OnboardingData {
   dayStartTime: string;
   priorityAreas: string[];
   nudgePreference: string;
-  selectedCategories?: string[];
   initialThoughts?: string;
 }
 
@@ -74,24 +72,16 @@ export function FullOnboardingFlow({ userId, onComplete }: FullOnboardingFlowPro
     setStep(6);
   };
 
-  const handleBoxes = (selectedCategories: string[]) => {
-    console.log('handleBoxes called with:', selectedCategories);
-    updateData({ selectedCategories });
+  const handleInitialThoughts = (thoughts: string) => {
+    updateData({ initialThoughts: thoughts });
     setStep(7);
   };
 
-  const handleInitialThoughts = (thoughts: string) => {
-    updateData({ initialThoughts: thoughts });
-    setStep(8);
-  };
-
   const handleSkip = () => {
-    setStep(8);
+    setStep(7);
   };
 
   const handleComplete = () => {
-    console.log('handleComplete - dataRef.current:', JSON.stringify(dataRef.current));
-    console.log('selectedCategories in ref:', dataRef.current.selectedCategories);
     onComplete(dataRef.current as OnboardingData);
   };
 
@@ -103,15 +93,14 @@ export function FullOnboardingFlow({ userId, onComplete }: FullOnboardingFlowPro
       {step === 3 && <OnboardingWeek onContinue={handleWeek} />}
       {step === 4 && <OnboardingPriorities onContinue={handlePriorities} />}
       {step === 5 && <OnboardingNudges onContinue={handleNudges} />}
-      {step === 6 && <OnboardingBoxes onContinue={handleBoxes} />}
-      {step === 7 && (
+      {step === 6 && (
         <OnboardingInitialThoughts
           userId={userId}
           onContinue={handleInitialThoughts}
           onSkip={handleSkip}
         />
       )}
-      {step === 8 && (
+      {step === 7 && (
         <OnboardingReady
           userName={data.name || ''}
           household={data.household || []}

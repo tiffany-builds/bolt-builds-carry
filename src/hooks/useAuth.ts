@@ -40,10 +40,8 @@ export function useAuth() {
       if (userId) {
         localStorage.removeItem(`carry_onboarded_${userId}`);
         localStorage.removeItem(`carry_name_${userId}`);
-        localStorage.removeItem(`carry_categories_${userId}`);
       }
       localStorage.removeItem('carryUserProfile');
-      localStorage.removeItem('carryUserCategories');
 
       setUser(null);
     } catch (err) {
@@ -64,9 +62,7 @@ export function useAuth() {
       // Clear all user-specific localStorage
       localStorage.removeItem(`carry_onboarded_${userId}`);
       localStorage.removeItem(`carry_name_${userId}`);
-      localStorage.removeItem(`carry_categories_${userId}`);
       localStorage.removeItem('carryUserProfile');
-      localStorage.removeItem('carryUserCategories');
 
       // Reload the page to restart onboarding
       window.location.reload();

@@ -29,23 +29,12 @@ import { categorizeAndCreateItems } from './hooks/useItemCategorization';
 type OnboardingStep = 'welcome' | 'name' | 'family' | 'ready' | 'complete';
 type View = 'home' | 'boxDetail' | 'everything';
 
-// Default categories to use when no saved categories exist
-const DEFAULT_CATEGORIES: UserCategory[] = [
-  { id: 'kids', user_id: '', name: 'Kids', emoji: '🧒', color: '#A8B89A', order_index: 0 },
-  { id: 'household', user_id: '', name: 'Household', emoji: '🏠', color: '#C4714A', order_index: 1 },
-  { id: 'health', user_id: '', name: 'Health', emoji: '❤️', color: '#A0B4C0', order_index: 2 },
-  { id: 'errands', user_id: '', name: 'Errands', emoji: '🛍', color: '#D4C285', order_index: 3 },
-  { id: 'me', user_id: '', name: 'Me', emoji: '🏃‍♀️', color: '#B0A8C4', order_index: 4 },
-  { id: 'ideas', user_id: '', name: 'Ideas', emoji: '✨', color: '#C4B5A5', order_index: 5 },
-  { id: 'work', user_id: '', name: 'Work', emoji: '💼', color: '#8B7355', order_index: 6 },
-  { id: 'projects', user_id: '', name: 'Projects', emoji: '📋', color: '#9E8E80', order_index: 7 },
-];
+import { DEFAULT_CATEGORIES } from './data/defaultCategories';
 
 function App() {
   const [onboardingStep, setOnboardingStep] = useState<OnboardingStep>('welcome');
   const [userName, setUserName] = useState('');
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [userCategories, setUserCategories] = useState<UserCategory[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentView, setCurrentView] = useState<View>('home');
@@ -79,14 +68,6 @@ function App() {
           setUserProfile(profile);
           setUserName(profile.name);
           setIsBirthday(checkBirthday(profile));
-
-          // Load categories from localStorage
-          const localCatsRaw = localStorage.getItem(`carry_categories_${user.id}`);
-          if (localCatsRaw) {
-            setUserCategories(JSON.parse(localCatsRaw));
-          } else {
-            setUserCategories(DEFAULT_CATEGORIES);
-          }
 
           if (profile.onboarding_complete) {
             setOnboardingStep('complete');
@@ -196,26 +177,12 @@ function App() {
           const name = onboardingData.name || 'there';
           setUserName(name);
 
-          // Always set default categories after onboarding
-          console.log('RAW selectedCategories:', onboardingData.selectedCategories);
-          const selectedCats = onboardingData.selectedCategories && onboardingData.selectedCategories.length > 0
-            ? onboardingData.selectedCategories
-            : DEFAULT_CATEGORIES.map(c => c.name);
-          console.log('selectedCats after fallback:', selectedCats);
-          const userCats = DEFAULT_CATEGORIES.filter(c => selectedCats.includes(c.name));
-          console.log('userCats after filter:', userCats);
-          setUserCategories(userCats);
-          console.log('userCategories set to:', userCats.map(c => c.name));
-
           // Persist to localStorage immediately after onboarding
           localStorage.setItem(`carry_onboarded_${user.id}`, 'true');
           localStorage.setItem(`carry_name_${user.id}`, name);
-          localStorage.setItem(`carry_categories_${user.id}`, JSON.stringify(userCats));
 
           // Try to save to Supabase but don't block on failure
           try {
-            console.log("Attempting to save profile:", onboardingData);
-
             const profileUpdate = {
               auth_user_id: user.id,
               name: name,
@@ -229,7 +196,6 @@ function App() {
               priority_areas: onboardingData.priorityAreas,
               nudge_preference: onboardingData.nudgePreference,
               onboarding_complete: true,
-              selected_categories: userCats.map(c => c.name),
             };
 
             const { data: updatedProfile, error } = await supabase
@@ -241,7 +207,6 @@ function App() {
             if (error) {
               console.log('Profile save attempted but failed:', error);
             } else {
-              console.log("Profile saved successfully");
               setUserProfile(updatedProfile);
               setIsBirthday(checkBirthday(updatedProfile));
             }
@@ -353,10 +318,9 @@ function App() {
           />
           <TimelineSection items={todayItems} />
           <BoxesSection
-            categories={userCategories.length > 0 ? userCategories : DEFAULT_CATEGORIES}
             categoryCounts={categoryCounts}
             onBoxClick={(category) => {
-              setSelectedCategory(category);
+              setSelectedCategory(category as UserCategory);
               setCurrentView('boxDetail');
             }}
           />
@@ -372,7 +336,6 @@ function App() {
       </div>
       <FloatingActionButton
         userId={user?.id || null}
-        userCategories={userCategories.length > 0 ? userCategories.map(c => c.name) : DEFAULT_CATEGORIES.map(c => c.name)}
         onSubmitSuccess={loadItems}
         onItemsAdded={addItemsToLocalState}
         onEverythingClick={() => setCurrentView('everything')}

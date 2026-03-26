@@ -12,13 +12,12 @@ const client = new Anthropic({
 
 interface FloatingActionButtonProps {
   userId: string | null;
-  userCategories: string[];
   onItemsAdded?: (items: any[]) => void;
   onSubmitSuccess?: () => void;
   onEverythingClick?: () => void;
 }
 
-export function FloatingActionButton({ userId, userCategories, onItemsAdded, onSubmitSuccess, onEverythingClick }: FloatingActionButtonProps) {
+export function FloatingActionButton({ userId, onItemsAdded, onSubmitSuccess, onEverythingClick }: FloatingActionButtonProps) {
   const [showInput, setShowInput] = useState(false);
   const [inputText, setInputText] = useState('');
   const [liveTranscript, setLiveTranscript] = useState('');
@@ -41,14 +40,11 @@ export function FloatingActionButton({ userId, userCategories, onItemsAdded, onS
       const today = new Date();
       const dayName = today.toLocaleDateString('en-GB', { weekday: 'long' });
       const dateStr = today.toISOString().split('T')[0];
-      const categoryList = userCategories.length > 0
-        ? userCategories.join(', ')
-        : 'Kids, Household, Health, Errands, Me, Ideas, Work, Projects';
 
       const message = await client.messages.create({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1000,
-        system: `You are Carry, a personal assistant for parents. Today is ${dayName} ${dateStr}. The user has these categories: ${categoryList}. Extract all items from the input and return ONLY a valid JSON array. Each item must have: title (max 6 words), detail (one sentence), category (must be one of: ${categoryList}), type (event, task, reminder, idea, mind or lookforward). If a date or time is mentioned include date (YYYY-MM-DD), time (HH:MM), hasDateTime: true. For lookforward items include startDate, endDate, targetMonth, excitement. Return valid JSON only — no explanation, no markdown.`,
+        system: `You are Carry, a personal assistant for parents. Today is ${dayName} ${dateStr}. Categories: Kids, Home, Health, Errands, Me, Work. Extract all items from the input and return ONLY a valid JSON array. Each item must have: title (max 6 words), detail (one sentence), category (must be exactly one of: Kids, Home, Health, Errands, Me, Work — if unsure, use the closest match), type (event, task, reminder, idea, mind or lookforward). If a date or time is mentioned include date (YYYY-MM-DD), time (HH:MM), hasDateTime: true. For lookforward items include startDate, endDate, targetMonth, excitement. Return valid JSON only — no explanation, no markdown.`,
         messages: [{ role: 'user', content: inputText }]
       });
 
@@ -274,12 +270,15 @@ export function FloatingActionButton({ userId, userCategories, onItemsAdded, onS
               <span className="font-ui text-text">Everything you Carry</span>
             </button>
             <button
-              onClick={(e) => {
+              onClick={async (e) => {
                 e.stopPropagation();
                 if (userId) {
                   localStorage.removeItem(`carry_onboarded_${userId}`);
                   localStorage.removeItem(`carry_name_${userId}`);
-                  localStorage.removeItem(`carry_categories_${userId}`);
+                  await supabase
+                    .from('user_profiles')
+                    .update({ onboarding_complete: false })
+                    .eq('id', userId);
                 }
                 window.location.reload();
               }}

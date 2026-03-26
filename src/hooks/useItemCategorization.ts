@@ -22,7 +22,7 @@ const client = new Anthropic({
   dangerouslyAllowBrowser: true
 });
 
-export async function categorizeAndCreateItems(text: string, userId: string, userCategories: string[] = []) {
+export async function categorizeAndCreateItems(text: string, userId: string) {
   try {
     const today = new Date();
     const dayName = today.toLocaleDateString('en-GB', { weekday: 'long' });
@@ -31,13 +31,11 @@ export async function categorizeAndCreateItems(text: string, userId: string, use
     const date = String(today.getDate()).padStart(2, '0');
     const dateStr = `${year}-${month}-${date}`;
 
-    const DEFAULT_CATEGORIES = ['Kids', 'Household', 'Health', 'Errands', 'Me', 'Ideas', 'Work', 'Projects'];
-    const categoriesToUse = userCategories.length > 0 ? userCategories : DEFAULT_CATEGORIES;
-    const categoryNames = categoriesToUse.join(', ');
+    const categoryNames = 'Kids, Home, Health, Errands, Me, Work';
 
     const systemPrompt = `You are Carry, a personal assistant for parents.
 Today is ${dayName} ${dateStr}.
-The user has these categories: ${categoryNames}.
+Categories: ${categoryNames}.
 When the user says "Saturday" they mean the next upcoming Saturday from today.
 Always calculate dates going FORWARD from today — never backwards.
 
@@ -98,16 +96,13 @@ Output:
   "excitement": "Something just for you — a proper break with a friend."
 }
 
-Categories:
+Categories (must be exactly one of: Kids, Home, Health, Errands, Me, Work — if unsure, use the closest match):
 - Health: doctor, dentist, hospital, medication, physio, therapy, optician, mental health, medical appointments, prescriptions, anything health or body related
 - Me: personal time, self care, exercise, hobbies, things just for the user
 - Errands: shopping, returns, post office, admin tasks, errands outside the home
 - Kids: child activities, school, childcare
-- Household: home maintenance, chores, cleaning
+- Home: home maintenance, chores, cleaning, household tasks
 - Work: work tasks, meetings, projects
-- Ideas: future plans, wishes, dreams
-- Projects: DIY, home projects
-- Other: miscellaneous
 
 Use type "mind" for longer term plans, wishes, future intentions or anything with a vague or approximate timeframe.
 

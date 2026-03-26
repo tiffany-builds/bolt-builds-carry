@@ -1,5 +1,5 @@
-import { UserCategory } from '../types';
 import { getCategoryDisplayName } from '../utils/categoryHelpers';
+import { DEFAULT_CATEGORIES } from '../data/defaultCategories';
 
 interface BoxCardProps {
   name: string;
@@ -23,22 +23,18 @@ function BoxCard({ name, emoji, count, onClick }: BoxCardProps) {
 }
 
 interface BoxesSectionProps {
-  categories: UserCategory[];
   categoryCounts: Record<string, number>;
-  onBoxClick: (category: UserCategory) => void;
+  onBoxClick: (category: { id: string; name: string; emoji: string; color: string }) => void;
 }
 
-export function BoxesSection({ categories, categoryCounts, onBoxClick }: BoxesSectionProps) {
-  //("29. BoxesSection render - categories:", categories);
-  //("30. BoxesSection render - categoryCounts:", categoryCounts);
-
+export function BoxesSection({ categoryCounts, onBoxClick }: BoxesSectionProps) {
   return (
     <div className="animate-fade-up stagger-4">
       <h2 className="text-xs uppercase tracking-wider text-muted font-ui font-medium mb-3">
         Your boxes
       </h2>
       <div className="flex gap-3 overflow-x-auto pb-2 -mx-5 px-5 scrollbar-hide">
-        {categories.map((category) => (
+        {DEFAULT_CATEGORIES.map((category) => (
           <BoxCard
             key={category.id}
             name={category.name}
