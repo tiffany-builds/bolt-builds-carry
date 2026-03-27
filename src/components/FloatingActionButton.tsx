@@ -45,7 +45,7 @@ export function FloatingActionButton({ userId, onItemsAdded, onSubmitSuccess, on
       const dateStr = today.toISOString().split('T')[0];
 
       const message = await client.messages.create({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-5',
         max_tokens: 1000,
         system: `You are Carry, a personal assistant for parents. Today is ${dayName} ${dateStr}. Categories: Kids, Home, Health, Errands, Me, Work. Extract all items from the input and return ONLY a valid JSON array. Each item must have: title (max 6 words), detail (one sentence), category (must be exactly one of: Kids, Home, Health, Errands, Me, Work — if unsure, use the closest match), type (event, task, reminder, idea, mind or lookforward). If a date or time is mentioned include date (YYYY-MM-DD), time (HH:MM), hasDateTime: true. For lookforward items include startDate, endDate, targetMonth, excitement. Return valid JSON only — no explanation, no markdown.`,
         messages: [{ role: 'user', content: inputText }]
@@ -119,7 +119,8 @@ export function FloatingActionButton({ userId, onItemsAdded, onSubmitSuccess, on
       }
 
     } catch (err) {
-      console.error('processInput error:', err);
+      const message = err instanceof Error ? err.message : String(err);
+      console.error('processInput error:', message);
       showToast("Carry couldn't quite catch that — want to try again?");
     } finally {
       setIsProcessing(false);

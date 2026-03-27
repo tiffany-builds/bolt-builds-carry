@@ -111,7 +111,7 @@ If no action field is present assume "create".
 Return valid JSON array only — no explanation, no markdown, no code blocks.`;
 
     const message = await client.messages.create({
-      model: "claude-sonnet-4-20250514",
+      model: "claude-sonnet-4-5",
       max_tokens: 1000,
       system: systemPrompt,
       messages: [{ role: "user", content: text }]
