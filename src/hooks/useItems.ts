@@ -29,9 +29,8 @@ export function useItems(userId: string | null) {
   const loadItems = useCallback(async () => {
     if (!userId) {
       setIsLoading(false);
-      return; // Don't wipe existing items
+      return;
     }
-
     try {
       const { data, error } = await supabase
         .from('items')
@@ -42,13 +41,14 @@ export function useItems(userId: string | null) {
 
       if (error) throw error;
 
-      // Only update if we got data back
-      if (data !== null) {
+      // Only replace state if Supabase returned actual items
+      // If empty array returned and we already have local items, keep local items
+      if (data && data.length > 0) {
         setItems(data);
       }
+      // If data is empty, don't wipe existing local state
     } catch (err) {
-      console.log('loadItems error:', err);
-      // Don't wipe state on error
+      console.log('loadItems error — keeping existing state:', err);
     } finally {
       setIsLoading(false);
     }

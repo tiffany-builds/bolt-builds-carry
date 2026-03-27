@@ -254,8 +254,6 @@ function App() {
 
             const count = await getLastWeekItemCount(user.id);
             setLastWeekCount(count);
-
-            await loadItems();
           } catch (err) {
             // Log but don't throw — let user through anyway
             console.log('Profile save attempted:', err);
@@ -379,15 +377,10 @@ function App() {
 
   const handleRemoveItem = async (itemId: string) => {
     try {
-      const { error } = await supabase
-        .from('items')
-        .delete()
-        .eq('id', itemId);
-
-      if (error) throw error;
-      loadItems();
+      await supabase.from('items').delete().eq('id', itemId);
     } catch (err) {
     }
+    removeItemFromState(itemId);
   };
 
 
@@ -420,7 +413,7 @@ function App() {
           />
           <OnYourMindSection
             items={items}
-            onItemsChange={loadItems}
+            onItemsChange={removeItemFromState}
           />
           <LookForwardSection
             items={todayItems}
@@ -430,7 +423,7 @@ function App() {
       </div>
       <FloatingActionButton
         userId={user?.id || null}
-        onSubmitSuccess={loadItems}
+        onSubmitSuccess={undefined}
         onItemsAdded={addItemsToLocalState}
         onEverythingClick={() => setCurrentView('everything')}
         onCalendarClick={() => setCurrentView('calendar')}

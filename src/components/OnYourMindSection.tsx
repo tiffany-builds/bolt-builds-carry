@@ -4,7 +4,7 @@ import { addNudgesToMindItems, getContextualEmoji, type MindItem } from '../util
 
 interface OnYourMindSectionProps {
   items: MindItem[];
-  onItemsChange: () => void;
+  onItemsChange: (itemId: string) => void;
 }
 
 export function OnYourMindSection({ items, onItemsChange }: OnYourMindSectionProps) {
@@ -26,16 +26,10 @@ export function OnYourMindSection({ items, onItemsChange }: OnYourMindSectionPro
 
   const dismissMindItem = async (itemId: string) => {
     try {
-      const { error } = await supabase
-        .from('items')
-        .delete()
-        .eq('id', itemId);
-
-      if (error) throw error;
-      onItemsChange();
+      await supabase.from('items').update({ completed: true }).eq('id', itemId);
     } catch (err) {
-      //('Error dismissing mind item:', err);
     }
+    onItemsChange(itemId);
   };
 
   return (
