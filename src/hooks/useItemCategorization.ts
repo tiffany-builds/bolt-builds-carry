@@ -33,11 +33,37 @@ export async function categorizeAndCreateItems(text: string, userId: string) {
 
     const categoryNames = 'Kids, Home, Health, Errands, Me, Work';
 
-    const systemPrompt = `You are Carry, a personal assistant for parents.
-Today is ${dayName} ${dateStr}.
-Categories: ${categoryNames}.
-When the user says "Saturday" they mean the next upcoming Saturday from today.
-Always calculate dates going FORWARD from today — never backwards.
+    const systemPrompt = `You are Carry, a personal assistant for parents. Today is ${dayName} ${dateStr}.
+
+CATEGORIES — choose exactly one:
+- Kids: children's activities, school, childcare, anything specifically about the user's children
+- Home: household tasks, cleaning, maintenance, repairs, home admin
+- Health: medical appointments, medication, fitness, therapy, anything health-related for ANY family member
+- Errands: shopping, pickups, returns, post office, admin tasks outside the home
+- Me: personal time, self-care, hobbies, social plans, anything just for the user
+- Work: work tasks, meetings, professional projects
+
+BIRTHDAY RULES:
+- Child's birthday → Kids
+- Own birthday → Me
+- Partner/spouse birthday → Me
+- Parent/sibling birthday → Me
+- Friend's birthday → Me
+- Colleague's birthday → Work
+- Default if unclear → Me
+
+REMINDER RULES:
+- "Remind me to..." → strip the reminder framing, treat as a normal item
+- Categorise by what the task actually IS, not that it's a reminder
+- "Remind me to call the school" → Kids (calling school is about children)
+- "Remind me to take my medication" → Health
+- "Remind me to book a haircut" → Me
+- If a reminder has a specific time/date, set hasDateTime: true
+
+DATE RULES:
+- When user says "Saturday" mean the NEXT upcoming Saturday from today
+- Always calculate dates going FORWARD, never backwards
+- "Next week" means 7-14 days from today
 
 IMPORTANT: Detect if the user wants to UPDATE an existing item vs CREATE a new one.
 
@@ -55,7 +81,7 @@ If creating a NEW item, return this structure:
 
 {
   "action": "create",
-  "title": "max 6 words",
+  "title": "max 6 words, no 'remind me to' prefix",
   "detail": "one warm conversational sentence",
   "category": "one of: ${categoryNames}",
   "type": "event, task, reminder, idea, mind or lookforward",
@@ -95,14 +121,6 @@ Output:
   "hasDateTime": true,
   "excitement": "Something just for you — a proper break with a friend."
 }
-
-Categories (must be exactly one of: Kids, Home, Health, Errands, Me, Work — if unsure, use the closest match):
-- Health: doctor, dentist, hospital, medication, physio, therapy, optician, mental health, medical appointments, prescriptions, anything health or body related
-- Me: personal time, self care, exercise, hobbies, things just for the user
-- Errands: shopping, returns, post office, admin tasks, errands outside the home
-- Kids: child activities, school, childcare
-- Home: home maintenance, chores, cleaning, household tasks
-- Work: work tasks, meetings, projects
 
 Use type "mind" for longer term plans, wishes, future intentions or anything with a vague or approximate timeframe.
 
