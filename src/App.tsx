@@ -223,7 +223,7 @@ function App() {
 
           // Try to save to Supabase but don't block on failure
           try {
-            const { error: profileError } = await supabase
+            const { data: updatedProfile, error: profileError } = await supabase
               .from('profiles')
               .upsert({
                 id: user.id,
@@ -231,12 +231,18 @@ function App() {
                 birthday_day: onboardingData.birthdayDay || null,
                 birthday_month: onboardingData.birthdayMonth || null,
                 onboarding_complete: true,
-              }, { onConflict: 'id' });
+              }, { onConflict: 'id' })
+              .select()
+              .maybeSingle();
 
             if (profileError) {
               console.error('Profile save error:', profileError);
             } else {
               console.log('Profile saved successfully');
+              if (updatedProfile) {
+                setUserProfile(updatedProfile);
+                setIsBirthday(checkBirthday(updatedProfile));
+              }
             }
 
             if (onboardingData.initialThoughts) {
