@@ -106,6 +106,7 @@ export function useItems(userId: string | null) {
 
   return {
     items,
+    setItems,
     isLoading,
     loadItems,
     getItemsByCategory,

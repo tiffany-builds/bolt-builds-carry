@@ -47,7 +47,7 @@ function App() {
   const [autoOpenFAB, setAutoOpenFAB] = useState(false);
 
   const { user, isLoading: authLoading } = useAuth();
-  const { items, isLoading: itemsLoading, loadItems, getCategoryCounts, getOnYourMindItems, getLastWeekItemCount, addItemsToLocalState, removeItemFromState } = useItems(user?.id || null);
+  const { items, setItems, isLoading: itemsLoading, loadItems, getCategoryCounts, getOnYourMindItems, getLastWeekItemCount, addItemsToLocalState, removeItemFromState } = useItems(user?.id || null);
 
   const checkBirthday = (profile: UserProfile | null) => {
     if (!profile?.birthday_day || !profile?.birthday_month) return false;
@@ -284,16 +284,16 @@ function App() {
           items={items.filter(i => i.category === selectedCategory.name && !i.completed)}
           onItemComplete={async (itemId) => {
             await supabase.from('items').update({ completed: true }).eq('id', itemId);
-            loadItems();
+            setItems(prev => prev.filter(i => i.id !== itemId));
           }}
           onItemDelete={async (itemId) => {
             await supabase.from('items').delete().eq('id', itemId);
-            loadItems();
+            setItems(prev => prev.filter(i => i.id !== itemId));
           }}
         />
         <FloatingActionButton
           userId={user.id}
-          onSubmitSuccess={loadItems}
+          onSubmitSuccess={undefined}
           onItemsAdded={addItemsToLocalState}
           onEverythingClick={() => setCurrentView('everything')}
           onCalendarClick={() => setCurrentView('calendar')}
