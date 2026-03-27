@@ -277,11 +277,10 @@ function App() {
           categoryName={selectedCategory.name}
           categoryEmoji={selectedCategory.emoji}
           userId={user.id}
-          onBack={() => {
-            setCurrentView('home');
-            setSelectedCategory(null);
-            loadItems();
-          }}
+         onBack={() => {
+  setCurrentView('home');
+  setSelectedCategory(null);
+}}
           items={items.filter(i => i.category === selectedCategory.name && !i.completed)}
           onItemComplete={async (itemId) => {
             await supabase.from('items').update({ completed: true }).eq('id', itemId);
