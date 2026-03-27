@@ -4,16 +4,9 @@ import { Header } from './components/Header';
 import { AffirmationCard } from './components/AffirmationCard';
 import { TimelineSection } from './components/TimelineSection';
 import { BoxesSection } from './components/BoxesSection';
-import { NudgesSection } from './components/NudgesSection';
 import { FloatingActionButton } from './components/FloatingActionButton';
 import { SignIn } from './components/auth/SignIn';
 import { LoadingScreen } from './components/LoadingScreen';
-import { WelcomeScreen } from './components/onboarding/WelcomeScreen';
-import { NameInput } from './components/onboarding/NameInput';
-import { FamilyInput } from './components/onboarding/FamilyInput';
-import { ReadyScreen } from './components/onboarding/ReadyScreen';
-import { CategorySelection } from './components/onboarding/CategorySelection';
-import { IntakeFlow } from './components/onboarding/IntakeFlow';
 import { BoxDetailView } from './components/BoxDetailView';
 import { EverythingYouCarry } from './components/EverythingYouCarry';
 import { OnYourMindSection } from './components/OnYourMindSection';
@@ -29,8 +22,6 @@ import { categorizeAndCreateItems } from './hooks/useItemCategorization';
 
 type OnboardingStep = 'welcome' | 'name' | 'family' | 'ready' | 'complete';
 type View = 'home' | 'boxDetail' | 'everything' | 'calendar';
-
-import { DEFAULT_CATEGORIES } from './data/defaultCategories';
 
 function App() {
   const [onboardingStep, setOnboardingStep] = useState<OnboardingStep>('welcome');
@@ -129,54 +120,6 @@ function App() {
       setAutoOpenFAB(true);
     }
   }, [hasCompletedOnboardingThisSession]);
-
-  const handleNameSubmit = async (name: string) => {
-    if (!user) return;
-
-    setIsLoading(true);
-    setError(null);
-    try {
-      const profile = await createUserProfile(name, user.id);
-      setUserName(name);
-      setUserProfile(profile);
-      setOnboardingStep('family');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create profile');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleFamilySubmit = async (familyMembers: string[]) => {
-    if (!userProfile) return;
-
-    setIsLoading(true);
-    setError(null);
-    try {
-      const updatedProfile = await updateUserProfile(userProfile.id, { family_members: familyMembers });
-      setUserProfile(updatedProfile);
-      setOnboardingStep('ready');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save family members');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleReadyComplete = async () => {
-    if (!userProfile) return;
-
-    setIsLoading(true);
-    setError(null);
-    try {
-      await completeOnboarding(userProfile.id);
-      setOnboardingStep('complete');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to complete onboarding');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   if (authLoading || isLoading) {
     return <LoadingScreen />;
@@ -306,7 +249,9 @@ function App() {
     return (
       <EverythingYouCarry
         userId={user.id}
+        items={items}
         onBack={() => setCurrentView('home')}
+        onItemComplete={removeItemFromState}
       />
     );
   }

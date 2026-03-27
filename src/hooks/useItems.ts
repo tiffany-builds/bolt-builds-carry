@@ -41,14 +41,11 @@ export function useItems(userId: string | null) {
 
       if (error) throw error;
 
-      // Only replace state if Supabase returned actual items
-      // If empty array returned and we already have local items, keep local items
       if (data && data.length > 0) {
         setItems(data);
       }
-      // If data is empty, don't wipe existing local state
     } catch (err) {
-      console.log('loadItems error — keeping existing state:', err);
+      console.log('loadItems error — keeping local state');
     } finally {
       setIsLoading(false);
     }

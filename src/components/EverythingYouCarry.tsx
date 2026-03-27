@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { ArrowLeft, Check } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -14,34 +14,13 @@ interface Item {
 
 interface EverythingYouCarryProps {
   userId: string;
+  items: any[];
   onBack: () => void;
+  onItemComplete: (itemId: string) => void;
 }
 
-export function EverythingYouCarry({ userId, onBack }: EverythingYouCarryProps) {
-  const [items, setItems] = useState<Item[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export function EverythingYouCarry({ userId, items, onBack, onItemComplete }: EverythingYouCarryProps) {
   const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
-
-  useEffect(() => {
-    loadItems();
-  }, [userId]);
-
-  const loadItems = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('items')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setItems(data || []);
-    } catch (err) {
-      //('Error loading items:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const toggleComplete = async (itemId: string, currentCompleted: boolean) => {
     try {
@@ -52,9 +31,7 @@ export function EverythingYouCarry({ userId, onBack }: EverythingYouCarryProps) 
 
       if (error) throw error;
 
-      setItems(items.map(item =>
-        item.id === itemId ? { ...item, completed: !currentCompleted } : item
-      ));
+      onItemComplete(itemId);
     } catch (err) {
       //('Error toggling item:', err);
     }
@@ -125,11 +102,7 @@ export function EverythingYouCarry({ userId, onBack }: EverythingYouCarryProps) 
           </button>
         </div>
 
-        {isLoading ? (
-          <div className="text-center py-12">
-            <div className="w-8 h-8 border-4 border-border border-t-accent rounded-full animate-spin mx-auto"></div>
-          </div>
-        ) : filteredItems.length === 0 ? (
+        {items.length === 0 ? (
           <div className="text-center py-12 space-y-3">
             <p className="font-ui text-muted font-light">
               {filter === 'all' ? "You haven't captured anything yet" : `No ${filter} items`}
