@@ -347,6 +347,10 @@ function App() {
           <TimelineSection
             items={todayItems}
             onItemComplete={removeItemFromState}
+            onItemDelete={async (itemId) => {
+              await supabase.from('items').delete().eq('id', itemId);
+              removeItemFromState(itemId);
+            }}
             onShowToast={setToastMessage}
           />
           <BoxesSection
