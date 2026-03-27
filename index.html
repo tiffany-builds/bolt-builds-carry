@@ -1,30 +1,721 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <title>Carry</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <meta property="og:title" content="Carry">
-    <meta property="og:description" content="For everything you're holding in your head.">
-    <meta property="og:image" content="https://carry-the-app.com/carry-preview.svg">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:image" content="https://carry-the-app.com/carry-preview.svg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Carry" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="theme-color" content="#FFFEF9" />
+<!-- Tab title -->
+<title>Carry — For everything you're holding in your head</title>
 
-    <link rel="manifest" href="/manifest.json" />
+<!-- Link preview (iMessage, WhatsApp, Slack etc) -->
+<meta name="description" content="Just talk — Carry listens, understands, and organises everything for you.">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,200;0,300;1,200;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<!-- Open Graph (Facebook, iMessage rich preview) -->
+<meta property="og:title" content="Carry">
+<meta property="og:description" content="For everything you're holding in your head.">
+<meta property="og:url" content="https://carry-the-app.com">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://carry-the-app.com/carry-preview.svg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+
+<!-- Twitter/X card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Carry">
+<meta name="twitter:description" content="For everything you're holding in your head.">
+<meta name="twitter:image" content="https://carry-the-app.com/carry-preview.svg">
+
+<!-- Favicon -->
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,200;0,300;1,200;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --sand: #E8DDD0;
+    --warm-white: #FDF9F4;
+    --terra: #C4714A;
+    --deep: #2C2420;
+    --muted: #8B7355;
+    --border: rgba(44,36,32,0.12);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--sand);
+    color: var(--deep);
+    font-family: 'DM Sans', sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 20px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(232,221,208,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 24px;
+    color: var(--deep);
+    text-decoration: none;
+  }
+
+  .nav-cta {
+    background: var(--deep);
+    color: var(--warm-white);
+    border: none;
+    border-radius: 100px;
+    padding: 10px 24px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .nav-cta:hover { background: var(--terra); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 120px 24px 80px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -200px; right: -200px;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(196,113,74,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-eyebrow {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--terra);
+    margin-bottom: 24px;
+    opacity: 0;
+    animation: fadeUp 0.6s ease forwards 0.1s;
+  }
+
+  .hero-headline {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 200;
+    font-size: clamp(48px, 8vw, 88px);
+    line-height: 1.05;
+    color: var(--deep);
+    max-width: 800px;
+    margin-bottom: 28px;
+    opacity: 0;
+    animation: fadeUp 0.7s ease forwards 0.2s;
+  }
+
+  .hero-headline em {
+    font-style: italic;
+    color: var(--terra);
+  }
+
+  .hero-sub {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 18px;
+    font-weight: 300;
+    color: var(--muted);
+    max-width: 480px;
+    line-height: 1.7;
+    margin-bottom: 48px;
+    opacity: 0;
+    animation: fadeUp 0.7s ease forwards 0.35s;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 80px;
+    opacity: 0;
+    animation: fadeUp 0.7s ease forwards 0.5s;
+  }
+
+  .btn-primary {
+    background: var(--terra);
+    color: white;
+    border: none;
+    border-radius: 100px;
+    padding: 16px 36px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+    display: inline-block;
+  }
+
+  .btn-primary:hover { background: #b8613e; transform: translateY(-1px); }
+
+  .btn-secondary {
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 300;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .btn-secondary:hover { color: var(--deep); }
+
+  /* PHONE MOCKUP */
+  .phone-wrapper {
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.6s;
+    position: relative;
+    display: inline-block;
+  }
+
+  .phone {
+    width: 280px;
+    background: var(--warm-white);
+    border-radius: 44px;
+    border: 8px solid var(--deep);
+    overflow: hidden;
+    box-shadow: 0 40px 80px rgba(44,36,32,0.2), 0 0 0 1px rgba(44,36,32,0.05);
+    position: relative;
+  }
+
+  .phone-notch {
+    width: 80px;
+    height: 20px;
+    background: var(--deep);
+    border-radius: 0 0 14px 14px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+  }
+
+  .phone-screen {
+    padding: 16px 16px 24px;
+    background: var(--sand);
+    min-height: 520px;
+  }
+
+  .phone-time {
+    font-size: 11px;
+    color: var(--deep);
+    font-weight: 500;
+    margin-bottom: 16px;
+    opacity: 0.7;
+  }
+
+  .phone-greeting {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 18px;
+    color: var(--deep);
+    line-height: 1.3;
+    margin-bottom: 4px;
+  }
+
+  .phone-greeting span { color: var(--terra); }
+
+  .phone-date {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 16px;
+    font-weight: 300;
+  }
+
+  .phone-card {
+    background: var(--warm-white);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 12px;
+    border: 1px solid var(--border);
+  }
+
+  .phone-card-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--terra);
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+
+  .phone-card-text {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 13px;
+    color: var(--deep);
+    line-height: 1.5;
+  }
+
+  .phone-section-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    font-weight: 500;
+    margin: 12px 0 8px;
+  }
+
+  .phone-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--warm-white);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    border: 1px solid var(--border);
+  }
+
+  .phone-item-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .phone-item-text {
+    font-size: 12px;
+    color: var(--deep);
+    font-weight: 400;
+    flex: 1;
+  }
+
+  .phone-item-tag {
+    font-size: 9px;
+    color: var(--muted);
+    background: var(--sand);
+    padding: 2px 8px;
+    border-radius: 100px;
+  }
+
+  .phone-boxes {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+    margin-top: 12px;
+  }
+
+  .phone-box {
+    background: var(--warm-white);
+    border-radius: 10px;
+    padding: 10px 8px;
+    text-align: center;
+    border: 1px solid var(--border);
+  }
+
+  .phone-box-emoji { font-size: 16px; margin-bottom: 4px; }
+
+  .phone-box-name {
+    font-size: 9px;
+    color: var(--deep);
+    font-weight: 500;
+    display: block;
+  }
+
+  .phone-box-count {
+    font-size: 8px;
+    color: var(--muted);
+  }
+
+  .phone-fab {
+    width: 44px; height: 44px;
+    background: var(--deep);
+    border-radius: 50%;
+    margin: 16px auto 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* PROBLEM SECTION */
+  .problem {
+    padding: 100px 24px;
+    max-width: 760px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .section-eyebrow {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--terra);
+    margin-bottom: 24px;
+  }
+
+  .section-headline {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 200;
+    font-size: clamp(36px, 5vw, 56px);
+    line-height: 1.15;
+    color: var(--deep);
+    margin-bottom: 32px;
+  }
+
+  .problem-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 60px;
+  }
+
+  .stat-card {
+    background: var(--warm-white);
+    border-radius: 20px;
+    padding: 32px 24px;
+    border: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .stat-number {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 48px;
+    font-weight: 200;
+    color: var(--terra);
+    line-height: 1;
+    margin-bottom: 12px;
+  }
+
+  .stat-label {
+    font-size: 14px;
+    color: var(--muted);
+    font-weight: 300;
+    line-height: 1.5;
+  }
+
+  /* HOW IT WORKS */
+  .how {
+    padding: 100px 24px;
+    background: var(--warm-white);
+  }
+
+  .how-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+    margin-top: 60px;
+    position: relative;
+  }
+
+  .steps::before {
+    content: '';
+    position: absolute;
+    top: 32px;
+    left: calc(16.6% + 16px);
+    right: calc(16.6% + 16px);
+    height: 1px;
+    background: var(--border);
+  }
+
+  .step { text-align: center; }
+
+  .step-number {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: var(--sand);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 24px;
+    font-weight: 300;
+    color: var(--terra);
+    position: relative;
+    z-index: 1;
+    background: var(--warm-white);
+  }
+
+  .step-title {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 22px;
+    color: var(--deep);
+    margin-bottom: 12px;
+  }
+
+  .step-body {
+    font-size: 14px;
+    color: var(--muted);
+    font-weight: 300;
+    line-height: 1.7;
+  }
+
+  /* CTA */
+  .cta {
+    padding: 120px 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta::before {
+    content: '';
+    position: absolute;
+    bottom: -200px; left: 50%;
+    transform: translateX(-50%);
+    width: 800px; height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(196,113,74,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .cta-headline {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 200;
+    font-size: clamp(40px, 6vw, 64px);
+    color: var(--deep);
+    max-width: 600px;
+    margin: 0 auto 20px;
+    line-height: 1.1;
+  }
+
+  .cta-sub {
+    font-size: 16px;
+    color: var(--muted);
+    font-weight: 300;
+    margin-bottom: 48px;
+  }
+
+  /* FOOTER */
+  footer {
+    padding: 40px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .footer-logo {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 20px;
+    color: var(--deep);
+  }
+
+  .footer-text {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 640px) {
+    nav { padding: 16px 20px; }
+    .problem-stats { grid-template-columns: 1fr; }
+    .steps { grid-template-columns: 1fr; }
+    .steps::before { display: none; }
+    footer { flex-direction: column; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Carry.</a>
+  <a href="/app" class="nav-cta">Try Carry free →</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <p class="hero-eyebrow">Introducing Carry</p>
+  <h1 class="hero-headline">
+    For everything you're<br>holding <em>in your head.</em>
+  </h1>
+  <p class="hero-sub">
+    The school run, the dentist, the birthday gift you keep forgetting, the thing you told yourself you'd remember. Carry takes it all off your mind — just talk, and it organises everything for you.
+  </p>
+  <div class="hero-actions">
+    <a href="/app" class="btn-primary">Start carrying less →</a>
+    <a href="#how" class="btn-secondary">See how it works</a>
+  </div>
+
+  <!-- Phone mockup -->
+  <div class="phone-wrapper">
+    <div class="phone">
+      <div class="phone-notch"></div>
+      <div class="phone-screen">
+        <div class="phone-time">9:41 AM</div>
+        <div class="phone-greeting">Friday looks good, <span>Sophie.</span></div>
+        <div class="phone-date">Friday, 27 March · 3 things on today</div>
+
+        <div class="phone-card">
+          <div class="phone-card-label">This week</div>
+          <div class="phone-card-text">You carried 14 things last week.<br>That's not nothing.</div>
+        </div>
+
+        <div class="phone-section-label">Today</div>
+
+        <div class="phone-item">
+          <div class="phone-item-dot" style="background:#A0B4C0"></div>
+          <span class="phone-item-text">🦷 Dentist — Leo 3pm</span>
+          <span class="phone-item-tag">Health</span>
+        </div>
+        <div class="phone-item">
+          <div class="phone-item-dot" style="background:#A8B89A"></div>
+          <span class="phone-item-text">⚽ Football pickup 5pm</span>
+          <span class="phone-item-tag">Kids</span>
+        </div>
+        <div class="phone-item">
+          <div class="phone-item-dot" style="background:#D4C285"></div>
+          <span class="phone-item-text">🛒 Grocery run</span>
+          <span class="phone-item-tag">Errands</span>
+        </div>
+
+        <div class="phone-section-label">Your boxes</div>
+        <div class="phone-boxes">
+          <div class="phone-box">
+            <div class="phone-box-emoji">🧒</div>
+            <span class="phone-box-name">Kids</span>
+            <div class="phone-box-count">4 items</div>
+          </div>
+          <div class="phone-box">
+            <div class="phone-box-emoji">❤️</div>
+            <span class="phone-box-name">Health</span>
+            <div class="phone-box-count">2 items</div>
+          </div>
+          <div class="phone-box">
+            <div class="phone-box-emoji">🏠</div>
+            <span class="phone-box-name">Home</span>
+            <div class="phone-box-count">3 items</div>
+          </div>
+        </div>
+
+        <div class="phone-fab">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section class="problem">
+  <p class="section-eyebrow">The mental load is real</p>
+  <h2 class="section-headline">
+    Mums carry an average of<br>
+    <em>two full-time jobs</em> worth<br>of invisible work.
+  </h2>
+  <p style="font-size:16px; color:var(--muted); font-weight:300; line-height:1.7; max-width:520px; margin:0 auto;">
+    The school appointments, the permission slips, the birthday gifts, the medication refills — it all lives rent-free in your head. Carry gives it somewhere to go.
+  </p>
+
+  <div class="problem-stats">
+    <div class="stat-card">
+      <div class="stat-number">87%</div>
+      <div class="stat-label">of mothers say mental load affects their sleep and wellbeing</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">3hrs</div>
+      <div class="stat-label">lost every day to remembering, tracking and managing family tasks</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">0</div>
+      <div class="stat-label">apps designed specifically to reduce the invisible work mums carry</div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <div class="how-inner">
+    <p class="section-eyebrow">How it works</p>
+    <h2 class="section-headline">Three steps.<br><em>That's genuinely it.</em></h2>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-number">1</div>
+        <h3 class="step-title">Just talk.</h3>
+        <p class="step-body">Open Carry and say whatever's on your mind. "Leo has football Thursday at 4, I need to book the dentist, and I keep forgetting to call the school." All of it, all at once.</p>
+      </div>
+      <div class="step">
+        <div class="step-number">2</div>
+        <h3 class="step-title">Carry sorts it.</h3>
+        <p class="step-body">Carry listens, understands, and organises everything into the right box — Kids, Health, Home, Errands, Me or Work. Dates and times are captured automatically.</p>
+      </div>
+      <div class="step">
+        <div class="step-number">3</div>
+        <h3 class="step-title">Nothing gets lost.</h3>
+        <p class="step-body">Your home screen shows you what's on today, what's coming up, and everything waiting in your boxes. It's all there when you need it — and out of your head when you don't.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <h2 class="cta-headline">
+    Put it down.<br>
+    <em>We've got it.</em>
+  </h2>
+  <p class="cta-sub">Free to try. No credit card. Just a little less to carry.</p>
+  <a href="/app" class="btn-primary">Try Carry free →</a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Carry.</div>
+  <p class="footer-text">For everything you're holding in your head.</p>
+  <a href="/app" style="font-size:13px; color:var(--muted); text-decoration:none; font-weight:300;">carry-the-app.com</a>
+</footer>
+
+</body>
 </html>
