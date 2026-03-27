@@ -22,7 +22,6 @@ import { CalendarView } from './components/CalendarView';
 import { FullOnboardingFlow, OnboardingData } from './components/onboarding/FullOnboardingFlow';
 import { Toast } from './components/Toast';
 import { useAuth } from './hooks/useAuth';
-import { useOnboarding } from './hooks/useOnboarding';
 import { useItems } from './hooks/useItems';
 import { UserProfile, UserCategory, TimelineItem } from './types';
 import { supabase } from './lib/supabase';
@@ -48,7 +47,6 @@ function App() {
   const [autoOpenFAB, setAutoOpenFAB] = useState(false);
 
   const { user, isLoading: authLoading } = useAuth();
-  const { createUserProfile, getOrCreateUserProfile, updateUserProfile, completeOnboarding } = useOnboarding();
   const { items, isLoading: itemsLoading, loadItems, getCategoryCounts, getOnYourMindItems, getLastWeekItemCount, addItemsToLocalState, removeItemFromState } = useItems(user?.id || null);
 
   const checkBirthday = (profile: UserProfile | null) => {
@@ -66,26 +64,34 @@ function App() {
       if (hasCompletedOnboardingThisSession) return;
 
       try {
-        const profile = await getOrCreateUserProfile(user.id);
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .maybeSingle();
 
-        if (profile) {
-          setUserProfile(profile);
+        if (profileError) console.log('Profile load error:', profileError);
+
+        if (profile && profile.onboarding_complete) {
           setUserName(profile.first_name || '');
+          setUserProfile(profile);
           setIsBirthday(checkBirthday(profile));
-
-          if (profile.onboarding_complete) {
+          setOnboardingStep('complete');
+          const count = await getLastWeekItemCount(user.id);
+          setLastWeekCount(count);
+        } else {
+          // Check localStorage as fallback
+          const locallyOnboarded = localStorage.getItem(`carry_onboarded_${user.id}`);
+          if (locallyOnboarded === 'true') {
+            const localName = localStorage.getItem(`carry_name_${user.id}`) || '';
+            setUserName(localName);
             setOnboardingStep('complete');
-            localStorage.setItem(`carry_onboarded_${user.id}`, 'true');
-            localStorage.setItem(`carry_name_${user.id}`, profile.first_name || '');
-            const count = await getLastWeekItemCount(profile.id);
-            setLastWeekCount(count);
           } else {
             setOnboardingStep('welcome');
           }
-        } else {
-          setOnboardingStep('welcome');
         }
       } catch (err) {
+        console.log('Error checking existing user:', err);
       }
     };
 
@@ -217,25 +223,20 @@ function App() {
 
           // Try to save to Supabase but don't block on failure
           try {
-            const profileUpdate = {
-              id: user.id,
-              first_name: name,
-              birthday_day: onboardingData.birthdayDay,
-              birthday_month: onboardingData.birthdayMonth,
-              onboarding_complete: true,
-            };
-
-            const { data: updatedProfile, error } = await supabase
+            const { error: profileError } = await supabase
               .from('profiles')
-              .upsert(profileUpdate, { onConflict: 'id' })
-              .select()
-              .maybeSingle();
+              .upsert({
+                id: user.id,
+                first_name: name,
+                birthday_day: onboardingData.birthdayDay || null,
+                birthday_month: onboardingData.birthdayMonth || null,
+                onboarding_complete: true,
+              }, { onConflict: 'id' });
 
-            if (error) {
-              console.log('Profile save attempted but failed:', error);
+            if (profileError) {
+              console.error('Profile save error:', profileError);
             } else {
-              setUserProfile(updatedProfile);
-              setIsBirthday(checkBirthday(updatedProfile));
+              console.log('Profile saved successfully');
             }
 
             if (onboardingData.initialThoughts) {

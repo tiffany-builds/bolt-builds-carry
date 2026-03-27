@@ -55,9 +55,9 @@ export function useAuth() {
 
       // Update database to mark onboarding as incomplete
       await supabase
-        .from('user_profiles')
+        .from('profiles')
         .update({ onboarding_complete: false })
-        .eq('auth_user_id', userId);
+        .eq('id', userId);
 
       // Clear all user-specific localStorage
       localStorage.removeItem(`carry_onboarded_${userId}`);

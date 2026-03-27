@@ -308,7 +308,7 @@ export function FloatingActionButton({ userId, onItemsAdded, onSubmitSuccess, on
                   localStorage.removeItem(`carry_onboarded_${userId}`);
                   localStorage.removeItem(`carry_name_${userId}`);
                   await supabase
-                    .from('user_profiles')
+                    .from('profiles')
                     .update({ onboarding_complete: false })
                     .eq('id', userId);
                 }
