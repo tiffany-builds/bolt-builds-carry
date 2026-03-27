@@ -1,0 +1,166 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@1,200;1,300&amp;family=DM+Sans:wght@300;400&amp;display=swap');
+    </style>
+    <!-- Subtle radial glow -->
+    <radialGradient id="glow" cx="75%" cy="30%" r="50%">
+      <stop offset="0%" stop-color="#C4714A" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#E8DDD0" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Phone shadow -->
+    <filter id="shadow" x="-20%" y="-10%" width="140%" height="130%">
+      <feDropShadow dx="0" dy="12" stdDeviation="20" flood-color="#2C2420" flood-opacity="0.25"/>
+    </filter>
+    <!-- Screen clip -->
+    <clipPath id="screenClip">
+      <rect x="739" y="72" width="186" height="492" rx="24"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#E8DDD0"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+
+  <!-- Decorative circles top left -->
+  <circle cx="120" cy="80" r="200" fill="none" stroke="#C4714A" stroke-width="0.5" opacity="0.2"/>
+  <circle cx="120" cy="80" r="280" fill="none" stroke="#2C2420" stroke-width="0.5" opacity="0.08"/>
+
+  <!-- LEFT SIDE — Brand copy -->
+
+  <!-- "Carry." headline -->
+  <text x="90" y="260"
+    font-family="Fraunces, Georgia, serif"
+    font-style="italic"
+    font-weight="200"
+    font-size="130"
+    fill="#2C2420"
+    letter-spacing="-2">Carry.</text>
+
+  <!-- Strapline line 1 -->
+  <text x="90" y="340"
+    font-family="Fraunces, Georgia, serif"
+    font-style="italic"
+    font-weight="300"
+    font-size="38"
+    fill="#C4714A">For everything you're holding</text>
+
+  <!-- Strapline line 2 -->
+  <text x="90" y="385"
+    font-family="Fraunces, Georgia, serif"
+    font-style="italic"
+    font-weight="300"
+    font-size="38"
+    fill="#C4714A">in your head.</text>
+
+  <!-- Terra accent line -->
+  <rect x="90" y="415" width="220" height="2" fill="#C4714A" opacity="0.4"/>
+
+  <!-- Descriptor -->
+  <text x="90" y="455"
+    font-family="DM Sans, sans-serif"
+    font-weight="300"
+    font-size="22"
+    fill="#8B7355">Just talk. Carry organises the rest.</text>
+
+  <!-- URL -->
+  <text x="90" y="580"
+    font-family="DM Sans, sans-serif"
+    font-weight="300"
+    font-size="18"
+    fill="#8B7355" opacity="0.7">carry-the-app.com</text>
+
+  <!-- Vertical soft divider -->
+  <rect x="600" y="60" width="1" height="510" fill="#2C2420" opacity="0.08"/>
+
+  <!-- RIGHT SIDE — iPhone mockup -->
+
+  <!-- Phone body -->
+  <rect x="732" y="55" width="200" height="520" rx="38" fill="#2C2420" filter="url(#shadow)"/>
+
+  <!-- Screen background -->
+  <rect x="739" y="72" width="186" height="492" rx="24" fill="#E8DDD0"/>
+
+  <!-- Notch -->
+  <rect x="790" y="72" width="84" height="18" rx="9" fill="#2C2420"/>
+
+  <!-- Screen content clipped -->
+  <g clip-path="url(#screenClip)">
+
+    <!-- Status bar -->
+    <text x="752" y="104" font-family="DM Sans, sans-serif" font-weight="500" font-size="10" fill="#2C2420" opacity="0.6">9:41</text>
+
+    <!-- Greeting -->
+    <text x="752" y="128"
+      font-family="Fraunces, Georgia, serif"
+      font-style="italic"
+      font-weight="300"
+      font-size="16"
+      fill="#2C2420">Friday looks good,</text>
+    <text x="752" y="147"
+      font-family="Fraunces, Georgia, serif"
+      font-style="italic"
+      font-weight="300"
+      font-size="16"
+      fill="#C4714A">Sophie.</text>
+
+    <!-- Date -->
+    <text x="752" y="162" font-family="DM Sans, sans-serif" font-weight="300" font-size="9" fill="#8B7355">Friday, 27 March · 3 things on today</text>
+
+    <!-- Affirmation card -->
+    <rect x="750" y="170" width="168" height="46" rx="10" fill="#FDF9F4"/>
+    <text x="758" y="181" font-family="DM Sans, sans-serif" font-weight="500" font-size="7" fill="#C4714A" letter-spacing="0.08em">THIS WEEK</text>
+    <text x="758" y="195" font-family="Fraunces, Georgia, serif" font-style="italic" font-weight="300" font-size="10" fill="#2C2420">You carried 14 things last week.</text>
+    <text x="758" y="208" font-family="Fraunces, Georgia, serif" font-style="italic" font-weight="300" font-size="10" fill="#2C2420">That's not nothing.</text>
+
+    <!-- TODAY label -->
+    <text x="752" y="232" font-family="DM Sans, sans-serif" font-weight="500" font-size="7" fill="#8B7355" letter-spacing="0.1em">TODAY</text>
+
+    <!-- Item 1 -->
+    <rect x="750" y="238" width="168" height="22" rx="7" fill="#FDF9F4"/>
+    <circle cx="762" cy="249" r="4" fill="#A0B4C0"/>
+    <text x="771" y="253" font-family="DM Sans, sans-serif" font-size="9" fill="#2C2420">🦷 Dentist — Leo 3pm</text>
+
+    <!-- Item 2 -->
+    <rect x="750" y="264" width="168" height="22" rx="7" fill="#FDF9F4"/>
+    <circle cx="762" cy="275" r="4" fill="#A8B89A"/>
+    <text x="771" y="279" font-family="DM Sans, sans-serif" font-size="9" fill="#2C2420">⚽ Football pickup 5pm</text>
+
+    <!-- Item 3 -->
+    <rect x="750" y="290" width="168" height="22" rx="7" fill="#FDF9F4"/>
+    <circle cx="762" cy="301" r="4" fill="#D4C285"/>
+    <text x="771" y="305" font-family="DM Sans, sans-serif" font-size="9" fill="#2C2420">🛒 Grocery run</text>
+
+    <!-- YOUR BOXES label -->
+    <text x="752" y="328" font-family="DM Sans, sans-serif" font-weight="500" font-size="7" fill="#8B7355" letter-spacing="0.1em">YOUR BOXES</text>
+
+    <!-- Box 1 - Kids -->
+    <rect x="750" y="334" width="50" height="52" rx="8" fill="#FDF9F4"/>
+    <text x="764" y="352" font-family="DM Sans" font-size="14">🧒</text>
+    <text x="763" y="366" font-family="DM Sans, sans-serif" font-weight="500" font-size="7" fill="#2C2420">Kids</text>
+    <text x="758" y="378" font-family="DM Sans, sans-serif" font-weight="300" font-size="6" fill="#8B7355">4 items</text>
+
+    <!-- Box 2 - Health -->
+    <rect x="806" y="334" width="50" height="52" rx="8" fill="#FDF9F4"/>
+    <text x="820" y="352" font-family="DM Sans" font-size="14">❤️</text>
+    <text x="816" y="366" font-family="DM Sans, sans-serif" font-weight="500" font-size="7" fill="#2C2420">Health</text>
+    <text x="814" y="378" font-family="DM Sans, sans-serif" font-weight="300" font-size="6" fill="#8B7355">2 items</text>
+
+    <!-- Box 3 - Home -->
+    <rect x="862" y="334" width="50" height="52" rx="8" fill="#FDF9F4"/>
+    <text x="876" y="352" font-family="DM Sans" font-size="14">🏠</text>
+    <text x="874" y="366" font-family="DM Sans, sans-serif" font-weight="500" font-size="7" fill="#2C2420">Home</text>
+    <text x="870" y="378" font-family="DM Sans, sans-serif" font-weight="300" font-size="6" fill="#8B7355">3 items</text>
+
+    <!-- FAB -->
+    <circle cx="832" cy="430" r="20" fill="#2C2420"/>
+    <rect x="828" y="420" width="8" height="12" rx="4" fill="#E8DDD0"/>
+    <path d="M824 428 Q824 438 832 438 Q840 438 840 428" stroke="#E8DDD0" stroke-width="1.5" fill="none"/>
+    <line x1="832" y1="438" x2="832" y2="443" stroke="#E8DDD0" stroke-width="1.5"/>
+
+  </g>
+
+  <!-- Phone frame overlay for realism -->
+  <rect x="732" y="55" width="200" height="520" rx="38" fill="none" stroke="#2C2420" stroke-width="2"/>
+
+</svg>
