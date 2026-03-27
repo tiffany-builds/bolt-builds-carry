@@ -122,7 +122,7 @@ function App() {
       checkExistingUser();
       fixOldCategories();
     }
-  }, [user, authLoading, hasCompletedOnboardingThisSession, getOrCreateUserProfile, getLastWeekItemCount]);
+  }, [user, authLoading, hasCompletedOnboardingThisSession, getLastWeekItemCount]);
 
   useEffect(() => {
     if (hasCompletedOnboardingThisSession) {
