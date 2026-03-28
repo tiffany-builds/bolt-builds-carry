@@ -450,7 +450,7 @@ Return valid JSON array only — no explanation, no markdown.`,
               )}
               <button
                 onClick={() => fileInputRef.current?.click()}
-                disabled={isProcessing || isListening}
+                disabled={isProcessing}
                 className="flex-shrink-0 w-12 h-12 bg-surface border-2 border-accent text-accent rounded-full flex items-center justify-center hover:bg-accent hover:text-surface active:scale-95 transition-all disabled:opacity-50"
                 aria-label="Add photo"
               >
@@ -465,14 +465,6 @@ Return valid JSON array only — no explanation, no markdown.`,
                 <X size={20} />
               </button>
             </div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              style={{ display: 'none' }}
-              onChange={handlePhotoCapture}
-            />
 
             {isListening && (
               <div className="flex items-center gap-2 text-sm text-accent">
@@ -511,6 +503,15 @@ Return valid JSON array only — no explanation, no markdown.`,
 
   return (
     <>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        style={{ display: 'none' }}
+        onChange={handlePhotoCapture}
+      />
+
       {toastMessage && (
         <Toast
           message={toastMessage}
