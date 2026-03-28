@@ -249,9 +249,7 @@ function App() {
     return (
       <EverythingYouCarry
         userId={user.id}
-        items={items}
         onBack={() => setCurrentView('home')}
-        onItemComplete={removeItemFromState}
       />
     );
   }

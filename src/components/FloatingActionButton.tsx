@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Mic, Check, X, Menu, Archive, Calendar } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Mic, Check, X, Menu, Archive, Calendar, Camera } from 'lucide-react';
 import Anthropic from '@anthropic-ai/sdk';
 import { useSpeechRecognition } from '../utils/useSpeechRecognition';
 import { Toast } from './Toast';
@@ -28,6 +28,7 @@ export function FloatingActionButton({ userId, onItemsAdded, onSubmitSuccess, on
   const [showMenu, setShowMenu] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [recurringConfirmation, setRecurringConfirmation] = useState<{item: any, index: number} | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const showToast = (message: string) => {
     setToastMessage(message);
@@ -243,6 +244,144 @@ Return valid JSON only — no explanation, no markdown.`,
     setInputText(text);
   };
 
+  const handlePhotoCapture = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsProcessing(true);
+    setShowInput(false);
+
+    let savedItems: any[] = [];
+
+    try {
+      // Convert image to base64
+      const base64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result as string;
+          resolve(result.split(',')[1]);
+        };
+        reader.readAsDataURL(file);
+      });
+
+      const today = new Date();
+      const dayName = today.toLocaleDateString('en-GB', { weekday: 'long' });
+      const dateStr = today.toISOString().split('T')[0];
+
+      const message = await client.messages.create({
+        model: 'claude-sonnet-4-5',
+        max_tokens: 1000,
+        system: `You are Carry, a personal assistant for parents. Today is ${dayName} ${dateStr}.
+
+Extract all actionable information from this image — events, appointments, tasks, dates, times, deadlines.
+
+CATEGORIES — choose exactly one:
+- Kids: children's activities, school letters, sports, childcare
+- Home: household tasks, maintenance, deliveries
+- Health: medical, dental, prescriptions, fitness
+- Errands: shopping lists, returns, admin
+- Me: personal events, social plans, self-care
+- Work: work events, meetings, deadlines
+
+For each item found return a JSON object with:
+- title (max 6 words, clear and specific)
+- detail (one warm sentence describing what it is)
+- category (exactly one of the 6 above)
+- type (event, task, reminder, or lookforward)
+- date (YYYY-MM-DD if found, otherwise null)
+- time (HH:MM if found, otherwise null)
+- hasDateTime (true if date or time found)
+
+If the image contains no actionable information, return an empty array [].
+Return valid JSON array only — no explanation, no markdown.`,
+        messages: [{
+          role: 'user',
+          content: [
+            {
+              type: 'image',
+              source: {
+                type: 'base64',
+                media_type: file.type as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp',
+                data: base64,
+              }
+            },
+            {
+              type: 'text',
+              text: 'What actionable items can you find in this image?'
+            }
+          ]
+        }]
+      });
+
+      const rawText = message.content[0].type === 'text' ? message.content[0].text : '';
+      const cleaned = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
+      const parsedItems = JSON.parse(cleaned);
+
+      if (!Array.isArray(parsedItems) || parsedItems.length === 0) {
+        showToast("Nothing to add from that one — try another photo.");
+        return;
+      }
+
+      const newItems = parsedItems.map((item: any) => ({
+        title: item.title || 'Untitled',
+        description: item.detail || '',
+        category: item.category || 'Errands',
+        completed: false,
+        time_frame: 'anytime',
+        date: item.date || null,
+        time: item.time || null,
+        has_date_time: item.hasDateTime || false,
+        type: item.type || 'task',
+        target_month: item.targetMonth || null,
+        start_date: item.startDate || null,
+        end_date: item.endDate || null,
+        excitement: item.excitement || null,
+      }));
+
+      showToast(`Found ${newItems.length} thing${newItems.length > 1 ? 's' : ''} in that photo`);
+
+      // Save to Supabase
+      savedItems = [];
+      if (userId) {
+        for (const item of newItems) {
+          try {
+            const { data: inserted } = await supabase.from('items').insert({
+              user_id: userId,
+              title: item.title,
+              description: item.description,
+              category: item.category,
+              completed: false,
+              time_frame: 'anytime',
+              date: item.date,
+              time: item.time,
+              has_date_time: item.has_date_time,
+              type: item.type,
+              target_month: item.target_month,
+              start_date: item.start_date,
+              end_date: item.end_date,
+              excitement: item.excitement,
+            }).select().single();
+
+            if (inserted) savedItems.push(inserted);
+            else savedItems.push({ ...item, id: crypto.randomUUID(), created_at: new Date().toISOString(), user_id: userId });
+          } catch {
+            savedItems.push({ ...item, id: crypto.randomUUID(), created_at: new Date().toISOString(), user_id: userId });
+          }
+        }
+      }
+
+      if (onItemsAdded) onItemsAdded(savedItems);
+
+    } catch (err) {
+      console.error('Photo processing error:', err);
+      showToast("Couldn't read that photo — want to try again?");
+    } finally {
+      setIsProcessing(false);
+      // Reset file input
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   useEffect(() => {
     if (autoOpenFAB) {
       const timer = setTimeout(() => {
@@ -310,6 +449,14 @@ Return valid JSON only — no explanation, no markdown.`,
                 </button>
               )}
               <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isProcessing || isListening}
+                className="flex-shrink-0 w-12 h-12 bg-surface border-2 border-accent text-accent rounded-full flex items-center justify-center hover:bg-accent hover:text-surface active:scale-95 transition-all disabled:opacity-50"
+                aria-label="Add photo"
+              >
+                <Camera size={20} />
+              </button>
+              <button
                 onClick={handleCancel}
                 disabled={isProcessing}
                 className="flex-shrink-0 w-12 h-12 bg-border/50 text-text rounded-full flex items-center justify-center hover:bg-border active:scale-95 transition-all disabled:opacity-50"
@@ -318,6 +465,14 @@ Return valid JSON only — no explanation, no markdown.`,
                 <X size={20} />
               </button>
             </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              style={{ display: 'none' }}
+              onChange={handlePhotoCapture}
+            />
 
             {isListening && (
               <div className="flex items-center gap-2 text-sm text-accent">
@@ -444,9 +599,13 @@ Return valid JSON only — no explanation, no markdown.`,
         </button>
 
         <div className="flex items-center gap-4">
-          <span className="text-xs text-muted font-ui font-light">
-            {isBrowserSupported ? 'voice' : 'type'}
-          </span>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="w-10 h-10 bg-surface border border-border rounded-full flex items-center justify-center hover:border-accent/30 active:scale-95 transition-all"
+            aria-label="Camera"
+          >
+            <Camera size={18} className="text-muted" />
+          </button>
           <button
             onClick={handleFABClick}
             className={`relative w-16 h-16 bg-text rounded-full flex items-center justify-center text-surface shadow-lg hover:scale-105 active:scale-95 transition-transform ${isListening ? 'scale-110' : ''}`}
@@ -456,7 +615,7 @@ Return valid JSON only — no explanation, no markdown.`,
             <Mic size={24} />
           </button>
           <span className="text-xs text-muted font-ui font-light">
-            {isBrowserSupported ? 'or type' : 'only'}
+            {isBrowserSupported ? 'or type' : 'type'}
           </span>
         </div>
 
