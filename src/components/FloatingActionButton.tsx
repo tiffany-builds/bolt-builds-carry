@@ -27,6 +27,7 @@ export function FloatingActionButton({ userId, onItemsAdded, onSubmitSuccess, on
   const [isProcessing, setIsProcessing] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [recurringConfirmation, setRecurringConfirmation] = useState<{item: any, index: number} | null>(null);
 
   const showToast = (message: string) => {
     setToastMessage(message);
@@ -38,6 +39,8 @@ export function FloatingActionButton({ userId, onItemsAdded, onSubmitSuccess, on
     setIsProcessing(true);
     setLiveTranscript('');
     setInputText('');
+
+    let savedItems: any[] = [];
 
     try {
       const today = new Date();
@@ -79,6 +82,12 @@ DATE RULES:
 - Always calculate dates going FORWARD, never backwards
 - "Next week" means 7-14 days from today
 
+RECURRING RULES:
+- If the user mentions something happening regularly (every day, every week, every Monday etc), add "recurring": true and "recurringPattern": "daily" / "weekly" / "monthly" to the item
+- Examples: "football every Monday" → recurring: true, recurringPattern: "weekly"
+- "take medication every morning" → recurring: true, recurringPattern: "daily"
+- Default is recurring: false
+
 Extract all items from the input and return ONLY a valid JSON array. Each item must have:
 - title (max 6 words, no "remind me to" prefix)
 - detail (one warm conversational sentence)
@@ -87,6 +96,8 @@ Extract all items from the input and return ONLY a valid JSON array. Each item m
 - date (YYYY-MM-DD or null)
 - time (HH:MM or null)
 - hasDateTime (true or false)
+- recurring (true or false)
+- recurringPattern (daily, weekly, monthly or null)
 
 For lookforward items also include: startDate, endDate, targetMonth, excitement.
 
@@ -114,13 +125,15 @@ Return valid JSON only — no explanation, no markdown.`,
         start_date: item.startDate || null,
         end_date: item.endDate || null,
         excitement: item.excitement || null,
+        recurring: item.recurring || false,
+        recurring_pattern: item.recurringPattern || null,
       }));
 
-      // Show toast
-      showToast(`✓ Got it — added ${newItems.length} thing${newItems.length > 1 ? 's' : ''} to Carry`);
+      // Check for recurring items
+      const hasRecurring = newItems.some((item: any) => item.recurring);
 
       // Save to Supabase and get real items back
-      const savedItems = [];
+      savedItems = [];
 
       if (userId) {
         for (const item of newItems) {
@@ -132,9 +145,9 @@ Return valid JSON only — no explanation, no markdown.`,
               category: item.category,
               completed: false,
               time_frame: 'anytime',
-              date: item.date,
+              date: item.type === 'lookforward' ? item.start_date : item.date,
               time: item.time,
-              has_date_time: item.has_date_time,
+              has_date_time: item.type === 'lookforward' ? true : item.has_date_time,
               type: item.type,
               target_month: item.target_month,
               start_date: item.start_date,
@@ -161,10 +174,17 @@ Return valid JSON only — no explanation, no markdown.`,
         onItemsAdded(savedItems);
       }
 
+      // Show appropriate toast
+      if (hasRecurring) {
+        setRecurringConfirmation({ item: newItems.find((i: any) => i.recurring), index: 0 });
+      } else {
+        showToast('Got it — added to Carry');
+      }
+
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       console.error('processInput error:', message);
-      showToast("Carry couldn't quite catch that — want to try again?");
+      showToast("Didn't quite catch that — want to try again?");
     } finally {
       setIsProcessing(false);
       setShowInput(false);
@@ -188,9 +208,9 @@ Return valid JSON only — no explanation, no markdown.`,
       onStart: () => {},
       onError: (error) => {
         if (error === 'no-speech') {
-          showToast("Carry couldn't quite catch that — want to try again?");
+          showToast("Didn't quite catch that — want to try again?");
         } else {
-          showToast("Carry couldn't quite catch that — want to try again?");
+          showToast("Didn't quite catch that — want to try again?");
         }
       },
     });
@@ -311,6 +331,29 @@ Return valid JSON only — no explanation, no markdown.`,
     );
   }
 
+  const handleRecurringYes = async () => {
+    if (recurringConfirmation && userId) {
+      // The item is already saved with recurring field, just acknowledge
+      showToast('Got it — added to Carry');
+    }
+    setRecurringConfirmation(null);
+  };
+
+  const handleRecurringNo = async () => {
+    if (recurringConfirmation && userId) {
+      // Remove recurring flag from the saved item
+      const savedItem = savedItems.find((i: any) => i.title === recurringConfirmation.item.title);
+      if (savedItem) {
+        await supabase
+          .from('items')
+          .update({ recurring: false, recurring_pattern: null })
+          .eq('id', savedItem.id);
+      }
+      showToast('Got it — added to Carry');
+    }
+    setRecurringConfirmation(null);
+  };
+
   return (
     <>
       {toastMessage && (
@@ -318,6 +361,30 @@ Return valid JSON only — no explanation, no markdown.`,
           message={toastMessage}
           onClose={() => setToastMessage(null)}
         />
+      )}
+
+      {recurringConfirmation && (
+        <div className="fixed inset-0 bg-text/20 z-50 flex items-end justify-center animate-fade-up">
+          <div className="bg-surface rounded-t-3xl w-full max-w-2xl p-6 space-y-4 shadow-lg" style={{ paddingBottom: 'max(1.5rem, calc(env(safe-area-inset-bottom) + 1.5rem))' }}>
+            <p className="font-ui text-text text-center">
+              Sounds like this happens regularly — want me to remember that?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={handleRecurringYes}
+                className="flex-1 bg-accent text-surface rounded-xl py-3 font-ui font-medium hover:bg-accent/90 transition-all active:scale-95"
+              >
+                Yes, add {recurringConfirmation.item.recurring_pattern}
+              </button>
+              <button
+                onClick={handleRecurringNo}
+                className="flex-1 bg-surface border border-border text-text rounded-xl py-3 font-ui font-medium hover:border-accent/30 transition-all active:scale-95"
+              >
+                Just this once
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {showMenu && (

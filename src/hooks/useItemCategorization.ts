@@ -212,7 +212,7 @@ Return valid JSON array only — no explanation, no markdown, no code blocks.`;
           completed: false,
           date: item.type === 'lookforward' ? item.startDate : item.date || null,
           time: item.time || null,
-          has_date_time: item.hasDateTime || false,
+          has_date_time: item.type === 'lookforward' ? true : (item.hasDateTime || false),
           type: item.type || 'task',
           target_month: item.targetMonth || null,
         };

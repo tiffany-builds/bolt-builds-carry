@@ -169,7 +169,7 @@ export function TimelineSection({ items, onItemComplete, onItemDelete, onShowToa
           <div className="space-y-3">
             {day.items.length === 0 && day.isToday ? (
               <p className="font-ui text-sm text-muted font-light py-4">
-                Nothing on today yet
+                A quiet day. Rare — enjoy it.
               </p>
             ) : (
               day.items.map((item) => (

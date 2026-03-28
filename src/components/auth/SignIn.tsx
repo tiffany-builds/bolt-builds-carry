@@ -279,7 +279,7 @@ export function SignIn({ onSuccess }: SignInProps) {
               marginBottom: '16px'
             }}
           >
-            {isLoading ? 'Please wait...' : mode === 'forgot' ? 'Send reset link' : mode === 'signup' ? 'Create account' : 'Sign in'}
+            {isLoading ? 'One moment...' : mode === 'forgot' ? 'Send reset link' : mode === 'signup' ? 'Create account' : 'Sign in'}
           </button>
 
           {error && (

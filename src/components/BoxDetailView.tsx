@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ArrowLeft, Check } from 'lucide-react';
 import { getContextualEmoji } from '../utils/mindNudges';
 import { getCategoryDisplayName } from '../utils/categoryHelpers';
+import { supabase } from '../lib/supabase';
 
 interface Item {
   id: string;
@@ -27,6 +28,8 @@ export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onIt
   const [swipingItemId, setSwipingItemId] = useState<string | null>(null);
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [touchStart, setTouchStart] = useState(0);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingText, setEditingText] = useState('');
 
   const handleTouchStart = (e: React.TouchEvent, itemId: string) => {
     setTouchStart(e.touches[0].clientX);
@@ -53,6 +56,38 @@ export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onIt
     }
   };
 
+  const updateItemTitle = async (itemId: string, newTitle: string) => {
+    if (!newTitle.trim()) return;
+    await supabase
+      .from('items')
+      .update({ title: newTitle.trim() })
+      .eq('id', itemId);
+  };
+
+  const handleTitleClick = (item: Item) => {
+    setEditingId(item.id);
+    setEditingText(item.title);
+  };
+
+  const handleTitleBlur = async (itemId: string) => {
+    if (editingText.trim() && editingText !== items.find(i => i.id === itemId)?.title) {
+      await updateItemTitle(itemId, editingText);
+    }
+    setEditingId(null);
+    setEditingText('');
+  };
+
+  const handleTitleKeyDown = async (e: React.KeyboardEvent, itemId: string) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (editingText.trim() && editingText !== items.find(i => i.id === itemId)?.title) {
+        await updateItemTitle(itemId, editingText);
+      }
+      setEditingId(null);
+      setEditingText('');
+    }
+  };
+
   const displayName = getCategoryDisplayName(categoryName);
 
   return (
@@ -76,10 +111,7 @@ export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onIt
 
         {items.length === 0 ? (
           <div className="text-center py-12 space-y-3">
-            <p className="font-ui text-muted font-light">Nothing in this box yet</p>
-            <p className="font-ui text-sm text-muted/70">
-              Items you capture will appear here
-            </p>
+            <p className="font-ui text-muted font-light">Nothing in here yet. Probably a good sign.</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -112,9 +144,24 @@ export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onIt
                     </button>
 
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-ui font-medium text-text">
-                        {getContextualEmoji(item.title, item.category)} {item.title}
-                      </h3>
+                      {editingId === item.id ? (
+                        <input
+                          type="text"
+                          value={editingText}
+                          onChange={(e) => setEditingText(e.target.value)}
+                          onBlur={() => handleTitleBlur(item.id)}
+                          onKeyDown={(e) => handleTitleKeyDown(e, item.id)}
+                          className="font-ui font-medium text-text bg-transparent border-b border-accent/30 outline-none w-full"
+                          autoFocus
+                        />
+                      ) : (
+                        <h3
+                          className="font-ui font-medium text-text cursor-pointer hover:text-accent/70 transition-colors"
+                          onClick={() => handleTitleClick(item)}
+                        >
+                          {getContextualEmoji(item.title, item.category)} {item.title}
+                        </h3>
+                      )}
                       {item.description && (
                         <p className="font-ui text-sm text-muted mt-1">{item.description}</p>
                       )}

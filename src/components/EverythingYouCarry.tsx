@@ -105,7 +105,7 @@ export function EverythingYouCarry({ userId, items, onBack, onItemComplete }: Ev
         {items.length === 0 ? (
           <div className="text-center py-12 space-y-3">
             <p className="font-ui text-muted font-light">
-              {filter === 'all' ? "You haven't captured anything yet" : `No ${filter} items`}
+              {filter === 'all' ? "Nothing yet. It won't stay this way for long." : `No ${filter} items`}
             </p>
           </div>
         ) : (
