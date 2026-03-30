@@ -64,7 +64,7 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
 
       const message = await client.messages.create({
         model: 'claude-sonnet-4-5',
-        max_tokens: 1000,
+        max_tokens: 2000,
         system: `You are Carry, a personal assistant. Today is ${dayName} ${dateStr}.
 ${caringContext}
 ${familyContext}
@@ -319,7 +319,7 @@ Return valid JSON only — no explanation, no markdown.`,
 
       const message = await client.messages.create({
         model: 'claude-sonnet-4-5',
-        max_tokens: 1000,
+        max_tokens: 2000,
         system: `You are Carry, a personal assistant for parents. Today is ${dayName} ${dateStr}.
 
 Extract all actionable information from this image — events, appointments, tasks, dates, times, deadlines.
@@ -460,7 +460,7 @@ Return valid JSON array only — no explanation, no markdown.`,
               ) : isListening && !liveTranscript ? (
                 <div className="flex items-center gap-2 text-accent">
                   <div className="w-2 h-2 bg-accent rounded-full animate-pulse"></div>
-                  <span>Listening...</span>
+                  <span>Listening — say everything, tap stop when done</span>
                 </div>
               ) : (
                 <span className="text-text">{liveTranscript}</span>
@@ -482,7 +482,7 @@ Return valid JSON array only — no explanation, no markdown.`,
                       handleSubmit();
                     }
                   }}
-                  placeholder={autoOpenFAB ? "What's on your plate this week?" : "Just talk. Carry figures out the rest."}
+                  placeholder="Tell me everything on your plate — dates, times, whatever comes to mind."
                   className="w-full bg-cream border border-border rounded-xl px-4 py-3 font-ui text-text placeholder:text-muted focus:outline-none focus:border-accent/50 transition-colors"
                   disabled={isListening || isProcessing}
                   autoFocus={!isBrowserSupported}
@@ -521,10 +521,15 @@ Return valid JSON array only — no explanation, no markdown.`,
             </div>
 
             {isListening && (
-              <div className="flex items-center gap-2 text-sm text-accent">
+              <button
+                onClick={() => {
+                  stopListening();
+                }}
+                className="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-accent/10 border border-accent/20 text-accent font-ui text-sm font-medium transition-all active:scale-95"
+              >
                 <div className="w-2 h-2 bg-accent rounded-full animate-pulse"></div>
-                <span className="font-ui font-light">Listening...</span>
-              </div>
+                Tap to stop
+              </button>
             )}
           </div>
         </div>

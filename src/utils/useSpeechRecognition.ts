@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 
 interface UseSpeechRecognitionProps {
   onTranscript: (transcript: string) => void;
@@ -21,6 +21,7 @@ export function useSpeechRecognition({
       window.SpeechRecognition || (window as any).webkitSpeechRecognition;
     return !!SpeechRecognition;
   });
+  const recognitionRef = useRef<any>(null);
 
   const startListening = useCallback(() => {
     console.log("VOICE: startListening called");
@@ -35,7 +36,7 @@ export function useSpeechRecognition({
     }
 
     const recognition = new SpeechRecognition();
-    recognition.continuous = false;
+    recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = 'en-US';
     recognition.maxAlternatives = 1;
@@ -52,14 +53,12 @@ export function useSpeechRecognition({
       let interim = '';
       for (let i = event.resultIndex; i < event.results.length; i++) {
         if (event.results[i].isFinal) {
-          finalTranscript += event.results[i][0].transcript;
+          finalTranscript += ' ' + event.results[i][0].transcript;
         } else {
           interim += event.results[i][0].transcript;
         }
       }
-      const currentTranscript = finalTranscript || interim;
-      console.log("VOICE: Transcript so far:", currentTranscript);
-      onInterimTranscript?.(currentTranscript);
+      onInterimTranscript?.(finalTranscript.trim() + ' ' + interim);
     };
 
     recognition.onend = () => {
@@ -82,6 +81,7 @@ export function useSpeechRecognition({
     };
 
     try {
+      recognitionRef.current = recognition;
       recognition.start();
       console.log("VOICE: recognition.start() called successfully");
     } catch (e) {
@@ -92,6 +92,11 @@ export function useSpeechRecognition({
   }, [onTranscript, onInterimTranscript, onStart, onStop, onError]);
 
   const stopListening = useCallback(() => {
+    console.log("VOICE: stopListening called");
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+    }
     setIsListening(false);
   }, []);
 
