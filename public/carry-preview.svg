@@ -102,7 +102,7 @@
       font-style="italic"
       font-weight="300"
       font-size="16"
-      fill="#C4714A">Sophie.</text>
+      fill="#C4714A">Eva.</text>
 
     <!-- Date -->
     <text x="752" y="162" font-family="DM Sans, sans-serif" font-weight="300" font-size="9" fill="#8B7355">Friday, 27 March · 3 things on today</text>
@@ -134,7 +134,7 @@
     <!-- YOUR BOXES label -->
     <text x="752" y="328" font-family="DM Sans, sans-serif" font-weight="500" font-size="7" fill="#8B7355" letter-spacing="0.1em">YOUR BOXES</text>
 
-    <!-- Box 1 - Kids -->
+    <!-- Box 1 - Family -->
     <rect x="750" y="334" width="50" height="52" rx="8" fill="#FDF9F4"/>
     <text x="764" y="352" font-family="DM Sans" font-size="14">🧒</text>
     <text x="763" y="366" font-family="DM Sans, sans-serif" font-weight="500" font-size="7" fill="#2C2420">Kids</text>
