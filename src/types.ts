@@ -14,6 +14,7 @@ export interface TimelineItem {
   start_date?: string | null;
   end_date?: string | null;
   excitement?: string | null;
+  emoji?: string | null;
 }
 
 export interface Box {

@@ -7,6 +7,7 @@ interface CategorizedItem {
   title?: string;
   detail?: string;
   category?: string;
+  emoji?: string;
   type?: string;
   date?: string | null;
   time?: string | null;
@@ -104,7 +105,15 @@ For lookforward items also include:
 - endDate: ISO format YYYY-MM-DD if multi-day, otherwise same as startDate
 - targetMonth: month number 1-12
 - hasDateTime: true
-- excitement: a short warm one-line description of why this is worth looking forward to
+- excitement: one warm, understated sentence about why this is worth looking forward to.
+  Write it in second person, conversational tone.
+  Examples:
+  "A few days somewhere completely different."
+  "Time with people you actually want to see."
+  "Yours — no agenda, no obligations."
+  NEVER return a single word or sentiment score like "high" or "medium".
+  NEVER use exclamation marks.
+  NEVER start with "This is" or "You deserve".
 
 Example:
 Input: "I have a trip with Sarah from April 28 to May 2"
@@ -123,6 +132,20 @@ Output:
 }
 
 Use type "mind" for longer term plans, wishes, future intentions or anything with a vague or approximate timeframe.
+
+EMOJI RULES:
+Add an "emoji" field to every item. Choose the most specific and contextually appropriate emoji:
+- Locations: use the country flag or landmark emoji
+  (Italy → 🇮🇹, Paris → 🗼, Spain → 🇪🇸, New York → 🗽, London → 🎡)
+- Food/meals: use the specific food (rhubarb dessert → 🍮, pasta → 🍝, cake → 🎂)
+- Sports: use the sport (football → ⚽, swimming → 🏊, tennis → 🎾)
+- Health: use the specific type (dentist → 🦷, doctor → 🩺, pharmacy → 💊)
+- People/birthdays: use (birthday → 🎂, friend → 👯, family → 👨‍👩‍👧)
+- School: (school letter → 📝, sports day → 🏃, play → 🎭)
+- Home: (cleaning → 🧹, repairs → 🔧, delivery → 📦)
+- Work: (meeting → 💼, deadline → ⏰, presentation → 📊)
+- Travel: use destination flag or landmark when known
+- Default to the most specific emoji possible — avoid generic ones like 📌 or 📅
 
 If no action field is present assume "create".
 
@@ -208,6 +231,7 @@ Return valid JSON array only — no explanation, no markdown, no code blocks.`;
           title: item.title || '',
           description: item.detail || null,
           category: item.category || 'Other',
+          emoji: item.emoji || null,
           time_frame: timeFrameMap[item.type || 'task'] || 'future',
           completed: false,
           date: item.type === 'lookforward'

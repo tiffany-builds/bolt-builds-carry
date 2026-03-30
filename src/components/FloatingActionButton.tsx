@@ -100,7 +100,33 @@ Extract all items from the input and return ONLY a valid JSON array. Each item m
 - recurring (true or false)
 - recurringPattern (daily, weekly, monthly or null)
 
-For lookforward items also include: startDate, endDate, targetMonth, excitement.
+For lookforward items also include:
+- startDate (YYYY-MM-DD)
+- endDate (YYYY-MM-DD or null)
+- targetMonth (month name or null)
+- excitement: one warm, understated sentence about why this is worth looking forward to.
+  Write it in second person, conversational tone.
+  Examples:
+  "A few days somewhere completely different."
+  "Time with people you actually want to see."
+  "Yours — no agenda, no obligations."
+  NEVER return a single word or sentiment score like "high" or "medium".
+  NEVER use exclamation marks.
+  NEVER start with "This is" or "You deserve".
+
+EMOJI RULES:
+Add an "emoji" field to every item. Choose the most specific and contextually appropriate emoji:
+- Locations: use the country flag or landmark emoji
+  (Italy → 🇮🇹, Paris → 🗼, Spain → 🇪🇸, New York → 🗽, London → 🎡)
+- Food/meals: use the specific food (rhubarb dessert → 🍮, pasta → 🍝, cake → 🎂)
+- Sports: use the sport (football → ⚽, swimming → 🏊, tennis → 🎾)
+- Health: use the specific type (dentist → 🦷, doctor → 🩺, pharmacy → 💊)
+- People/birthdays: use (birthday → 🎂, friend → 👯, family → 👨‍👩‍👧)
+- School: (school letter → 📝, sports day → 🏃, play → 🎭)
+- Home: (cleaning → 🧹, repairs → 🔧, delivery → 📦)
+- Work: (meeting → 💼, deadline → ⏰, presentation → 📊)
+- Travel: use destination flag or landmark when known
+- Default to the most specific emoji possible — avoid generic ones like 📌 or 📅
 
 Return valid JSON only — no explanation, no markdown.`,
         messages: [{ role: 'user', content: inputText }]
@@ -116,6 +142,7 @@ Return valid JSON only — no explanation, no markdown.`,
         title: item.title || 'Untitled',
         description: item.detail || '',
         category: item.category || 'Other',
+        emoji: item.emoji || null,
         completed: false,
         time_frame: 'anytime',
         date: item.date || null,
@@ -144,6 +171,7 @@ Return valid JSON only — no explanation, no markdown.`,
               title: item.title,
               description: item.description,
               category: item.category,
+              emoji: item.emoji,
               completed: false,
               time_frame: 'anytime',
               date: item.type === 'lookforward'
@@ -352,6 +380,7 @@ Return valid JSON array only — no explanation, no markdown.`,
               title: item.title,
               description: item.description,
               category: item.category,
+              emoji: item.emoji,
               completed: false,
               time_frame: 'anytime',
               date: item.type === 'lookforward'

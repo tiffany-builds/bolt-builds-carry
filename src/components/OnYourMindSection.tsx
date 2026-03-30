@@ -49,7 +49,7 @@ export function OnYourMindSection({ items, onItemsChange }: OnYourMindSectionPro
           >
             <div className="flex items-start gap-3">
               <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center text-xl mt-0.5">
-                {getContextualEmoji(item.title, item.category)}
+                {item.emoji || getContextualEmoji(item.title, item.category)}
               </div>
 
               <div className="flex-1 min-w-0">

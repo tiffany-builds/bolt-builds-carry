@@ -18,6 +18,7 @@ interface Item {
   type: string;
   start_date?: string | null;
   end_date?: string | null;
+  emoji?: string | null;
 }
 
 interface BoxDetailViewProps {
@@ -165,7 +166,7 @@ export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onIt
                           className="font-ui font-medium text-text cursor-pointer hover:text-accent/70 transition-colors"
                           onClick={() => handleTitleClick(item)}
                         >
-                          {getContextualEmoji(item.title, item.category)} {item.title}
+                          {item.emoji || getContextualEmoji(item.title, item.category)} {item.title}
                         </h3>
                       )}
                       {item.description && (

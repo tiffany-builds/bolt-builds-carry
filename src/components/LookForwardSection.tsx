@@ -62,7 +62,7 @@ export function LookForwardSection({ items, onRemoveItem }: LookForwardSectionPr
             marginBottom: '8px'
           }}>
             <span style={{ fontSize: '24px' }}>
-              {getContextualEmoji(item.title, item.category)}
+              {item.emoji || getContextualEmoji(item.title, item.category)}
             </span>
             <div>
               <div style={{
@@ -89,7 +89,7 @@ export function LookForwardSection({ items, onRemoveItem }: LookForwardSectionPr
             </div>
           </div>
 
-          {item.excitement && (
+          {item.excitement && item.excitement.split(' ').length >= 4 && (
             <div style={{
               fontSize: '13px',
               color: 'var(--bark)',
@@ -98,7 +98,7 @@ export function LookForwardSection({ items, onRemoveItem }: LookForwardSectionPr
               fontFamily: 'Fraunces, serif',
               fontStyle: 'italic'
             }}>
-              "{item.excitement}"
+              {item.excitement}
             </div>
           )}
 

@@ -20,6 +20,7 @@ interface TimelineItemProps {
 function TimelineItemCard({ item, onComplete, onDelete, swipingId, swipeOffset, onTouchStart, onTouchMove, onTouchEnd }: TimelineItemProps) {
   const borderColor = getCategoryColor(item.category);
   const isCompleted = item.completed;
+  const displayEmoji = item.emoji || getContextualEmoji(item.title, item.category);
 
   const handleComplete = async () => {
     try {
@@ -76,7 +77,7 @@ function TimelineItemCard({ item, onComplete, onDelete, swipingId, swipeOffset, 
           </div>
           <div className="flex-1">
             <h3 className={`font-ui font-medium text-text mb-1 ${isCompleted ? 'line-through' : ''}`}>
-              {getContextualEmoji(item.title, item.category)} {item.title}
+              {displayEmoji} {item.title}
             </h3>
             {item.detail && (
               <p className="font-ui text-sm text-muted font-light">{item.detail}</p>

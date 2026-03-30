@@ -17,6 +17,7 @@ interface Item {
   start_date?: string | null;
   end_date?: string | null;
   excitement?: string | null;
+  emoji?: string | null;
 }
 
 export function useItems(userId: string | null) {
