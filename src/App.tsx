@@ -95,7 +95,7 @@ function App() {
         'Projects': 'Work',
         'Household': 'Home',
         'Household Tasks': 'Home',
-        'Family': 'Kids',
+        'Kids': 'Family',
         'Shopping': 'Errands',
         'Exercise': 'Me',
       };
@@ -173,6 +173,7 @@ function App() {
                 first_name: name,
                 birthday_day: onboardingData.birthdayDay || null,
                 birthday_month: onboardingData.birthdayMonth || null,
+                caring_for: onboardingData.caringFor || [],
                 onboarding_complete: true,
               }, { onConflict: 'id' })
               .select()
@@ -378,6 +379,7 @@ function App() {
       </div>
       <FloatingActionButton
         userId={user?.id || null}
+        caringFor={userProfile?.caring_for || []}
         onSubmitSuccess={undefined}
         onItemsAdded={addItemsToLocalState}
         onEverythingClick={() => setCurrentView('everything')}

@@ -1,5 +1,5 @@
 export const DEFAULT_CATEGORIES = [
-  { id: 'kids', name: 'Kids', emoji: '🧒', color: '#A8B89A' },
+  { id: 'family', name: 'Family', emoji: '🏡', color: '#A8B89A' },
   { id: 'home', name: 'Home', emoji: '🏠', color: '#C4714A' },
   { id: 'health', name: 'Health', emoji: '❤️', color: '#A0B4C0' },
   { id: 'errands', name: 'Errands', emoji: '🛍', color: '#D4C285' },

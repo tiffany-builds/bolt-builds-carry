@@ -31,7 +31,7 @@ export interface Nudge {
   suggestion: string;
 }
 
-export type Category = 'Kids' | 'Health' | 'Family' | 'Errands' | 'Me' | 'Ideas' | 'Household' | 'Shopping';
+export type Category = 'Family' | 'Health' | 'Errands' | 'Me' | 'Ideas' | 'Household' | 'Shopping';
 
 export interface UserProfile {
   id: string;
@@ -43,6 +43,7 @@ export interface UserProfile {
   household?: string[];
   has_children?: boolean;
   children?: Array<{ name: string; age: number }>;
+  caring_for?: string[];
   week_structure?: string;
   day_start_time?: string;
   priority_areas?: string[];

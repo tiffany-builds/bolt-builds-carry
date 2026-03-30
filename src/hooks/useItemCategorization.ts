@@ -32,12 +32,12 @@ export async function categorizeAndCreateItems(text: string, userId: string) {
     const date = String(today.getDate()).padStart(2, '0');
     const dateStr = `${year}-${month}-${date}`;
 
-    const categoryNames = 'Kids, Home, Health, Errands, Me, Work';
+    const categoryNames = 'Family, Home, Health, Errands, Me, Work';
 
     const systemPrompt = `You are Carry, a personal assistant for parents. Today is ${dayName} ${dateStr}.
 
 CATEGORIES — choose exactly one:
-- Kids: children's activities, school, childcare, anything specifically about the user's children
+- Family: children, pets, elderly parents, anyone you care for at home
 - Home: household tasks, cleaning, maintenance, repairs, home admin
 - Health: medical appointments, medication, fitness, therapy, anything health-related for ANY family member
 - Errands: shopping, pickups, returns, post office, admin tasks outside the home
@@ -45,7 +45,8 @@ CATEGORIES — choose exactly one:
 - Work: work tasks, meetings, professional projects
 
 BIRTHDAY RULES:
-- Child's birthday → Kids
+- Child's birthday → Family
+- Pet → Family
 - Own birthday → Me
 - Partner/spouse birthday → Me
 - Parent/sibling birthday → Me
@@ -56,7 +57,7 @@ BIRTHDAY RULES:
 REMINDER RULES:
 - "Remind me to..." → strip the reminder framing, treat as a normal item
 - Categorise by what the task actually IS, not that it's a reminder
-- "Remind me to call the school" → Kids (calling school is about children)
+- "Remind me to call the school" → Family (calling school is about children)
 - "Remind me to take my medication" → Health
 - "Remind me to book a haircut" → Me
 - If a reminder has a specific time/date, set hasDateTime: true
@@ -166,13 +167,13 @@ Return valid JSON array only — no explanation, no markdown, no code blocks.`;
       return [];
     }
 
-    const validCategories = ['Kids', 'Home', 'Health', 'Errands', 'Me', 'Work'];
+    const validCategories = ['Family', 'Home', 'Health', 'Errands', 'Me', 'Work'];
     const fallbackMap: Record<string, string> = {
       'Ideas': 'Me',
       'Other': 'Errands',
       'Projects': 'Work',
       'Household': 'Home',
-      'Family': 'Kids',
+      'Kids': 'Family',
       'Shopping': 'Errands',
       'Exercise': 'Me',
       'Personal': 'Me',

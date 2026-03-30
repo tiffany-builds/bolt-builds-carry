@@ -12,6 +12,7 @@ const client = new Anthropic({
 
 interface FloatingActionButtonProps {
   userId: string | null;
+  caringFor?: string[];
   onItemsAdded?: (items: any[]) => void;
   onSubmitSuccess?: () => void;
   onEverythingClick?: () => void;
@@ -20,7 +21,7 @@ interface FloatingActionButtonProps {
   onAutoOpenComplete?: () => void;
 }
 
-export function FloatingActionButton({ userId, onItemsAdded, onSubmitSuccess, onEverythingClick, onCalendarClick, autoOpenFAB, onAutoOpenComplete }: FloatingActionButtonProps) {
+export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmitSuccess, onEverythingClick, onCalendarClick, autoOpenFAB, onAutoOpenComplete }: FloatingActionButtonProps) {
   const [showInput, setShowInput] = useState(false);
   const [inputText, setInputText] = useState('');
   const [liveTranscript, setLiveTranscript] = useState('');
@@ -48,21 +49,37 @@ export function FloatingActionButton({ userId, onItemsAdded, onSubmitSuccess, on
       const dayName = today.toLocaleDateString('en-GB', { weekday: 'long' });
       const dateStr = today.toISOString().split('T')[0];
 
+      const caringContext = caringFor && caringFor.length > 0
+        ? `This user cares for: ${caringFor.join(', ')}.`
+        : '';
+
+      const hasPets = caringFor?.includes('pets');
+      const hasChildren = caringFor?.includes('children');
+
+      const familyContext = [
+        hasChildren ? 'Family category includes children and school-related items.' : '',
+        hasPets ? 'Family category also includes pet care — vet appointments, pet food, grooming.' : '',
+        !hasChildren && !hasPets ? 'Family category covers partner, parents, and personal relationships.' : '',
+      ].filter(Boolean).join(' ');
+
       const message = await client.messages.create({
         model: 'claude-sonnet-4-5',
         max_tokens: 1000,
-        system: `You are Carry, a personal assistant for parents. Today is ${dayName} ${dateStr}.
+        system: `You are Carry, a personal assistant. Today is ${dayName} ${dateStr}.
+${caringContext}
+${familyContext}
 
 CATEGORIES — choose exactly one:
-- Kids: children's activities, school, childcare, anything specifically about the user's children
+- Family: ${hasChildren ? 'children, school,' : ''} ${hasPets ? 'pets, vet,' : ''} anyone this person cares for
 - Home: household tasks, cleaning, maintenance, repairs, home admin
-- Health: medical appointments, medication, fitness, therapy, anything health-related for ANY family member
-- Errands: shopping, pickups, returns, post office, admin tasks outside the home
-- Me: personal time, self-care, hobbies, social plans, anything just for the user
-- Work: work tasks, meetings, professional projects
+- Health: medical appointments, medication, fitness, therapy, wellbeing
+- Errands: shopping, admin, tasks outside the home
+- Me: personal time, hobbies, social plans
+- Work: professional tasks and meetings
 
 BIRTHDAY RULES:
-- Child's birthday → Kids
+- Child's birthday → Family
+- Pet → Family
 - Own birthday → Me
 - Partner/spouse birthday → Me
 - Parent/sibling birthday → Me
@@ -73,7 +90,7 @@ BIRTHDAY RULES:
 REMINDER RULES:
 - "Remind me to..." → strip the reminder framing, treat as a normal item
 - Categorise by what the task actually IS, not that it's a reminder
-- "Remind me to call the school" → Kids (calling school is about children)
+- "Remind me to call the school" → Family (calling school is about children)
 - "Remind me to take my medication" → Health
 - "Remind me to book a haircut" → Me
 - If a reminder has a specific time/date, set hasDateTime: true
@@ -92,7 +109,7 @@ RECURRING RULES:
 Extract all items from the input and return ONLY a valid JSON array. Each item must have:
 - title (max 6 words, no "remind me to" prefix)
 - detail (one warm conversational sentence)
-- category (exactly one of: Kids, Home, Health, Errands, Me, Work)
+- category (exactly one of: Family, Home, Health, Errands, Me, Work)
 - type (event, task, reminder, idea, mind or lookforward)
 - date (YYYY-MM-DD or null)
 - time (HH:MM or null)

@@ -2,8 +2,7 @@ import { CategoryOption } from '../types';
 
 export const categoryOptions: CategoryOption[] = [
   { name: 'Household', emoji: '🏠', description: 'Home maintenance & chores' },
-  { name: 'Kids', emoji: '🧒', description: 'Kid activities & care' },
-  { name: 'Family', emoji: '👨‍👩‍👧‍👦', description: 'Family time & plans' },
+  { name: 'Family', emoji: '🏡', description: 'Children, pets, anyone you care for' },
   { name: 'Work', emoji: '💼', description: 'Work tasks & projects' },
   { name: 'Ideas', emoji: '✈️', description: 'Dreams & future plans' },
   { name: 'Errands', emoji: '🛍', description: 'Shopping & to-do' },

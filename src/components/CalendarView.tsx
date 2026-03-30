@@ -21,7 +21,7 @@ interface CalendarDay {
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
-  Kids: '#A8B89A',
+  Family: '#A8B89A',
   Home: '#C4714A',
   Health: '#A0B4C0',
   Errands: '#D4C285',
