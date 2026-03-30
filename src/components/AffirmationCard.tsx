@@ -1,28 +1,87 @@
 interface AffirmationCardProps {
-  itemCount?: number;
-  mindItemCount?: number;
-  isBirthday?: boolean;
+  itemCount: number;
+  mindItemCount: number;
+  isBirthday: boolean;
+  todayTotal: number;
+  todayCompleted: number;
 }
 
-export function AffirmationCard({ itemCount = 0, mindItemCount = 0, isBirthday = false }: AffirmationCardProps) {
-  const getMessage = () => {
-    if (isBirthday) {
-      return "Today is yours. Carry's got everything else.";
-    }
+function getMessage(
+  todayTotal: number,
+  todayCompleted: number,
+  lastWeekCount: number,
+  isBirthday: boolean
+): { headline: string; sub: string } {
 
-    if (mindItemCount > 0) {
-      const plural = mindItemCount === 1 ? 'thing' : 'things';
-      return `You have ${mindItemCount} ${plural} on your mind. Carry is keeping track.`;
-    }
+  if (isBirthday) {
+    return {
+      headline: "Happy birthday.",
+      sub: "Whatever's on the list today — it can wait a little."
+    };
+  }
 
-    if (itemCount === 0) {
-      return "Ready when you are. Just talk, and Carry will organise the rest.";
-    } else if (itemCount === 1) {
-      return "You carried 1 thing last week. That's not nothing.";
-    } else {
-      return `You carried ${itemCount} things last week. That's not nothing.`;
-    }
+  const remaining = todayTotal - todayCompleted;
+
+  if (todayTotal > 0 && remaining === 0) {
+    const options = [
+      { headline: "That's today handled.", sub: "Everything on the list — done." },
+      { headline: "All of it.", sub: "Not a small thing." },
+      { headline: "Clean slate.", sub: "That doesn't happen often." },
+    ];
+    return options[new Date().getDate() % options.length];
+  }
+
+  if (todayTotal >= 3 && todayCompleted > 0 && remaining > 0) {
+    const options = [
+      { headline: `${todayCompleted} down.`, sub: `${remaining} left. You're through the hard part.` },
+      { headline: "Making progress.", sub: `${remaining} more thing${remaining > 1 ? 's' : ''} and today's done.` },
+      { headline: "Keep going.", sub: `${remaining} left on today's list.` },
+    ];
+    return options[todayCompleted % options.length];
+  }
+
+  if (todayTotal >= 5) {
+    const options = [
+      { headline: `A full one today.`, sub: "Start with the timed ones and the rest will follow." },
+      { headline: `${todayTotal} things today.`, sub: "That's a lot. One at a time." },
+      { headline: "Today's a lot.", sub: "Start somewhere. Anywhere." },
+    ];
+    return options[new Date().getDay() % options.length];
+  }
+
+  if (todayTotal > 0 && todayTotal <= 2) {
+    const options = [
+      { headline: "A light one today.", sub: "Make the most of it." },
+      { headline: `Just ${todayTotal} thing${todayTotal > 1 ? 's' : ''} today.`, sub: "Manageable." },
+    ];
+    return options[new Date().getDay() % options.length];
+  }
+
+  if (todayTotal >= 3) {
+    const options = [
+      { headline: `${todayTotal} things on today.`, sub: "You've handled more." },
+      { headline: "A steady day ahead.", sub: `${todayTotal} things to get through.` },
+    ];
+    return options[new Date().getDay() % options.length];
+  }
+
+  if (lastWeekCount > 0) {
+    const options = [
+      { headline: `${lastWeekCount} things last week.`, sub: "That's not nothing." },
+      { headline: "Nothing on today.", sub: "Don't fill it out of habit." },
+      { headline: "A quiet one.", sub: "Rare. Enjoy it." },
+    ];
+    return options[new Date().getDay() % options.length];
+  }
+
+  return {
+    headline: "Ready when you are.",
+    sub: "Just talk, and Carry will organise the rest."
   };
+}
+
+export function AffirmationCard({ itemCount, mindItemCount, isBirthday, todayTotal, todayCompleted }: AffirmationCardProps) {
+  const message = getMessage(todayTotal, todayCompleted, itemCount, isBirthday);
 
   return (
     <div className="animate-fade-up stagger-2">
@@ -32,7 +91,10 @@ export function AffirmationCard({ itemCount = 0, mindItemCount = 0, isBirthday =
           This week
         </p>
         <p className="font-display italic text-xl font-light text-text leading-relaxed">
-          {getMessage()}
+          {message.headline}
+        </p>
+        <p className="font-ui text-sm text-muted mt-2">
+          {message.sub}
         </p>
       </div>
     </div>

@@ -1,10 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="8" fill="#2C2420"/>
-  <text x="16" y="23"
+  <rect width="32" height="32" rx="8" fill="#C4714A"/>
+  <text
+    x="16" y="23"
     font-family="Georgia, serif"
     font-style="italic"
-    font-size="22"
+    font-size="21"
     font-weight="300"
-    fill="#C4714A"
+    fill="#FDF9F4"
     text-anchor="middle">c</text>
 </svg>

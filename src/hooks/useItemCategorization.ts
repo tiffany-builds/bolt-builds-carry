@@ -210,7 +210,9 @@ Return valid JSON array only — no explanation, no markdown, no code blocks.`;
           category: item.category || 'Other',
           time_frame: timeFrameMap[item.type || 'task'] || 'future',
           completed: false,
-          date: item.type === 'lookforward' ? item.startDate : item.date || null,
+          date: item.type === 'lookforward'
+            ? (item.startDate || item.date)
+            : (item.date || null),
           time: item.time || null,
           has_date_time: item.type === 'lookforward' ? true : (item.hasDateTime || false),
           type: item.type || 'task',

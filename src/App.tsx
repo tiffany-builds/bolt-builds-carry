@@ -341,6 +341,8 @@ function App() {
             itemCount={lastWeekCount}
             mindItemCount={mindItems.length}
             isBirthday={isBirthday}
+            todayTotal={todayItems.length}
+            todayCompleted={todayItems.filter(i => i.completed).length}
           />
           <TimelineSection
             items={todayItems}
