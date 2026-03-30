@@ -41,6 +41,7 @@
   :root {
     --sand: #E8DDD0;
     --warm-white: #FDF9F4;
+    --cream: #FDF9F4;
     --terra: #C4714A;
     --deep: #2C2420;
     --muted: #8B7355;
@@ -50,7 +51,7 @@
   html { scroll-behavior: smooth; }
 
   body {
-    background: var(--sand);
+    background: #FDF9F4;
     color: var(--deep);
     font-family: 'DM Sans', sans-serif;
     overflow-x: hidden;
@@ -65,7 +66,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: rgba(232,221,208,0.85);
+    background: rgba(253,249,244,0.85);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
   }
@@ -401,7 +402,7 @@
   }
 
   .stat-card {
-    background: var(--warm-white);
+    background: #F0EBE3;
     border-radius: 20px;
     padding: 32px 24px;
     border: 1px solid var(--border);
@@ -428,7 +429,7 @@
   /* HOW IT WORKS */
   .how {
     padding: 100px 24px;
-    background: var(--warm-white);
+    background: #F0EBE3;
   }
 
   .how-inner {
@@ -460,7 +461,7 @@
   .step-number {
     width: 64px; height: 64px;
     border-radius: 50%;
-    background: var(--sand);
+    background: #FDF9F4;
     border: 1px solid var(--border);
     display: flex;
     align-items: center;
@@ -473,7 +474,6 @@
     color: var(--terra);
     position: relative;
     z-index: 1;
-    background: var(--warm-white);
   }
 
   .step-title {
@@ -498,6 +498,7 @@
     text-align: center;
     position: relative;
     overflow: hidden;
+    background: #FDF9F4;
   }
 
   .cta::before {
@@ -580,12 +581,12 @@
 
 <!-- HERO -->
 <section class="hero">
-  <p class="hero-eyebrow">Introducing Carry</p>
+  <p class="hero-eyebrow">There's a lot in your head right now</p>
   <h1 class="hero-headline">
-    For everything you're<br>holding <em>in your head.</em>
+    For everything<br>you're <em>holding in<br>your head.</em>
   </h1>
   <p class="hero-sub">
-    The school run, the dentist, the birthday gift you keep forgetting, the thing you told yourself you'd remember. Carry takes it all off your mind — just talk, and it organises everything for you.
+    Most of what you manage never makes it onto a list. It just lives in your head — because there's nowhere else for it to go. Until now.
   </p>
   <div class="hero-actions">
     <a href="/app" class="btn-primary">Start carrying less →</a>
@@ -627,7 +628,7 @@
         <div class="phone-section-label">Your boxes</div>
         <div class="phone-boxes">
           <div class="phone-box">
-            <div class="phone-box-emoji">🧒</div>
+            <div class="phone-box-emoji">🫶</div>
             <span class="phone-box-name">Kids</span>
             <div class="phone-box-count">4 items</div>
           </div>
@@ -653,27 +654,24 @@
 
 <!-- PROBLEM -->
 <section class="problem">
-  <p class="section-eyebrow">The mental load is real</p>
+  <p class="section-eyebrow">Sound familiar?</p>
   <h2 class="section-headline">
-    Mums carry an average of<br>
-    <em>two full-time jobs</em> worth<br>of invisible work.
+    Most of what you carry<br><em>is invisible to everyone else.</em>
   </h2>
   <p style="font-size:16px; color:var(--muted); font-weight:300; line-height:1.7; max-width:520px; margin:0 auto;">
-    The school appointments, the permission slips, the birthday gifts, the medication refills — it all lives rent-free in your head. Carry gives it somewhere to go.
+    The appointment you remembered to book. The thing you noticed was running low. The date you quietly rearranged so everyone else's plans could work. Nobody sees it. You just keep track — because someone has to.
   </p>
 
   <div class="problem-stats">
     <div class="stat-card">
-      <div class="stat-number">87%</div>
-      <div class="stat-label">of mothers say mental load affects their sleep and wellbeing</div>
+      <div class="stat-number">300+</div>
+      <div class="stat-label">decisions managed every week that never make it onto a list</div>
     </div>
     <div class="stat-card">
-      <div class="stat-number">3hrs</div>
-      <div class="stat-label">lost every day to remembering, tracking and managing family tasks</div>
+      <div class="stat-label">The mental load isn't just what's on the list. It's knowing what needs to be on it.</div>
     </div>
     <div class="stat-card">
-      <div class="stat-number">0</div>
-      <div class="stat-label">apps designed specifically to reduce the invisible work mums carry</div>
+      <div class="stat-label">Most of it never gets acknowledged — let alone organised. Carry is built for exactly this.</div>
     </div>
   </div>
 </section>
@@ -688,17 +686,17 @@
       <div class="step">
         <div class="step-number">1</div>
         <h3 class="step-title">Just talk.</h3>
-        <p class="step-body">Open Carry and say whatever's on your mind. "Leo has football Thursday at 4, I need to book the dentist, and I keep forgetting to call the school." All of it, all at once.</p>
+        <p class="step-body">Open Carry and say whatever's taking up space. All of it, in whatever order it comes out. Carry listens for the details — dates, times, names, what matters.</p>
       </div>
       <div class="step">
         <div class="step-number">2</div>
         <h3 class="step-title">Carry sorts it.</h3>
-        <p class="step-body">Carry listens, understands, and organises everything into the right box — Kids, Health, Home, Errands, Me or Work. Dates and times are captured automatically.</p>
+        <p class="step-body">Everything lands where it should — Family, Health, Home, Errands, Me, Work. Dates and times are captured automatically. Nothing needs filing. Nothing gets lost.</p>
       </div>
       <div class="step">
         <div class="step-number">3</div>
         <h3 class="step-title">Nothing gets lost.</h3>
-        <p class="step-body">Your home screen shows you what's on today, what's coming up, and everything waiting in your boxes. It's all there when you need it — and out of your head when you don't.</p>
+        <p class="step-body">Your home screen shows today, what's coming, and everything waiting. It's there when you need it. And when you don't — it's not in your head anymore.</p>
       </div>
     </div>
   </div>
@@ -710,7 +708,7 @@
     Put it down.<br>
     <em>We've got it.</em>
   </h2>
-  <p class="cta-sub">Free to try. No credit card. Just a little less to carry.</p>
+  <p class="cta-sub">Free to try. No credit card needed. Just a little less to hold onto.</p>
   <a href="/app" class="btn-primary">Try Carry free →</a>
 </section>
 
