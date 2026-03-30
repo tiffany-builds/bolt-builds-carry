@@ -6,10 +6,10 @@ interface OnboardingBoxesProps {
 }
 
 const CATEGORIES = [
-  { name: 'Family', emoji: '🏡' },
+  { name: 'Family', emoji: '🫶' },
   { name: 'Household', emoji: '🏠' },
   { name: 'Health', emoji: '❤️' },
-  { name: 'Errands', emoji: '🛍' },
+  { name: 'Errands', emoji: '🛒' },
   { name: 'Me', emoji: '🏃‍♀️' },
   { name: 'Ideas', emoji: '✨' },
   { name: 'Work', emoji: '💼' },

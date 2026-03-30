@@ -1,6 +1,6 @@
 export function getCategoryDisplayName(category: string): string {
   const names: Record<string, string> = {
-    'Errands': 'Tasks & Errands',
+    'Errands': 'Errands',
     'Family': 'Family',
     'Household': 'Household',
     'Health': 'Health',

@@ -6,7 +6,7 @@ interface OnboardingCaringForProps {
 }
 
 const OPTIONS = [
-  { id: 'children', label: 'Children', emoji: '🧒' },
+  { id: 'children', label: 'Children', emoji: '🫶' },
   { id: 'pets', label: 'Pets', emoji: '🐾' },
   { id: 'partner', label: 'A partner', emoji: '🤝' },
   { id: 'parents', label: 'Parents or family', emoji: '👵' },

@@ -63,9 +63,9 @@ export function getNudgeMessage(item: MindItem): string | null {
 
 export function getCategoryEmoji(category: string): string {
   const emojis: Record<string, string> = {
-    Family: '🏡',
+    Family: '🫶',
     Household: '🏠',
-    Errands: '🛍',
+    Errands: '🛒',
     Me: '🏃‍♀️',
     Health: '❤️',
     Ideas: '✨',
@@ -178,9 +178,9 @@ export function getContextualEmoji(title: string, category: string): string {
 
   // Category fallbacks — only if no title match found
   const categoryEmojis: Record<string, string> = {
-    Family: '🏡',
+    Family: '🫶',
     Household: '🏠',
-    Errands: '🛍️',
+    Errands: '🛒',
     Me: '🏃‍♀️',
     Health: '❤️',
     Ideas: '✨',

@@ -323,7 +323,7 @@ Return valid JSON only — no explanation, no markdown.`,
 Extract all actionable information from this image — events, appointments, tasks, dates, times, deadlines.
 
 CATEGORIES — choose exactly one:
-- Kids: children's activities, school letters, sports, childcare
+- Family: children's activities, school letters, sports, childcare
 - Home: household tasks, maintenance, deliveries
 - Health: medical, dental, prescriptions, fitness
 - Errands: shopping lists, returns, admin
