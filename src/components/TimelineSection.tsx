@@ -81,6 +81,15 @@ function TimelineItemCard({ item, onComplete, onDelete, swipingId, swipeOffset, 
             {item.detail && (
               <p className="font-ui text-sm text-muted font-light">{item.detail}</p>
             )}
+            {item.date && (
+              <p className="font-ui text-xs text-muted/70 mt-1">
+                {new Date(item.date + 'T00:00:00').toLocaleDateString('en-GB', {
+                  weekday: 'short',
+                  day: 'numeric',
+                  month: 'short',
+                })}
+              </p>
+            )}
           </div>
           <div className="flex-shrink-0">
             <span

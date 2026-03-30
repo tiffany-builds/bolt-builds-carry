@@ -256,7 +256,10 @@ function App() {
 
   if (currentView === 'calendar' && user) {
     const todayItems: TimelineItem[] = items
-      .filter(item => (item.has_date_time && item.date) || (item.type === 'lookforward' && item.start_date))
+      .filter(item =>
+      (item.has_date_time && item.date) ||
+      (item.type === 'lookforward' && (item.start_date || item.date))
+    )
       .map(item => ({
         id: item.id,
         time: item.time || null,
@@ -299,7 +302,10 @@ function App() {
   );
 
   const todayItems: TimelineItem[] = items
-    .filter(item => (item.has_date_time && item.date) || (item.type === 'lookforward' && item.start_date))
+    .filter(item =>
+      (item.has_date_time && item.date) ||
+      (item.type === 'lookforward' && (item.start_date || item.date))
+    )
     .map(item => ({
       id: item.id,
       time: item.time || null,

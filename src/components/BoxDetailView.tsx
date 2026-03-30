@@ -12,6 +12,12 @@ interface Item {
   category: string;
   time_frame: string;
   created_at: string;
+  date: string | null;
+  time: string | null;
+  has_date_time: boolean;
+  type: string;
+  start_date?: string | null;
+  end_date?: string | null;
 }
 
 interface BoxDetailViewProps {
@@ -164,6 +170,17 @@ export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onIt
                       )}
                       {item.description && (
                         <p className="font-ui text-sm text-muted mt-1">{item.description}</p>
+                      )}
+                      {/* Date display */}
+                      {(item.date || item.start_date) && (
+                        <p className="font-ui text-xs text-accent font-medium mt-1">
+                          {new Date((item.date || item.start_date) + 'T00:00:00').toLocaleDateString('en-GB', {
+                            weekday: 'short',
+                            day: 'numeric',
+                            month: 'short',
+                          })}
+                          {item.time && ` · ${item.time.slice(0, 5)}`}
+                        </p>
                       )}
                       {item.time_frame && item.time_frame !== 'future' && (
                         <p className="font-ui text-xs text-muted/70 mt-2 capitalize">
