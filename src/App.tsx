@@ -258,9 +258,9 @@ function App() {
   if (currentView === 'calendar' && user) {
     const todayItems: TimelineItem[] = items
       .filter(item =>
-      (item.has_date_time && item.date) ||
-      (item.type === 'lookforward' && (item.start_date || item.date))
-    )
+        (item.has_date_time && item.date) ||
+        item.type === 'lookforward'
+      )
       .map(item => ({
         id: item.id,
         time: item.time || null,
@@ -305,7 +305,7 @@ function App() {
   const todayItems: TimelineItem[] = items
     .filter(item =>
       (item.has_date_time && item.date) ||
-      (item.type === 'lookforward' && (item.start_date || item.date))
+      item.type === 'lookforward'
     )
     .map(item => ({
       id: item.id,
@@ -345,11 +345,12 @@ function App() {
             isBirthday={isBirthday}
           />
           <AffirmationCard
-            itemCount={lastWeekCount}
-            mindItemCount={mindItems.length}
             isBirthday={isBirthday}
-            todayTotal={todayItems.length}
-            todayCompleted={todayItems.filter(i => i.completed).length}
+            allDoneToday={
+              todayItems.filter(i => i.date === new Date().toISOString().split('T')[0]).length > 0 &&
+              todayItems.filter(i => i.date === new Date().toISOString().split('T')[0] && !i.completed).length === 0
+            }
+            lastWeekCount={lastWeekCount}
           />
           <TimelineSection
             items={todayItems}

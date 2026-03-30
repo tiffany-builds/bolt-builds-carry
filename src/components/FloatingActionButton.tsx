@@ -183,25 +183,27 @@ Return valid JSON only — no explanation, no markdown.`,
       if (userId) {
         for (const item of newItems) {
           try {
-            const { data: inserted } = await supabase.from('items').insert({
+            const supabaseItem = {
               user_id: userId,
               title: item.title,
               description: item.description,
               category: item.category,
-              emoji: item.emoji,
+              emoji: item.emoji || null,
               completed: false,
               time_frame: 'anytime',
               date: item.type === 'lookforward'
                 ? (item.start_date || item.date)
-                : item.date,
-              time: item.time,
+                : (item.date || null),
+              time: item.time || null,
               has_date_time: item.type === 'lookforward' ? true : (item.has_date_time || false),
               type: item.type,
-              target_month: item.target_month,
-              start_date: item.start_date,
-              end_date: item.end_date,
-              excitement: item.excitement,
-            }).select().single();
+              target_month: item.target_month || null,
+              start_date: item.start_date || null,
+              end_date: item.end_date || null,
+              excitement: item.excitement || null,
+            };
+
+            const { data: inserted } = await supabase.from('items').insert(supabaseItem).select().single();
 
             if (inserted) {
               savedItems.push(inserted);
@@ -392,25 +394,27 @@ Return valid JSON array only — no explanation, no markdown.`,
       if (userId) {
         for (const item of newItems) {
           try {
-            const { data: inserted } = await supabase.from('items').insert({
+            const supabaseItem = {
               user_id: userId,
               title: item.title,
               description: item.description,
               category: item.category,
-              emoji: item.emoji,
+              emoji: item.emoji || null,
               completed: false,
               time_frame: 'anytime',
               date: item.type === 'lookforward'
                 ? (item.start_date || item.date)
-                : item.date,
-              time: item.time,
+                : (item.date || null),
+              time: item.time || null,
               has_date_time: item.type === 'lookforward' ? true : (item.has_date_time || false),
               type: item.type,
-              target_month: item.target_month,
-              start_date: item.start_date,
-              end_date: item.end_date,
-              excitement: item.excitement,
-            }).select().single();
+              target_month: item.target_month || null,
+              start_date: item.start_date || null,
+              end_date: item.end_date || null,
+              excitement: item.excitement || null,
+            };
+
+            const { data: inserted } = await supabase.from('items').insert(supabaseItem).select().single();
 
             if (inserted) savedItems.push(inserted);
             else savedItems.push({ ...item, id: crypto.randomUUID(), created_at: new Date().toISOString(), user_id: userId });

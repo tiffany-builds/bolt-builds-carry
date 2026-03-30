@@ -1,87 +1,62 @@
 interface AffirmationCardProps {
-  itemCount: number;
-  mindItemCount: number;
-  isBirthday: boolean;
-  todayTotal: number;
-  todayCompleted: number;
+  isBirthday?: boolean;
+  allDoneToday?: boolean;
+  lastWeekCount?: number;
 }
 
-function getMessage(
-  todayTotal: number,
-  todayCompleted: number,
-  lastWeekCount: number,
-  isBirthday: boolean
-): { headline: string; sub: string } {
+const DAILY_MESSAGES = [
+  "Ready when you are.",
+  "Whatever's in your head — Carry's got it.",
+  "Nothing gets lost from here.",
+  "You don't have to hold all of this alone.",
+  "It's all here whenever you need it.",
+  "One less thing to remember.",
+  "Carry's keeping track so you don't have to.",
+  "Everything in its place.",
+  "Still here. Still holding it all.",
+  "Nothing's slipping through.",
+];
 
-  if (isBirthday) {
-    return {
-      headline: "Happy birthday.",
-      sub: "Whatever's on the list today — it can wait a little."
-    };
-  }
+const DONE_MESSAGES = [
+  "That's today handled.",
+  "All of it. Not a small thing.",
+  "Clean slate. That doesn't happen often.",
+  "Done. Every last one.",
+];
 
-  const remaining = todayTotal - todayCompleted;
+export function AffirmationCard({
+  isBirthday = false,
+  allDoneToday = false,
+  lastWeekCount = 0
+}: AffirmationCardProps) {
 
-  if (todayTotal > 0 && remaining === 0) {
-    const options = [
-      { headline: "That's today handled.", sub: "Everything on the list — done." },
-      { headline: "All of it.", sub: "Not a small thing." },
-      { headline: "Clean slate.", sub: "That doesn't happen often." },
-    ];
-    return options[new Date().getDate() % options.length];
-  }
+  const getMessage = () => {
+    if (isBirthday) {
+      return "Today is yours. Carry's got everything else.";
+    }
 
-  if (todayTotal >= 3 && todayCompleted > 0 && remaining > 0) {
-    const options = [
-      { headline: `${todayCompleted} down.`, sub: `${remaining} left. You're through the hard part.` },
-      { headline: "Making progress.", sub: `${remaining} more thing${remaining > 1 ? 's' : ''} and today's done.` },
-      { headline: "Keep going.", sub: `${remaining} left on today's list.` },
-    ];
-    return options[todayCompleted % options.length];
-  }
+    if (allDoneToday) {
+      const i = new Date().getDate() % DONE_MESSAGES.length;
+      return DONE_MESSAGES[i];
+    }
 
-  if (todayTotal >= 5) {
-    const options = [
-      { headline: `A full one today.`, sub: "Start with the timed ones and the rest will follow." },
-      { headline: `${todayTotal} things today.`, sub: "That's a lot. One at a time." },
-      { headline: "Today's a lot.", sub: "Start somewhere. Anywhere." },
-    ];
-    return options[new Date().getDay() % options.length];
-  }
+    if (lastWeekCount > 0) {
+      const i = new Date().getDay() % DAILY_MESSAGES.length;
+      return DAILY_MESSAGES[i];
+    }
 
-  if (todayTotal > 0 && todayTotal <= 2) {
-    const options = [
-      { headline: "A light one today.", sub: "Make the most of it." },
-      { headline: `Just ${todayTotal} thing${todayTotal > 1 ? 's' : ''} today.`, sub: "Manageable." },
-    ];
-    return options[new Date().getDay() % options.length];
-  }
-
-  if (todayTotal >= 3) {
-    const options = [
-      { headline: `${todayTotal} things on today.`, sub: "You've handled more." },
-      { headline: "A steady day ahead.", sub: `${todayTotal} things to get through.` },
-    ];
-    return options[new Date().getDay() % options.length];
-  }
-
-  if (lastWeekCount > 0) {
-    const options = [
-      { headline: `${lastWeekCount} things last week.`, sub: "That's not nothing." },
-      { headline: "Nothing on today.", sub: "Don't fill it out of habit." },
-      { headline: "A quiet one.", sub: "Rare. Enjoy it." },
-    ];
-    return options[new Date().getDay() % options.length];
-  }
-
-  return {
-    headline: "Ready when you are.",
-    sub: "Just talk, and Carry will organise the rest."
+    return "Ready when you are. Just talk, and Carry will organise the rest.";
   };
-}
 
-export function AffirmationCard({ itemCount, mindItemCount, isBirthday, todayTotal, todayCompleted }: AffirmationCardProps) {
-  const message = getMessage(todayTotal, todayCompleted, itemCount, isBirthday);
+  const getSubtext = () => {
+    if (isBirthday || allDoneToday) return null;
+    if (lastWeekCount > 0) {
+      return `${lastWeekCount} things carried last week.`;
+    }
+    return null;
+  };
+
+  const subtext = getSubtext();
 
   return (
     <div className="animate-fade-up stagger-2">
@@ -91,11 +66,13 @@ export function AffirmationCard({ itemCount, mindItemCount, isBirthday, todayTot
           This week
         </p>
         <p className="font-display italic text-xl font-light text-text leading-relaxed">
-          {message.headline}
+          {getMessage()}
         </p>
-        <p className="font-ui text-sm text-muted mt-2">
-          {message.sub}
-        </p>
+        {subtext && (
+          <p className="font-ui text-sm text-muted font-light mt-2">
+            {subtext}
+          </p>
+        )}
       </div>
     </div>
   );
