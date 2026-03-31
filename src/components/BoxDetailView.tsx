@@ -4,6 +4,7 @@ import { getContextualEmoji } from '../utils/mindNudges';
 import { getCategoryDisplayName } from '../utils/categoryHelpers';
 import { parseDateString } from '../utils/dateFormatting';
 import { supabase } from '../lib/supabase';
+import { DEFAULT_CATEGORIES } from '../data/defaultCategories';
 
 interface Item {
   id: string;
@@ -38,6 +39,7 @@ export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onIt
   const [touchStart, setTouchStart] = useState(0);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
 
   const handleTouchStart = (e: React.TouchEvent, itemId: string) => {
     setTouchStart(e.touches[0].clientX);
@@ -94,6 +96,20 @@ export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onIt
       setEditingId(null);
       setEditingText('');
     }
+  };
+
+  const updateItemCategory = async (itemId: string, newCategory: string) => {
+    try {
+      await supabase
+        .from('items')
+        .update({ category: newCategory })
+        .eq('id', itemId);
+
+      onItemDelete(itemId);
+    } catch (err) {
+      console.log('Error updating category:', err);
+    }
+    setEditingCategoryId(null);
   };
 
   const displayName = getCategoryDisplayName(categoryName);
@@ -196,6 +212,40 @@ export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onIt
                         <p className="font-ui text-xs text-muted/70 mt-2 capitalize">
                           {item.time_frame.replace('_', ' ')}
                         </p>
+                      )}
+
+                      {/* Category pill — tap to change */}
+                      {editingCategoryId === item.id ? (
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {DEFAULT_CATEGORIES.map(cat => (
+                            <button
+                              key={cat.id}
+                              onClick={() => updateItemCategory(item.id, cat.name)}
+                              className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-ui font-medium transition-all ${
+                                cat.name === item.category
+                                  ? 'bg-accent text-surface'
+                                  : 'bg-cream border border-border text-muted hover:border-accent/30'
+                              }`}
+                            >
+                              {cat.emoji} {cat.name}
+                            </button>
+                          ))}
+                          <button
+                            onClick={() => setEditingCategoryId(null)}
+                            className="px-3 py-1 rounded-full text-xs font-ui text-muted border border-border hover:border-accent/30 transition-all"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setEditingCategoryId(item.id)}
+                          className="mt-2 flex items-center gap-1 text-xs font-ui text-muted hover:text-accent transition-colors"
+                        >
+                          <span>{DEFAULT_CATEGORIES.find(c => c.name === item.category)?.emoji || '📁'}</span>
+                          <span>{item.category}</span>
+                          <span className="opacity-50 text-xs">· move</span>
+                        </button>
                       )}
                     </div>
                   </div>
