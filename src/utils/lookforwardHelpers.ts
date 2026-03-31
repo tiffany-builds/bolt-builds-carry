@@ -1,5 +1,7 @@
+import { parseDateString } from './dateFormatting';
+
 export function formatLookforwardDate(startDate: string, endDate?: string | null): string {
-  const start = new Date(startDate);
+  const start = parseDateString(startDate);
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -7,7 +9,7 @@ export function formatLookforwardDate(startDate: string, endDate?: string | null
     return `${start.getDate()} ${months[start.getMonth()]}`;
   }
 
-  const end = new Date(endDate);
+  const end = parseDateString(endDate);
   if (start.getMonth() === end.getMonth()) {
     return `${start.getDate()}–${end.getDate()} ${months[start.getMonth()]}`;
   }
@@ -18,7 +20,7 @@ export function getDaysUntil(dateStr: string): string {
   if (!dateStr) return '';
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const target = new Date(dateStr);
+  const target = parseDateString(dateStr);
   target.setHours(0, 0, 0, 0);
   const days = Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ArrowLeft, Check } from 'lucide-react';
 import { getContextualEmoji } from '../utils/mindNudges';
 import { getCategoryDisplayName } from '../utils/categoryHelpers';
+import { parseDateString } from '../utils/dateFormatting';
 import { supabase } from '../lib/supabase';
 
 interface Item {
@@ -183,7 +184,7 @@ export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onIt
                       {/* Date display */}
                       {(item.date || item.start_date) && (
                         <p className="font-ui text-xs text-accent font-medium mt-1">
-                          {new Date((item.date || item.start_date) + 'T00:00:00').toLocaleDateString('en-GB', {
+                          {parseDateString(item.date || item.start_date).toLocaleDateString('en-GB', {
                             weekday: 'short',
                             day: 'numeric',
                             month: 'short',

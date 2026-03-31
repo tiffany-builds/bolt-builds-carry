@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { TimelineItem } from '../types';
 import { getCategoryColor } from '../utils/categoryColors';
-import { formatDayLabel, formatTime, getWeekDays, getTodayDateString } from '../utils/dateFormatting';
+import { formatDayLabel, formatTime, getWeekDays, getTodayDateString, parseDateString } from '../utils/dateFormatting';
 import { getContextualEmoji } from '../utils/mindNudges';
 import { supabase } from '../lib/supabase';
 import { Check } from 'lucide-react';
@@ -92,7 +92,7 @@ function TimelineItemCard({ item, onComplete, onDelete, swipingId, swipeOffset, 
             )}
             {item.date && (
               <p className="font-ui text-xs text-muted/70 mt-1">
-                {new Date(item.date + 'T00:00:00').toLocaleDateString('en-GB', {
+                {parseDateString(item.date).toLocaleDateString('en-GB', {
                   weekday: 'short',
                   day: 'numeric',
                   month: 'short',

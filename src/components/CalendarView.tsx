@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, ArrowLeft, Check } from 'lucide-react';
 import { TimelineItem } from '../types';
 import { getContextualEmoji } from '../utils/mindNudges';
+import { parseDateString } from '../utils/dateFormatting';
 import { supabase } from '../lib/supabase';
 
 interface CalendarViewProps {
@@ -106,21 +107,21 @@ export function CalendarView({ userId, items, onBack, onItemComplete, onShowToas
 
   const lookforwardItems = useMemo(() => {
     if (!selectedDate) return [];
-    const selectedDateObj = new Date(selectedDate);
+    const selectedDateObj = parseDateString(selectedDate);
     return items.filter(item => {
       if (item.type !== 'lookforward' || !item.start_date || !item.end_date) return false;
-      const startDate = new Date(item.start_date);
-      const endDate = new Date(item.end_date);
+      const startDate = parseDateString(item.start_date);
+      const endDate = parseDateString(item.end_date);
       return selectedDateObj >= startDate && selectedDateObj <= endDate;
     });
   }, [selectedDate, items]);
 
   const getMultiDayRanges = (day: CalendarDay) => {
-    const dayDate = new Date(day.dateString);
+    const dayDate = parseDateString(day.dateString);
     return items.filter(item => {
       if (item.type !== 'lookforward' || !item.start_date || !item.end_date) return false;
-      const startDate = new Date(item.start_date);
-      const endDate = new Date(item.end_date);
+      const startDate = parseDateString(item.start_date);
+      const endDate = parseDateString(item.end_date);
       return dayDate >= startDate && dayDate <= endDate;
     });
   };
@@ -163,8 +164,8 @@ export function CalendarView({ userId, items, onBack, onItemComplete, onShowToas
   };
 
   const formatDateRange = (startDate: string, endDate: string) => {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+    const start = parseDateString(startDate);
+    const end = parseDateString(endDate);
     const startDay = start.getDate();
     const endDay = end.getDate();
     const startMonth = MONTH_NAMES[start.getMonth()].slice(0, 3);
@@ -276,7 +277,7 @@ export function CalendarView({ userId, items, onBack, onItemComplete, onShowToas
         {selectedDate && selectedDayItems.length > 0 && (
           <div className="bg-[#FDF9F4] rounded-[14px] border border-[rgba(44,36,32,0.08)] p-5 mb-4">
             <h3 className="text-sm font-ui font-medium text-[#2C2420] mb-4">
-              {new Date(selectedDate).toLocaleDateString('en-GB', {
+              {parseDateString(selectedDate).toLocaleDateString('en-GB', {
                 weekday: 'long',
                 day: 'numeric',
                 month: 'long'
