@@ -15,13 +15,13 @@ export function formatTime(timeStr: string | null): string {
 
 export function getWeekDays(): Date[] {
   const today = new Date();
-  const weekDays: Date[] = [];
-  for (let i = 0; i < 7; i++) {
+  const days: Date[] = [];
+  for (let i = 0; i < 28; i++) {
     const day = new Date(today);
     day.setDate(today.getDate() + i);
-    weekDays.push(day);
+    days.push(day);
   }
-  return weekDays;
+  return days;
 }
 
 export function getTodayDateString(): string {

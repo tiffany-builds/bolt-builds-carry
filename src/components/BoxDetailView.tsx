@@ -167,6 +167,14 @@ export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onIt
                           onClick={() => handleTitleClick(item)}
                         >
                           {item.emoji || getContextualEmoji(item.title, item.category)} {item.title}
+                          {((item as any).recurring || (item as any).recurring_parent_id) && (
+                            <span style={{
+                              fontSize: '10px',
+                              color: 'var(--muted)',
+                              marginLeft: '6px',
+                              opacity: 0.7
+                            }}>↻</span>
+                          )}
                         </h3>
                       )}
                       {item.description && (

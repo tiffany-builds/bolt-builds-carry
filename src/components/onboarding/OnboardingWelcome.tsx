@@ -17,16 +17,16 @@ export function OnboardingWelcome({ onContinue }: OnboardingWelcomeProps) {
 
   return (
     <div className="min-h-screen bg-cream flex flex-col">
-      <ProgressDots total={8} current={0} />
+      <ProgressDots total={3} current={0} />
 
       <div className="flex-1 flex items-center justify-center px-8">
         <div className="w-full max-w-md space-y-8">
           <div className="space-y-4">
             <h1 className="font-display font-light italic text-4xl text-text">
-              Hello. Let's set up Carry for you.
+              Hi. Let's set up Carry.
             </h1>
             <p className="font-ui font-light text-muted text-lg">
-              Just a few things so Carry can get to know you.
+              Takes about a minute.
             </p>
           </div>
 

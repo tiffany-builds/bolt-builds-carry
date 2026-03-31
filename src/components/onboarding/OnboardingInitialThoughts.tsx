@@ -19,16 +19,16 @@ export function OnboardingInitialThoughts({ onContinue, onSkip }: OnboardingInit
 
   return (
     <div className="min-h-screen bg-cream flex flex-col">
-      <ProgressDots total={9} current={7} />
+      <ProgressDots total={3} current={2} />
 
       <div className="flex-1 flex items-center justify-center px-8 py-8">
         <div className="w-full max-w-md space-y-8">
           <div className="space-y-4">
             <h1 className="font-display font-light italic text-4xl text-text">
-              Anything already on your mind?
+              Just talk. What's on your plate?
             </h1>
             <p className="font-display font-light italic text-muted text-lg">
-              Even something vague — Carry will hold onto it for you.
+              Say anything — Carry will sort it out.
             </p>
           </div>
 
@@ -36,7 +36,7 @@ export function OnboardingInitialThoughts({ onContinue, onSkip }: OnboardingInit
             <textarea
               value={thoughts}
               onChange={(e) => setThoughts(e.target.value)}
-              placeholder="A holiday you're thinking about, something you need to sort, a date coming up..."
+              placeholder="School pickups, appointments, things you keep forgetting, something coming up..."
               className="w-full bg-surface border border-border rounded-xl px-4 py-4 font-ui text-text placeholder:text-muted/50 focus:outline-none focus:border-accent transition-colors min-h-[150px] resize-none"
             />
 
@@ -53,7 +53,7 @@ export function OnboardingInitialThoughts({ onContinue, onSkip }: OnboardingInit
                 disabled={!thoughts.trim()}
                 className="flex-1 bg-accent text-surface rounded-xl px-6 py-4 font-ui font-medium hover:bg-accent/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                I'm ready →
+                Let's go →
               </button>
             </div>
           </form>

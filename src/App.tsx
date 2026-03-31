@@ -19,6 +19,7 @@ import { useItems } from './hooks/useItems';
 import { UserProfile, UserCategory, TimelineItem } from './types';
 import { supabase } from './lib/supabase';
 import { categorizeAndCreateItems } from './hooks/useItemCategorization';
+import { generateRecurringInstances } from './utils/recurringItems';
 
 type OnboardingStep = 'welcome' | 'name' | 'family' | 'ready' | 'complete';
 type View = 'home' | 'boxDetail' | 'everything' | 'calendar';
@@ -68,6 +69,12 @@ function App() {
           setUserProfile(profile);
           setIsBirthday(checkBirthday(profile));
           setOnboardingStep('complete');
+
+          // Generate recurring instances in background
+          generateRecurringInstances(user.id).then(() => {
+            loadItems();
+          });
+
           const count = await getLastWeekItemCount(user.id);
           setLastWeekCount(count);
         } else {
@@ -158,11 +165,22 @@ function App() {
 
           // Save the name locally regardless
           const name = onboardingData.name || 'there';
+          const caringFor = onboardingData.caringFor || [];
+          const children = onboardingData.children || [];
+
           setUserName(name);
+
+          // Build child names string for Claude context
+          const childNamesStr = children
+            .filter(c => c.name)
+            .map(c => c.name)
+            .join(', ');
 
           // Persist to localStorage immediately after onboarding
           localStorage.setItem(`carry_onboarded_${user.id}`, 'true');
           localStorage.setItem(`carry_name_${user.id}`, name);
+          localStorage.setItem(`carry_caring_for_${user.id}`, JSON.stringify(caringFor));
+          localStorage.setItem(`carry_children_${user.id}`, childNamesStr);
 
           // Try to save to Supabase but don't block on failure
           try {
@@ -171,9 +189,7 @@ function App() {
               .upsert({
                 id: user.id,
                 first_name: name,
-                birthday_day: onboardingData.birthdayDay || null,
-                birthday_month: onboardingData.birthdayMonth || null,
-                caring_for: onboardingData.caringFor || [],
+                caring_for: caringFor,
                 onboarding_complete: true,
               }, { onConflict: 'id' })
               .select()

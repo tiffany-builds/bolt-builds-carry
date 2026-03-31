@@ -100,11 +100,20 @@ DATE RULES:
 - Always calculate dates going FORWARD, never backwards
 - "Next week" means 7-14 days from today
 
-RECURRING RULES:
-- If the user mentions something happening regularly (every day, every week, every Monday etc), add "recurring": true and "recurringPattern": "daily" / "weekly" / "monthly" to the item
-- Examples: "football every Monday" → recurring: true, recurringPattern: "weekly"
+RECURRING ITEM RULES:
+If the user mentions something happening on a regular schedule, add these fields:
+- recurring: true
+- recurringPattern: "weekly" | "daily" | "monthly"
+- recurringDayOfWeek: 0-6 (0=Sunday, 1=Monday ... 6=Saturday) for weekly items
+- recurringTime: "HH:MM" if a time is mentioned
+
+Examples:
+- "Leo has football every Thursday at 4pm" → recurring: true, recurringPattern: "weekly", recurringDayOfWeek: 4, recurringTime: "16:00"
+- "daycare every Monday Wednesday Friday" → create THREE separate recurring items, one for each day
 - "take medication every morning" → recurring: true, recurringPattern: "daily"
-- Default is recurring: false
+
+For recurring items, set the first date to the next upcoming occurrence of that day.
+Always include these fields in the JSON alongside the standard fields.
 
 Extract all items from the input and return ONLY a valid JSON array. Each item must have:
 - title (max 6 words, no "remind me to" prefix)
@@ -116,6 +125,8 @@ Extract all items from the input and return ONLY a valid JSON array. Each item m
 - hasDateTime (true or false)
 - recurring (true or false)
 - recurringPattern (daily, weekly, monthly or null)
+- recurringDayOfWeek (0-6 or null)
+- recurringTime (HH:MM or null)
 
 For lookforward items also include:
 - startDate (YYYY-MM-DD)
@@ -163,8 +174,8 @@ Return valid JSON only — no explanation, no markdown.`,
         completed: false,
         time_frame: 'anytime',
         date: item.date || null,
-        time: item.time || null,
-        has_date_time: item.hasDateTime || false,
+        time: item.recurringTime || item.time || null,
+        has_date_time: item.recurring ? true : (item.hasDateTime || false),
         type: item.type || 'task',
         target_month: item.targetMonth || null,
         start_date: item.startDate || null,
@@ -172,6 +183,7 @@ Return valid JSON only — no explanation, no markdown.`,
         excitement: item.excitement || null,
         recurring: item.recurring || false,
         recurring_pattern: item.recurringPattern || null,
+        recurring_day_of_week: item.recurringDayOfWeek ?? null,
       }));
 
       // Check for recurring items
@@ -197,6 +209,9 @@ Return valid JSON only — no explanation, no markdown.`,
               time: item.time || null,
               has_date_time: item.type === 'lookforward' ? true : (item.has_date_time || false),
               type: item.type,
+              recurring: item.recurring || false,
+              recurring_pattern: item.recurring_pattern || null,
+              recurring_day_of_week: item.recurring_day_of_week ?? null,
               target_month: item.target_month || null,
               start_date: item.start_date || null,
               end_date: item.end_date || null,
@@ -408,6 +423,9 @@ Return valid JSON array only — no explanation, no markdown.`,
               time: item.time || null,
               has_date_time: item.type === 'lookforward' ? true : (item.has_date_time || false),
               type: item.type,
+              recurring: item.recurring || false,
+              recurring_pattern: item.recurring_pattern || null,
+              recurring_day_of_week: item.recurring_day_of_week ?? null,
               target_month: item.target_month || null,
               start_date: item.start_date || null,
               end_date: item.end_date || null,

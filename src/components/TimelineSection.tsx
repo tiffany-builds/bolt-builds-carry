@@ -78,6 +78,14 @@ function TimelineItemCard({ item, onComplete, onDelete, swipingId, swipeOffset, 
           <div className="flex-1">
             <h3 className={`font-ui font-medium text-text mb-1 ${isCompleted ? 'line-through' : ''}`}>
               {displayEmoji} {item.title}
+              {((item as any).recurring || (item as any).recurring_parent_id) && (
+                <span style={{
+                  fontSize: '10px',
+                  color: 'var(--muted)',
+                  marginLeft: '6px',
+                  opacity: 0.7
+                }}>↻</span>
+              )}
             </h3>
             {item.detail && (
               <p className="font-ui text-sm text-muted font-light">{item.detail}</p>
