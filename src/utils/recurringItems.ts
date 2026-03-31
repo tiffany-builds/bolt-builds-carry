@@ -14,26 +14,41 @@ interface RecurringItem {
   type: string;
 }
 
+let hasGeneratedThisSession = false;
+
 function getNextOccurrences(
   dayOfWeek: number,
   weeksAhead: number = 4
 ): string[] {
   const dates: string[] = [];
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+
+  const now = new Date();
+  const todayLocal = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate()
+  );
+  const todayDayOfWeek = todayLocal.getDay();
 
   for (let week = 0; week < weeksAhead; week++) {
-    const date = new Date(today);
-    let daysUntil = dayOfWeek - today.getDay();
+    let daysUntil = dayOfWeek - todayDayOfWeek;
     if (daysUntil < 0) daysUntil += 7;
-    if (daysUntil === 0 && week === 0) daysUntil = 0;
-    date.setDate(today.getDate() + daysUntil + (week * 7));
+    const totalDays = daysUntil + (week * 7);
 
-    const dateStr = date.toISOString().split('T')[0];
-    if (dateStr >= today.toISOString().split('T')[0]) {
-      dates.push(dateStr);
-    }
+    const targetDate = new Date(
+      todayLocal.getFullYear(),
+      todayLocal.getMonth(),
+      todayLocal.getDate() + totalDays
+    );
+
+    const year = targetDate.getFullYear();
+    const month = String(targetDate.getMonth() + 1).padStart(2, '0');
+    const day = String(targetDate.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
+
+    dates.push(dateStr);
   }
+
   return [...new Set(dates)];
 }
 
@@ -42,17 +57,25 @@ async function instanceExists(
   parentId: string,
   date: string
 ): Promise<boolean> {
-  const { data } = await supabase
-    .from('items')
-    .select('id')
-    .eq('user_id', userId)
-    .eq('recurring_parent_id', parentId)
-    .eq('date', date)
-    .maybeSingle();
-  return !!data;
+  try {
+    const { data, error } = await supabase
+      .from('items')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('recurring_parent_id', parentId)
+      .eq('date', date);
+
+    if (error) return false;
+    return data !== null && data.length > 0;
+  } catch {
+    return false;
+  }
 }
 
 export async function generateRecurringInstances(userId: string): Promise<void> {
+  if (hasGeneratedThisSession) return;
+  hasGeneratedThisSession = true;
+
   try {
     const { data: recurringItems, error } = await supabase
       .from('items')
@@ -92,9 +115,15 @@ export async function generateRecurringInstances(userId: string): Promise<void> 
       if (item.recurring_pattern === 'daily') {
         const today = new Date();
         for (let i = 0; i < 14; i++) {
-          const date = new Date(today);
-          date.setDate(today.getDate() + i);
-          const dateStr = date.toISOString().split('T')[0];
+          const target = new Date(
+            today.getFullYear(),
+            today.getMonth(),
+            today.getDate() + i
+          );
+          const year = target.getFullYear();
+          const month = String(target.getMonth() + 1).padStart(2, '0');
+          const day = String(target.getDate()).padStart(2, '0');
+          const dateStr = `${year}-${month}-${day}`;
 
           const exists = await instanceExists(userId, item.id, dateStr);
           if (!exists) {
