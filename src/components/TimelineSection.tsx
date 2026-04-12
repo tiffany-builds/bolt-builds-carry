@@ -132,14 +132,15 @@ export function TimelineSection({ items, onItemComplete, onItemDelete, onShowToa
   const [swipingId, setSwipingId] = useState<string | null>(null);
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [touchStartX, setTouchStartX] = useState(0);
+  const [showAll, setShowAll] = useState(false);
 
-  const weekDays = getWeekDays();
+  const weekDays = getWeekDays(showAll ? 28 : 7);
   const todayStr = getTodayDateString();
 
   const timelineItems = items.filter(i => i.date);
 
   const itemsByDay: DayGroup[] = weekDays.map(day => {
-    const dateStr = day.toISOString().split('T')[0];
+    const dateStr = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
     const isToday = dateStr === todayStr;
     const dayItems = timelineItems
       .filter(i => i.date === dateStr)
@@ -207,6 +208,22 @@ export function TimelineSection({ items, onItemComplete, onItemDelete, onShowToa
           </div>
         </div>
       ))}
+      {!showAll && (
+        <button
+          onClick={() => setShowAll(true)}
+          className="w-full py-3 font-ui text-sm text-muted font-light hover:text-accent transition-colors"
+        >
+          Show further ahead →
+        </button>
+      )}
+      {showAll && (
+        <button
+          onClick={() => setShowAll(false)}
+          className="w-full py-3 font-ui text-sm text-muted font-light hover:text-accent transition-colors"
+        >
+          Show less ↑
+        </button>
+      )}
     </div>
   );
 }

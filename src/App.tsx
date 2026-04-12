@@ -20,6 +20,7 @@ import { UserProfile, UserCategory, TimelineItem } from './types';
 import { supabase } from './lib/supabase';
 import { categorizeAndCreateItems } from './hooks/useItemCategorization';
 import { generateRecurringInstances } from './utils/recurringItems';
+import { getTodayDateString } from './utils/dateFormatting';
 
 type OnboardingStep = 'welcome' | 'name' | 'family' | 'ready' | 'complete';
 type View = 'home' | 'boxDetail' | 'everything' | 'calendar';
@@ -95,6 +96,8 @@ function App() {
 
     const fixOldCategories = async () => {
       if (!user?.id) return;
+      const alreadyFixed = localStorage.getItem(`carry_cats_fixed_${user.id}`);
+      if (alreadyFixed) return;
 
       const categoryMap: Record<string, string> = {
         'Ideas': 'Me',
@@ -114,6 +117,7 @@ function App() {
           .eq('user_id', user.id)
           .eq('category', oldCat);
       }
+      localStorage.setItem(`carry_cats_fixed_${user.id}`, 'true');
     };
 
     if (!authLoading) {
@@ -275,7 +279,7 @@ function App() {
     const todayItems: TimelineItem[] = items
       .filter(item =>
         (item.has_date_time && item.date) ||
-        item.type === 'lookforward'
+        (item.type === 'lookforward' && (item.start_date || item.date))
       )
       .map(item => ({
         id: item.id,
@@ -287,12 +291,13 @@ function App() {
         date: item.date || item.start_date || null,
         detail: item.description || null,
         type: item.type,
-        hasDateTime: item.has_date_time,
+        hasDateTime: item.has_date_time || item.type === 'lookforward',
         targetMonth: item.target_month,
         created_at: item.created_at,
         start_date: item.start_date || null,
         end_date: item.end_date || null,
         excitement: item.excitement || null,
+        emoji: (item as any).emoji || null,
       }));
 
     return (
@@ -321,7 +326,7 @@ function App() {
   const todayItems: TimelineItem[] = items
     .filter(item =>
       (item.has_date_time && item.date) ||
-      item.type === 'lookforward'
+      (item.type === 'lookforward' && (item.start_date || item.date))
     )
     .map(item => ({
       id: item.id,
@@ -333,12 +338,13 @@ function App() {
       date: item.date || item.start_date || null,
       detail: item.description || null,
       type: item.type,
-      hasDateTime: item.has_date_time,
+      hasDateTime: item.has_date_time || item.type === 'lookforward',
       targetMonth: item.target_month,
       created_at: item.created_at,
       start_date: item.start_date || null,
       end_date: item.end_date || null,
       excitement: item.excitement || null,
+      emoji: (item as any).emoji || null,
     }));
 
   const handleRemoveItem = async (itemId: string) => {
@@ -357,14 +363,14 @@ function App() {
         <div className="px-5 space-y-8">
           <Header
             userName={userName}
-            todayCount={todayItems.filter(i => i.date === new Date().toISOString().split('T')[0]).length}
+            todayCount={todayItems.filter(i => i.date === getTodayDateString()).length}
             isBirthday={isBirthday}
           />
           <AffirmationCard
             isBirthday={isBirthday}
             allDoneToday={
-              todayItems.filter(i => i.date === new Date().toISOString().split('T')[0]).length > 0 &&
-              todayItems.filter(i => i.date === new Date().toISOString().split('T')[0] && !i.completed).length === 0
+              todayItems.filter(i => i.date === getTodayDateString()).length > 0 &&
+              todayItems.filter(i => i.date === getTodayDateString() && !i.completed).length === 0
             }
             lastWeekCount={lastWeekCount}
           />

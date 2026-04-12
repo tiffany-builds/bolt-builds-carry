@@ -24,9 +24,6 @@ export function useItems(userId: string | null) {
   const [items, setItems] = useState<Item[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-  }, [items]);
-
   const loadItems = useCallback(async () => {
     if (!userId) {
       setIsLoading(false);
@@ -42,9 +39,7 @@ export function useItems(userId: string | null) {
 
       if (error) throw error;
 
-      if (data && data.length > 0) {
-        setItems(data);
-      }
+      setItems(data || []);
     } catch (err) {
       console.log('loadItems error — keeping local state');
     } finally {

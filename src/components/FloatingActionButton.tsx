@@ -1,14 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { Mic, Check, X, Menu, Archive, Calendar, Camera } from 'lucide-react';
-import Anthropic from '@anthropic-ai/sdk';
 import { useSpeechRecognition } from '../utils/useSpeechRecognition';
 import { Toast } from './Toast';
 import { supabase } from '../lib/supabase';
-
-const client = new Anthropic({
-  apiKey: import.meta.env.VITE_ANTHROPIC_API_KEY,
-  dangerouslyAllowBrowser: true
-});
 
 interface FloatingActionButtonProps {
   userId: string | null;
@@ -62,10 +56,10 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
         !hasChildren && !hasPets ? 'Family category covers partner, parents, and personal relationships.' : '',
       ].filter(Boolean).join(' ');
 
-      const message = await client.messages.create({
-        model: 'claude-sonnet-4-5',
-        max_tokens: 2000,
-        system: `You are Carry, a personal assistant. Today is ${dayName} ${dateStr}.
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      const systemPrompt = `You are Carry, a personal assistant. Today is ${dayName} ${dateStr}.
 ${caringContext}
 ${familyContext}
 
@@ -156,12 +150,28 @@ Add an "emoji" field to every item. Choose the most specific and contextually ap
 - Travel: use destination flag or landmark when known
 - Default to the most specific emoji possible — avoid generic ones like 📌 or 📅
 
-Return valid JSON only — no explanation, no markdown.`,
-        messages: [{ role: 'user', content: inputText }]
-      });
+Return valid JSON only — no explanation, no markdown.`;
 
-      const rawText = message.content[0].type === 'text' ? message.content[0].text : '';
-      const cleaned = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/categorize-items`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+          },
+          body: JSON.stringify({
+            text: inputText,
+            systemPrompt: systemPrompt,
+          }),
+        }
+      );
+
+      const { result, error: fnError } = await response.json();
+      if (fnError) throw new Error(fnError);
+
+      const cleaned = result.replace(/```json/gi, '').replace(/```/g, '').trim();
       const parsedItems = JSON.parse(cleaned);
 
       if (!Array.isArray(parsedItems)) throw new Error('Response is not an array');

@@ -1,5 +1,4 @@
 import { supabase } from '../lib/supabase';
-import Anthropic from '@anthropic-ai/sdk';
 
 interface CategorizedItem {
   action?: string;
@@ -17,11 +16,6 @@ interface CategorizedItem {
   endDate?: string | null;
   excitement?: string;
 }
-
-const client = new Anthropic({
-  apiKey: import.meta.env.VITE_ANTHROPIC_API_KEY,
-  dangerouslyAllowBrowser: true
-});
 
 export async function categorizeAndCreateItems(text: string, userId: string) {
   try {
@@ -152,16 +146,29 @@ If no action field is present assume "create".
 
 Return valid JSON array only — no explanation, no markdown, no code blocks.`;
 
-    const message = await client.messages.create({
-      model: "claude-sonnet-4-5",
-      max_tokens: 2000,
-      system: systemPrompt,
-      messages: [{ role: "user", content: text }]
-    });
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
 
-    const responseText = message.content[0].text;
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/categorize-items`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+        },
+        body: JSON.stringify({
+          text: text,
+          systemPrompt: systemPrompt,
+        }),
+      }
+    );
 
-    const items = JSON.parse(responseText) as CategorizedItem[];
+    const { result, error: fnError } = await response.json();
+    if (fnError) throw new Error(fnError);
+
+    const items = JSON.parse(result) as CategorizedItem[];
 
     if (!items || items.length === 0) {
       return [];

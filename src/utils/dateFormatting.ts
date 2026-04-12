@@ -18,15 +18,14 @@ export function formatTime(timeStr: string | null): string {
   return `${h12}:${minutes}${ampm}`;
 }
 
-export function getWeekDays(): Date[] {
+export function getWeekDays(days: number = 7): Date[] {
   const today = new Date();
-  const days: Date[] = [];
-  for (let i = 0; i < 28; i++) {
-    const day = new Date(today);
-    day.setDate(today.getDate() + i);
-    days.push(day);
+  const result: Date[] = [];
+  for (let i = 0; i < days; i++) {
+    const day = new Date(today.getFullYear(), today.getMonth(), today.getDate() + i);
+    result.push(day);
   }
-  return days;
+  return result;
 }
 
 export function getTodayDateString(): string {

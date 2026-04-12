@@ -59,7 +59,7 @@ export function CalendarView({ userId, items, onBack, onItemComplete, onShowToas
     const prevMonthLastDay = new Date(currentYear, currentMonth, 0).getDate();
     for (let i = firstDayOfWeek - 1; i >= 0; i--) {
       const date = new Date(currentYear, currentMonth - 1, prevMonthLastDay - i);
-      const dateString = date.toISOString().split('T')[0];
+      const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
       days.push({
         date,
         isCurrentMonth: false,
@@ -72,8 +72,8 @@ export function CalendarView({ userId, items, onBack, onItemComplete, onShowToas
     // Add current month's days
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(currentYear, currentMonth, day);
-      const dateString = date.toISOString().split('T')[0];
-      const todayString = today.toISOString().split('T')[0];
+      const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+      const todayString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
       days.push({
         date,
         isCurrentMonth: true,
@@ -87,7 +87,7 @@ export function CalendarView({ userId, items, onBack, onItemComplete, onShowToas
     const remainingDays = 42 - days.length; // 6 rows × 7 days
     for (let day = 1; day <= remainingDays; day++) {
       const date = new Date(currentYear, currentMonth + 1, day);
-      const dateString = date.toISOString().split('T')[0];
+      const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
       days.push({
         date,
         isCurrentMonth: false,
