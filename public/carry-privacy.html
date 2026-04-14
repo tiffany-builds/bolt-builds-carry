@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy — Carry</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;1,200;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="theme-color" content="#C4714A">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --sand: #E8DDD0;
+    --cream: #FDF9F4;
+    --terra: #C4714A;
+    --deep: #2C2420;
+    --muted: #8B7355;
+    --border: rgba(44,36,32,0.12);
+  }
+
+  body {
+    background: var(--cream);
+    color: var(--deep);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.8;
+  }
+
+  nav {
+    padding: 20px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    background: var(--cream);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .nav-logo {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 22px;
+    color: var(--deep);
+    text-decoration: none;
+  }
+
+  .nav-back {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .nav-back:hover { color: var(--terra); }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 60px 40px 120px;
+  }
+
+  .page-header {
+    margin-bottom: 56px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .page-header h1 {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 200;
+    font-size: 48px;
+    color: var(--deep);
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+
+  .page-header h1 em {
+    color: var(--terra);
+    font-style: italic;
+  }
+
+  .page-header p {
+    font-size: 15px;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  .last-updated {
+    display: inline-block;
+    background: var(--sand);
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: 100px;
+    margin-bottom: 16px;
+    letter-spacing: 0.04em;
+  }
+
+  section {
+    margin-bottom: 48px;
+  }
+
+  h2 {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 24px;
+    color: var(--deep);
+    margin-bottom: 16px;
+    padding-top: 8px;
+  }
+
+  p {
+    font-size: 15px;
+    color: var(--deep);
+    margin-bottom: 16px;
+    font-weight: 300;
+  }
+
+  ul {
+    margin: 0 0 16px 0;
+    padding-left: 0;
+    list-style: none;
+  }
+
+  ul li {
+    font-size: 15px;
+    color: var(--deep);
+    font-weight: 300;
+    padding: 6px 0 6px 20px;
+    position: relative;
+  }
+
+  ul li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--terra);
+    font-weight: 300;
+  }
+
+  .highlight-box {
+    background: var(--sand);
+    border-radius: 16px;
+    padding: 24px 28px;
+    margin-bottom: 24px;
+    border-left: 3px solid var(--terra);
+  }
+
+  .highlight-box p {
+    margin-bottom: 0;
+    font-size: 15px;
+  }
+
+  a {
+    color: var(--terra);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(196,113,74,0.3);
+    transition: border-color 0.2s;
+  }
+
+  a:hover { border-color: var(--terra); }
+
+  .contact-card {
+    background: var(--sand);
+    border-radius: 20px;
+    padding: 32px;
+    margin-top: 16px;
+  }
+
+  .contact-card p {
+    margin-bottom: 8px;
+  }
+
+  .contact-card p:last-child { margin-bottom: 0; }
+
+  footer {
+    text-align: center;
+    padding: 40px;
+    border-top: 1px solid var(--border);
+    margin-top: 80px;
+  }
+
+  footer a {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 20px;
+    color: var(--deep);
+    text-decoration: none;
+    border: none;
+  }
+
+  footer p {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 8px;
+    margin-bottom: 0;
+  }
+
+  @media (max-width: 640px) {
+    nav { padding: 16px 20px; }
+    .container { padding: 40px 20px 80px; }
+    .page-header h1 { font-size: 36px; }
+    h2 { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">Carry.</a>
+  <a href="/app" class="nav-back">← Back to app</a>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <span class="last-updated">Last updated: April 2026</span>
+    <h1>Your privacy<br>matters <em>a lot.</em></h1>
+    <p>Carry is built to reduce what you hold in your head — not to add to your worries. This policy explains plainly what we collect, why we need it, and what we never do with it.</p>
+  </div>
+
+  <div class="highlight-box">
+    <p><strong>The short version:</strong> We collect only what's needed to make Carry work. We never sell your data. We never use it for advertising. Your personal information stays yours.</p>
+  </div>
+
+  <section>
+    <h2>Who we are</h2>
+    <p>Carry is an AI-powered personal assistant app built to help people manage their mental load. The app is developed and operated by Tiffany MacRae, based in France.</p>
+    <p>If you have any questions about this policy, you can reach us at <a href="mailto:hello@carry-the-app.com">hello@carry-the-app.com</a>.</p>
+  </section>
+
+  <section>
+    <h2>What we collect</h2>
+    <p>We collect the minimum necessary to make Carry useful for you.</p>
+
+    <p><strong>Account information</strong></p>
+    <ul>
+      <li>Your email address — used to create and access your account</li>
+      <li>Your first name — used to personalise your experience</li>
+      <li>Your password — stored securely and encrypted, never readable by us</li>
+    </ul>
+
+    <p><strong>App content</strong></p>
+    <ul>
+      <li>The items, tasks and reminders you add to Carry</li>
+      <li>Dates, times and categories associated with those items</li>
+      <li>Onboarding preferences (who you're carrying for, household setup)</li>
+    </ul>
+
+    <p><strong>Voice and text input</strong></p>
+    <ul>
+      <li>When you speak or type into Carry, that input is sent to Anthropic's Claude AI to be understood and categorised</li>
+      <li>We do not store your raw voice recordings</li>
+      <li>The text transcript of what you said is processed momentarily and then stored only as the structured item Carry creates from it</li>
+    </ul>
+
+    <p><strong>Photos</strong></p>
+    <ul>
+      <li>When you use the photo capture feature, your image is sent to Anthropic's Claude AI for processing</li>
+      <li>We do not store your photos — only the items extracted from them</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>How we use your information</h2>
+    <ul>
+      <li>To provide and improve the Carry service</li>
+      <li>To personalise your experience (your name on the home screen, contextual reminders)</li>
+      <li>To sync your items across devices</li>
+      <li>To send you account-related emails (password reset, important service updates)</li>
+    </ul>
+    <p>We do not use your information for advertising. We do not sell your data to third parties. We do not share your personal information with anyone except the service providers listed below who help us operate Carry.</p>
+  </section>
+
+  <section>
+    <h2>Third-party services we use</h2>
+    <p>Carry is built on trusted infrastructure. Here's who handles your data and why.</p>
+
+    <p><strong>Supabase</strong> — Database and authentication</p>
+    <p>Your account details and app content are stored securely in Supabase's database infrastructure, hosted in the EU. Supabase is SOC 2 compliant. <a href="https://supabase.com/privacy" target="_blank">Supabase Privacy Policy →</a></p>
+
+    <p><strong>Anthropic (Claude AI)</strong> — Voice and photo processing</p>
+    <p>When you add items by voice, text or photo, your input is sent to Anthropic's Claude API to be understood and categorised. Anthropic processes this data according to their API usage policy. Input sent via the API is not used to train Anthropic's models by default. <a href="https://www.anthropic.com/privacy" target="_blank">Anthropic Privacy Policy →</a></p>
+
+    <p><strong>Apple</strong> — iOS app distribution and payments</p>
+    <p>If you download Carry from the App Store or subscribe through it, Apple processes your payment and may collect data in accordance with their privacy policy. <a href="https://www.apple.com/privacy/" target="_blank">Apple Privacy Policy →</a></p>
+  </section>
+
+  <section>
+    <h2>Data storage and security</h2>
+    <ul>
+      <li>Your data is stored on servers located in the European Union</li>
+      <li>All data is encrypted in transit using HTTPS</li>
+      <li>Passwords are hashed and never stored in plain text</li>
+      <li>We use row-level security to ensure your data is only accessible to you</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Your rights</h2>
+    <p>You have the right to:</p>
+    <ul>
+      <li>Access all the data we hold about you</li>
+      <li>Correct any inaccurate information</li>
+      <li>Delete your account and all associated data</li>
+      <li>Export your data in a portable format</li>
+      <li>Object to how we process your data</li>
+    </ul>
+    <p>To exercise any of these rights, email us at <a href="mailto:hello@carry-the-app.com">hello@carry-the-app.com</a>. We will respond within 30 days.</p>
+    <p>If you are based in the EU or UK, you also have the right to lodge a complaint with your local data protection authority.</p>
+  </section>
+
+  <section>
+    <h2>Children's privacy</h2>
+    <p>Carry is not directed at children under the age of 13. We do not knowingly collect personal information from children. If you believe we have inadvertently collected information from a child, please contact us immediately and we will delete it.</p>
+  </section>
+
+  <section>
+    <h2>Data retention</h2>
+    <p>We keep your data for as long as you have an active Carry account. If you delete your account, we will delete all your personal data within 30 days, except where we are required to retain it for legal reasons.</p>
+    <p>Completed items are retained in your account history until you delete them or your account is closed.</p>
+  </section>
+
+  <section>
+    <h2>Changes to this policy</h2>
+    <p>We may update this policy from time to time. When we do, we will update the date at the top of this page. For significant changes, we will notify you by email or through the app. Your continued use of Carry after changes are made constitutes your acceptance of the updated policy.</p>
+  </section>
+
+  <section>
+    <h2>Contact us</h2>
+    <p>If you have any questions, concerns or requests relating to this privacy policy or your personal data, please get in touch.</p>
+    <div class="contact-card">
+      <p><strong>Carry</strong></p>
+      <p>Email: <a href="mailto:hello@carry-the-app.com">hello@carry-the-app.com</a></p>
+      <p>Website: <a href="https://carry-the-app.com">carry-the-app.com</a></p>
+      <p>Based in France, European Union</p>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <a href="/">Carry.</a>
+  <p>For everything you're holding in your head.</p>
+</footer>
+
+</body>
+</html>
