@@ -170,10 +170,12 @@ Return valid JSON only — no explanation, no markdown.`;
         }
       );
 
-      const { result, error: fnError } = await response.json();
-      if (fnError) throw new Error(fnError);
+      const responseData = await response.json();
+      if (responseData.error) throw new Error(responseData.error);
+      const rawResult = responseData.result || responseData.items || '';
+      if (!rawResult) throw new Error('Empty response from function');
 
-      const cleaned = result.replace(/```json/gi, '').replace(/```/g, '').trim();
+      const cleaned = rawResult.replace(/```json/gi, '').replace(/```/g, '').trim();
       const parsedItems = JSON.parse(cleaned);
 
       if (!Array.isArray(parsedItems)) throw new Error('Response is not an array');
