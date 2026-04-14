@@ -30,6 +30,8 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
   };
 
   async function processInput(inputText: string) {
+    console.log('Key check:', import.meta.env.VITE_ANTHROPIC_API_KEY?.substring(0, 15));
+    console.log('API Key present:', !!import.meta.env.VITE_ANTHROPIC_API_KEY, 'Length:', import.meta.env.VITE_ANTHROPIC_API_KEY?.length);
     if (!inputText.trim()) return;
 
     setIsProcessing(true);
@@ -259,7 +261,7 @@ Return valid JSON only — no explanation, no markdown.`;
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       console.error('processInput error:', message);
-      showToast("Didn't quite catch that — want to try again?");
+      showToast(`Error: ${message}`);
     } finally {
       setIsProcessing(false);
       setShowInput(false);
