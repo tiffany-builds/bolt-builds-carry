@@ -342,17 +342,14 @@ Return valid JSON only — no explanation, no markdown.`;
 
       const today = new Date();
       const dayName = today.toLocaleDateString('en-GB', { weekday: 'long' });
-      const dateStr = today.toISOString().split('T')[0];
+      const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
-      const message = await client.messages.create({
-        model: 'claude-sonnet-4-5',
-        max_tokens: 2000,
-        system: `You are Carry, a personal assistant for parents. Today is ${dayName} ${dateStr}.
+      const photoSystemPrompt = `You are Carry, a personal assistant for parents. Today is ${dayName} ${dateStr}.
 
 Extract all actionable information from this image — events, appointments, tasks, dates, times, deadlines.
 
 CATEGORIES — choose exactly one:
-- Family: children's activities, school letters, sports, childcare
+- Family: children's activities, school letters, sports, childcare, pets
 - Home: household tasks, maintenance, deliveries
 - Health: medical, dental, prescriptions, fitness
 - Errands: shopping lists, returns, admin
@@ -367,29 +364,40 @@ For each item found return a JSON object with:
 - date (YYYY-MM-DD if found, otherwise null)
 - time (HH:MM if found, otherwise null)
 - hasDateTime (true if date or time found)
+- emoji (most specific contextual emoji)
 
 If the image contains no actionable information, return an empty array [].
-Return valid JSON array only — no explanation, no markdown.`,
-        messages: [{
-          role: 'user',
-          content: [
-            {
-              type: 'image',
-              source: {
-                type: 'base64',
-                media_type: file.type as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp',
-                data: base64,
-              }
-            },
-            {
-              type: 'text',
-              text: 'What actionable items can you find in this image?'
-            }
-          ]
-        }]
-      });
+Return valid JSON array only — no explanation, no markdown.`;
 
-      const rawText = message.content[0].type === 'text' ? message.content[0].text : '';
+      const { data: { session } } = await supabase.auth.getSession();
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/categorize-items`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session?.access_token}`,
+            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+          },
+          body: JSON.stringify({
+            text: 'What actionable items can you find in this image?',
+            systemPrompt: photoSystemPrompt,
+            imageBase64: base64,
+            imageType: file.type,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Function error: ${errText}`);
+      }
+
+      const { result, error: fnError } = await response.json();
+      if (fnError) throw new Error(fnError);
+
+      const rawText = result;
       const cleaned = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
       const parsedItems = JSON.parse(cleaned);
 

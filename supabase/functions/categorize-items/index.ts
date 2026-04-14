@@ -34,11 +34,11 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { text, systemPrompt: customSystemPrompt } = await req.json();
+    const { text, systemPrompt: customSystemPrompt, imageBase64, imageType } = await req.json();
 
-    if (!text) {
+    if (!text && !imageBase64) {
       return new Response(
-        JSON.stringify({ error: "Missing required field: text" }),
+        JSON.stringify({ error: "Missing required field: text or imageBase64" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -49,11 +49,34 @@ Deno.serve(async (req: Request) => {
 
     const systemPromptToUse = customSystemPrompt || defaultSystemPrompt;
 
+    const messages = imageBase64
+      ? [{
+          role: 'user' as const,
+          content: [
+            {
+              type: 'image' as const,
+              source: {
+                type: 'base64' as const,
+                media_type: (imageType || 'image/jpeg') as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp',
+                data: imageBase64,
+              }
+            },
+            {
+              type: 'text' as const,
+              text: text || 'What actionable items can you find in this image?'
+            }
+          ]
+        }]
+      : [{
+          role: 'user' as const,
+          content: text
+        }];
+
     const message = await client.messages.create({
       model: "claude-sonnet-4-5",
       max_tokens: 2000,
       system: systemPromptToUse,
-      messages: [{ role: "user", content: text }],
+      messages,
     });
 
     const content = message.content[0].type === "text"
