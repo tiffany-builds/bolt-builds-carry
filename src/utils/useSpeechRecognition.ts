@@ -24,13 +24,10 @@ export function useSpeechRecognition({
   const recognitionRef = useRef<any>(null);
 
   const startListening = useCallback(() => {
-    console.log("VOICE: startListening called");
-
     const SpeechRecognition =
       window.SpeechRecognition || (window as any).webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
-      console.log("VOICE: Speech not supported — calling onError");
       onError?.('not-supported');
       return;
     }
@@ -44,7 +41,6 @@ export function useSpeechRecognition({
     let finalTranscript = '';
 
     recognition.onstart = () => {
-      console.log("VOICE: Recognition started");
       setIsListening(true);
       onStart?.();
     };
@@ -62,20 +58,16 @@ export function useSpeechRecognition({
     };
 
     recognition.onend = () => {
-      console.log("VOICE: Recognition ended. Final transcript:", finalTranscript);
       setIsListening(false);
       onStop?.();
       if (finalTranscript.trim()) {
-        console.log("VOICE: Calling onTranscript with:", finalTranscript.trim());
         onTranscript(finalTranscript.trim());
       } else {
-        console.log("VOICE: No transcript captured");
         onError?.('no-speech');
       }
     };
 
     recognition.onerror = (event: any) => {
-      console.log("VOICE: Recognition error:", event.error);
       setIsListening(false);
       onError?.(event.error);
     };
@@ -83,16 +75,13 @@ export function useSpeechRecognition({
     try {
       recognitionRef.current = recognition;
       recognition.start();
-      console.log("VOICE: recognition.start() called successfully");
     } catch (e) {
-      console.log("VOICE: Failed to start recognition:", e);
       setIsListening(false);
       onError?.('start-failed');
     }
   }, [onTranscript, onInterimTranscript, onStart, onStop, onError]);
 
   const stopListening = useCallback(() => {
-    console.log("VOICE: stopListening called");
     if (recognitionRef.current) {
       recognitionRef.current.stop();
       recognitionRef.current = null;

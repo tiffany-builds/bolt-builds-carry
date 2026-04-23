@@ -41,7 +41,6 @@ export function useItems(userId: string | null) {
 
       setItems(data || []);
     } catch (err) {
-      console.log('loadItems error — keeping local state');
     } finally {
       setIsLoading(false);
     }

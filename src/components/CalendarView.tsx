@@ -150,7 +150,6 @@ export function CalendarView({ userId, items, onBack, onItemComplete, onShowToas
       onItemComplete(itemId);
       onShowToast('Done — one less thing to carry');
     } catch (err) {
-      console.error('Failed to complete item:', err);
     }
   };
 

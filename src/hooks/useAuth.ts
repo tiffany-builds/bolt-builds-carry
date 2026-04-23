@@ -67,7 +67,6 @@ export function useAuth() {
       // Reload the page to restart onboarding
       window.location.reload();
     } catch (err) {
-      console.error('Error resetting onboarding:', err);
     }
   };
 

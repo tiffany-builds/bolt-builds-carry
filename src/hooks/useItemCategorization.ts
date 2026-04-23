@@ -264,7 +264,6 @@ Return valid JSON array only — no explanation, no markdown, no code blocks.`;
           .select();
 
         if (error) {
-          console.log('Item save failed but kept in local state:', error);
           // Create local item with temporary ID if Supabase fails
           const localItem = {
             ...itemToInsert,

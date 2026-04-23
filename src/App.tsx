@@ -63,8 +63,6 @@ function App() {
           .eq('id', user.id)
           .maybeSingle();
 
-        if (profileError) console.log('Profile load error:', profileError);
-
         if (profile && profile.onboarding_complete) {
           setUserName(profile.first_name || '');
           setUserProfile(profile);
@@ -83,14 +81,20 @@ function App() {
           const locallyOnboarded = localStorage.getItem(`carry_onboarded_${user.id}`);
           if (locallyOnboarded === 'true') {
             const localName = localStorage.getItem(`carry_name_${user.id}`) || '';
+            const localCaringFor = JSON.parse(localStorage.getItem(`carry_caring_for_${user.id}`) || '[]');
             setUserName(localName);
+            setUserProfile(prev => prev ? prev : {
+              id: user.id,
+              first_name: localName,
+              onboarding_complete: true,
+              caring_for: localCaringFor
+            } as any);
             setOnboardingStep('complete');
           } else {
             setOnboardingStep('welcome');
           }
         }
       } catch (err) {
-        console.log('Error checking existing user:', err);
       }
     };
 
@@ -199,14 +203,9 @@ function App() {
               .select()
               .maybeSingle();
 
-            if (profileError) {
-              console.error('Profile save error:', profileError);
-            } else {
-              console.log('Profile saved successfully');
-              if (updatedProfile) {
-                setUserProfile(updatedProfile);
-                setIsBirthday(checkBirthday(updatedProfile));
-              }
+            if (!profileError && updatedProfile) {
+              setUserProfile(updatedProfile);
+              setIsBirthday(checkBirthday(updatedProfile));
             }
 
             if (onboardingData.initialThoughts) {
@@ -219,8 +218,6 @@ function App() {
             const count = await getLastWeekItemCount(user.id);
             setLastWeekCount(count);
           } catch (err) {
-            // Log but don't throw — let user through anyway
-            console.log('Profile save attempted:', err);
           }
 
           // Always proceed to home screen

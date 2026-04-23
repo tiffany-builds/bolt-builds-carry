@@ -79,7 +79,6 @@ export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onIt
         onItemUpdate(itemId, { title: newTitle.trim() });
       }
     } catch (err) {
-      console.log('Error updating title:', err);
     }
   };
 
@@ -116,7 +115,6 @@ export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onIt
 
       onItemDelete(itemId);
     } catch (err) {
-      console.log('Error updating category:', err);
     }
     setEditingCategoryId(null);
   };

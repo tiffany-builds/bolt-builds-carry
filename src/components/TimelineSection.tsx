@@ -31,7 +31,6 @@ function TimelineItemCard({ item, onComplete, onDelete, swipingId, swipeOffset, 
 
       onComplete(item.id);
     } catch (err) {
-      console.error('Error completing item:', err);
     }
   };
 

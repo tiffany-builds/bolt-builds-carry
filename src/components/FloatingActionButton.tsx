@@ -30,8 +30,6 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
   };
 
   async function processInput(inputText: string) {
-    console.log('Key check:', import.meta.env.VITE_ANTHROPIC_API_KEY?.substring(0, 15));
-    console.log('API Key present:', !!import.meta.env.VITE_ANTHROPIC_API_KEY, 'Length:', import.meta.env.VITE_ANTHROPIC_API_KEY?.length);
     if (!inputText.trim()) return;
 
     setIsProcessing(true);
@@ -240,7 +238,6 @@ Return valid JSON only — no explanation, no markdown.`;
               savedItems.push({ ...item, id: crypto.randomUUID(), created_at: new Date().toISOString(), user_id: userId });
             }
           } catch (saveErr) {
-            console.log('Item save failed but kept locally:', saveErr);
             savedItems.push({ ...item, id: crypto.randomUUID(), created_at: new Date().toISOString(), user_id: userId });
           }
         }
@@ -262,7 +259,6 @@ Return valid JSON only — no explanation, no markdown.`;
 
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      console.error('processInput error:', message);
       showToast(`Error: ${message}`);
     } finally {
       setIsProcessing(false);
@@ -467,7 +463,6 @@ Return valid JSON array only — no explanation, no markdown.`;
       if (onItemsAdded) onItemsAdded(savedItems);
 
     } catch (err) {
-      console.error('Photo processing error:', err);
       showToast("Couldn't read that photo — want to try again?");
     } finally {
       setIsProcessing(false);

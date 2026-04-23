@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { getTodayDateString } from './dateFormatting';
 
 interface RecurringItem {
   id: string;
@@ -13,8 +14,6 @@ interface RecurringItem {
   user_id: string;
   type: string;
 }
-
-let hasGeneratedThisSession = false;
 
 function getNextOccurrences(
   dayOfWeek: number,
@@ -73,8 +72,10 @@ async function instanceExists(
 }
 
 export async function generateRecurringInstances(userId: string): Promise<void> {
-  if (hasGeneratedThisSession) return;
-  hasGeneratedThisSession = true;
+  const today = getTodayDateString();
+  const lastRun = localStorage.getItem(`carry_recurring_last_run_${userId}`);
+  if (lastRun === today) return;
+  localStorage.setItem(`carry_recurring_last_run_${userId}`, today);
 
   try {
     const { data: recurringItems, error } = await supabase
@@ -147,6 +148,5 @@ export async function generateRecurringInstances(userId: string): Promise<void> 
       }
     }
   } catch (err) {
-    console.log('Error generating recurring instances:', err);
   }
 }

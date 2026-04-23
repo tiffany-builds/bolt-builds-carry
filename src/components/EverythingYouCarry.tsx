@@ -55,7 +55,6 @@ export function EverythingYouCarry({ userId, onBack }: EverythingYouCarryProps) 
       if (error) throw error;
       setItems(data || []);
     } catch (err) {
-      console.log('Error loading items:', err);
     } finally {
       setIsLoading(false);
     }
@@ -71,7 +70,6 @@ export function EverythingYouCarry({ userId, onBack }: EverythingYouCarryProps) 
         item.id === itemId ? { ...item, completed: !currentCompleted } : item
       ));
     } catch (err) {
-      console.log('Error toggling item:', err);
     }
   };
 
