@@ -31,9 +31,10 @@ interface BoxDetailViewProps {
   items: Item[];
   onItemComplete: (itemId: string) => void;
   onItemDelete: (itemId: string) => void;
+  onItemUpdate?: (itemId: string, updates: Partial<Item>) => void;
 }
 
-export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onItemComplete, onItemDelete }: BoxDetailViewProps) {
+export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onItemComplete, onItemDelete, onItemUpdate }: BoxDetailViewProps) {
   const [swipingItemId, setSwipingItemId] = useState<string | null>(null);
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [touchStart, setTouchStart] = useState(0);
@@ -68,10 +69,18 @@ export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onIt
 
   const updateItemTitle = async (itemId: string, newTitle: string) => {
     if (!newTitle.trim()) return;
-    await supabase
-      .from('items')
-      .update({ title: newTitle.trim() })
-      .eq('id', itemId);
+    try {
+      await supabase
+        .from('items')
+        .update({ title: newTitle.trim() })
+        .eq('id', itemId);
+
+      if (onItemUpdate) {
+        onItemUpdate(itemId, { title: newTitle.trim() });
+      }
+    } catch (err) {
+      console.log('Error updating title:', err);
+    }
   };
 
   const handleTitleClick = (item: Item) => {

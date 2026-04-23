@@ -252,6 +252,11 @@ function App() {
             await supabase.from('items').delete().eq('id', itemId);
             setItems(prev => prev.filter(i => i.id !== itemId));
           }}
+          onItemUpdate={(itemId, updates) => {
+            setItems(prev => prev.map(item =>
+              item.id === itemId ? { ...item, ...updates } : item
+            ));
+          }}
         />
         <FloatingActionButton
           userId={user.id}
