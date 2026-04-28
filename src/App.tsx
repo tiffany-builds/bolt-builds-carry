@@ -13,6 +13,7 @@ import { OnYourMindSection } from './components/OnYourMindSection';
 import { LookForwardSection } from './components/LookForwardSection';
 import { CalendarView } from './components/CalendarView';
 import { FullOnboardingFlow, OnboardingData } from './components/onboarding/FullOnboardingFlow';
+import { Settings } from './components/Settings';
 import { Toast } from './components/Toast';
 import { useAuth } from './hooks/useAuth';
 import { useItems } from './hooks/useItems';
@@ -23,7 +24,7 @@ import { generateRecurringInstances } from './utils/recurringItems';
 import { getTodayDateString } from './utils/dateFormatting';
 
 type OnboardingStep = 'welcome' | 'name' | 'family' | 'ready' | 'complete';
-type View = 'home' | 'boxDetail' | 'everything' | 'calendar';
+type View = 'home' | 'boxDetail' | 'everything' | 'calendar' | 'settings';
 
 function App() {
   const [onboardingStep, setOnboardingStep] = useState<OnboardingStep>('welcome');
@@ -229,6 +230,15 @@ function App() {
     );
   }
 
+  if (currentView === 'settings' && user) {
+    return (
+      <Settings
+        userEmail={user.email || ''}
+        onBack={() => setCurrentView('home')}
+      />
+    );
+  }
+
   if (currentView === 'boxDetail' && selectedCategory && user) {
     return (
       <>
@@ -367,6 +377,7 @@ function App() {
             userName={userName}
             todayCount={todayItems.filter(i => i.date === getTodayDateString()).length}
             isBirthday={isBirthday}
+            onOpenSettings={() => setCurrentView('settings')}
           />
           <AffirmationCard
             isBirthday={isBirthday}

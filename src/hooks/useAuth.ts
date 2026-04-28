@@ -48,32 +48,9 @@ export function useAuth() {
     }
   };
 
-  const resetOnboarding = async () => {
-    try {
-      const userId = user?.id;
-      if (!userId) return;
-
-      // Update database to mark onboarding as incomplete
-      await supabase
-        .from('profiles')
-        .update({ onboarding_complete: false })
-        .eq('id', userId);
-
-      // Clear all user-specific localStorage
-      localStorage.removeItem(`carry_onboarded_${userId}`);
-      localStorage.removeItem(`carry_name_${userId}`);
-      localStorage.removeItem('carryUserProfile');
-
-      // Reload the page to restart onboarding
-      window.location.reload();
-    } catch (err) {
-    }
-  };
-
   return {
     user,
     isLoading,
     signOut,
-    resetOnboarding,
   };
 }

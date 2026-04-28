@@ -1,14 +1,13 @@
-import { LogOut, RotateCcw } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
+import { Settings as SettingsIcon } from 'lucide-react';
 
 interface HeaderProps {
   userName?: string;
   todayCount?: number;
   isBirthday?: boolean;
+  onOpenSettings?: () => void;
 }
 
-export function Header({ userName = 'Tiffany', todayCount = 0, isBirthday = false }: HeaderProps) {
-  const { signOut, resetOnboarding } = useAuth();
+export function Header({ userName = 'Tiffany', todayCount = 0, isBirthday = false, onOpenSettings }: HeaderProps) {
   const currentDate = new Date();
   const dayName = currentDate.toLocaleDateString('en-US', { weekday: 'long' });
   const formattedDate = currentDate.toLocaleDateString('en-US', {
@@ -31,23 +30,15 @@ export function Header({ userName = 'Tiffany', todayCount = 0, isBirthday = fals
             <>{dayName} looks manageable, <em style={{color: '#C4714A', fontStyle: 'italic'}}>{userName}</em>.</>
           )}
         </h1>
-        <div className="flex gap-2">
+        {onOpenSettings && (
           <button
-            onClick={resetOnboarding}
+            onClick={onOpenSettings}
             className="flex-shrink-0 w-9 h-9 rounded-full bg-surface border border-border flex items-center justify-center hover:border-accent/30 transition-all active:scale-95"
-            aria-label="Reset onboarding"
-            title="Reset & restart onboarding"
+            aria-label="Settings"
           >
-            <RotateCcw className="w-4 h-4 text-muted" />
+            <SettingsIcon className="w-4 h-4 text-muted" />
           </button>
-          <button
-            onClick={signOut}
-            className="flex-shrink-0 w-9 h-9 rounded-full bg-surface border border-border flex items-center justify-center hover:border-accent/30 transition-all active:scale-95"
-            aria-label="Sign out"
-          >
-            <LogOut className="w-4 h-4 text-muted" />
-          </button>
-        </div>
+        )}
       </div>
       <p className="font-ui text-sm text-muted font-light">
         {formattedDate} · {todayCount} {todayCount === 1 ? 'thing' : 'things'} on today
