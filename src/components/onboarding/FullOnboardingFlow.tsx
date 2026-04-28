@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { OnboardingWelcome } from './OnboardingWelcome';
 import { OnboardingAboutYou } from './OnboardingAboutYou';
+import { OnboardingInitialThoughts } from './OnboardingInitialThoughts';
 
 interface FullOnboardingFlowProps {
   userId: string;
@@ -29,13 +30,29 @@ export function FullOnboardingFlow({ userId, onComplete }: FullOnboardingFlowPro
 
   const handleAboutYou = (data: { caringFor: string[]; children: Array<{ name: string }> }) => {
     updateData(data);
-    onComplete({ ...dataRef.current, ...data } as OnboardingData);
+    setStep(2);
+  };
+
+  const handleInitialThoughts = (thoughts: string) => {
+    updateData({ initialThoughts: thoughts });
+    onComplete(dataRef.current as OnboardingData);
+  };
+
+  const handleSkip = () => {
+    onComplete(dataRef.current as OnboardingData);
   };
 
   return (
     <>
       {step === 0 && <OnboardingWelcome onContinue={handleWelcome} />}
       {step === 1 && <OnboardingAboutYou onContinue={handleAboutYou} />}
+      {step === 2 && (
+        <OnboardingInitialThoughts
+          userId={userId}
+          onContinue={handleInitialThoughts}
+          onSkip={handleSkip}
+        />
+      )}
     </>
   );
 }

@@ -114,7 +114,7 @@ export function OnboardingAboutYou({ onContinue }: OnboardingAboutYouProps) {
             disabled={selected.length === 0}
             className="w-full bg-accent text-surface rounded-xl px-6 py-4 font-ui font-medium hover:bg-accent/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Let's go →
+            Continue →
           </button>
         </div>
       </div>
