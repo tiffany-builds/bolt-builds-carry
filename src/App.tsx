@@ -7,6 +7,7 @@ import { BoxesSection } from './components/BoxesSection';
 import { FloatingActionButton } from './components/FloatingActionButton';
 import { SignIn } from './components/auth/SignIn';
 import { LoadingScreen } from './components/LoadingScreen';
+import { CarryLoadingScreen } from './components/CarryLoadingScreen';
 import { BoxDetailView } from './components/BoxDetailView';
 import { EverythingYouCarry } from './components/EverythingYouCarry';
 import { OnYourMindSection } from './components/OnYourMindSection';
@@ -39,6 +40,7 @@ function App() {
   const [hasCompletedOnboardingThisSession, setHasCompletedOnboardingThisSession] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [autoOpenFAB, setAutoOpenFAB] = useState(false);
+  const [isCheckingProfile, setIsCheckingProfile] = useState(true);
 
   const { user, isLoading: authLoading } = useAuth();
   const { items, setItems, isLoading: itemsLoading, loadItems, getCategoryCounts, getOnYourMindItems, getLastWeekItemCount, addItemsToLocalState, removeItemFromState } = useItems(user?.id || null);
@@ -96,7 +98,9 @@ function App() {
           }
         }
       } catch (err) {
+        setIsCheckingProfile(false);
       }
+      setIsCheckingProfile(false);
     };
 
     const fixOldCategories = async () => {
@@ -139,6 +143,10 @@ function App() {
 
   if (authLoading || isLoading) {
     return <LoadingScreen />;
+  }
+
+  if (isCheckingProfile && user) {
+    return <CarryLoadingScreen />;
   }
 
   if (!user) {
