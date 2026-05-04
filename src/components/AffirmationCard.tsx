@@ -5,16 +5,15 @@ interface AffirmationCardProps {
 }
 
 const DAILY_MESSAGES = [
-  "Ready when you are.",
-  "Whatever's in your head — Carry's got it.",
-  "Nothing gets lost from here.",
-  "You don't have to hold all of this alone.",
-  "It's all here whenever you need it.",
-  "One less thing to remember.",
-  "Carry's keeping track so you don't have to.",
-  "Everything in its place.",
-  "Still here. Still holding it all.",
-  "Nothing's slipping through.",
+  "Everything in your head has a place here.",
+  "The invisible work isn't invisible here.",
+  "Whatever's on your plate — Carry's got it.",
+  "Nothing falls through the cracks.",
+  "You remember everything. Carry helps.",
+  "The mental load is real. So is this.",
+  "It all lives here now.",
+  "Keep talking. Carry keeps listening.",
+  "One less thing to hold in your head.",
 ];
 
 const DONE_MESSAGES = [
@@ -51,7 +50,7 @@ export function AffirmationCard({
   const getSubtext = () => {
     if (isBirthday || allDoneToday) return null;
     if (lastWeekCount > 0) {
-      return `${lastWeekCount} things carried last week.`;
+      return `You carried ${lastWeekCount} things last week.`;
     }
     return null;
   };
