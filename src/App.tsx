@@ -15,6 +15,7 @@ import { LookForwardSection } from './components/LookForwardSection';
 import { CalendarView } from './components/CalendarView';
 import { FullOnboardingFlow, OnboardingData } from './components/onboarding/FullOnboardingFlow';
 import { Settings } from './components/Settings';
+import { NavigationSheet } from './components/NavigationSheet';
 import { Toast } from './components/Toast';
 import { useAuth } from './hooks/useAuth';
 import { useItems } from './hooks/useItems';
@@ -40,6 +41,7 @@ function App() {
   const [hasCompletedOnboardingThisSession, setHasCompletedOnboardingThisSession] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [autoOpenFAB, setAutoOpenFAB] = useState(false);
+  const [showNavSheet, setShowNavSheet] = useState(false);
   const [isCheckingProfile, setIsCheckingProfile] = useState(true);
 
   const { user, isLoading: authLoading } = useAuth();
@@ -277,8 +279,6 @@ function App() {
           userId={user.id}
           onSubmitSuccess={undefined}
           onItemsAdded={addItemsToLocalState}
-          onEverythingClick={() => setCurrentView('everything')}
-          onCalendarClick={() => setCurrentView('calendar')}
           autoOpenFAB={autoOpenFAB}
           onAutoOpenComplete={() => setAutoOpenFAB(false)}
         />
@@ -393,7 +393,7 @@ function App() {
             userName={userName}
             todayCount={todayItems.filter(i => i.date === getTodayDateString()).length}
             isBirthday={isBirthday}
-            onOpenSettings={() => setCurrentView('settings')}
+            onOpenMenu={() => setShowNavSheet(true)}
           />
           <AffirmationCard
             isBirthday={isBirthday}
@@ -434,8 +434,6 @@ function App() {
         caringFor={userProfile?.caring_for || []}
         onSubmitSuccess={undefined}
         onItemsAdded={addItemsToLocalState}
-        onEverythingClick={() => setCurrentView('everything')}
-        onCalendarClick={() => setCurrentView('calendar')}
         autoOpenFAB={autoOpenFAB}
         onAutoOpenComplete={() => setAutoOpenFAB(false)}
       />
@@ -443,6 +441,14 @@ function App() {
         <Toast
           message={toastMessage}
           onClose={() => setToastMessage(null)}
+        />
+      )}
+      {showNavSheet && (
+        <NavigationSheet
+          onClose={() => setShowNavSheet(false)}
+          onEverythingClick={() => setCurrentView('everything')}
+          onCalendarClick={() => setCurrentView('calendar')}
+          onSettingsClick={() => setCurrentView('settings')}
         />
       )}
     </div>

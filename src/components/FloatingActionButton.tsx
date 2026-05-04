@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Mic, Check, X, Menu, Archive, Calendar, Camera } from 'lucide-react';
+import { Mic, Check, X, Camera, Keyboard } from 'lucide-react';
 import { useSpeechRecognition } from '../utils/useSpeechRecognition';
 import { Toast } from './Toast';
 import { supabase } from '../lib/supabase';
@@ -9,18 +9,16 @@ interface FloatingActionButtonProps {
   caringFor?: string[];
   onItemsAdded?: (items: any[]) => void;
   onSubmitSuccess?: () => void;
-  onEverythingClick?: () => void;
-  onCalendarClick?: () => void;
   autoOpenFAB?: boolean;
   onAutoOpenComplete?: () => void;
 }
 
-export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmitSuccess, onEverythingClick, onCalendarClick, autoOpenFAB, onAutoOpenComplete }: FloatingActionButtonProps) {
+export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmitSuccess, autoOpenFAB, onAutoOpenComplete }: FloatingActionButtonProps) {
   const [showInput, setShowInput] = useState(false);
+  const [showTextInput, setShowTextInput] = useState(false);
   const [inputText, setInputText] = useState('');
   const [liveTranscript, setLiveTranscript] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [showMenu, setShowMenu] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [recurringConfirmation, setRecurringConfirmation] = useState<{item: any, index: number} | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -198,10 +196,8 @@ Return valid JSON only — no explanation, no markdown.`;
         recurring_day_of_week: item.recurringDayOfWeek ?? null,
       }));
 
-      // Check for recurring items
       const hasRecurring = newItems.some((item: any) => item.recurring);
 
-      // Save to Supabase and get real items back
       savedItems = [];
 
       if (userId) {
@@ -245,12 +241,10 @@ Return valid JSON only — no explanation, no markdown.`;
         savedItems.push(...newItems.map(item => ({ ...item, id: crypto.randomUUID(), created_at: new Date().toISOString() })));
       }
 
-      // Update state with real items (no temp IDs)
       if (onItemsAdded) {
         onItemsAdded(savedItems);
       }
 
-      // Show appropriate toast
       if (hasRecurring) {
         setRecurringConfirmation({ item: newItems.find((i: any) => i.recurring), index: 0 });
       } else {
@@ -263,6 +257,7 @@ Return valid JSON only — no explanation, no markdown.`;
     } finally {
       setIsProcessing(false);
       setShowInput(false);
+      setShowTextInput(false);
     }
   }
 
@@ -310,6 +305,7 @@ Return valid JSON only — no explanation, no markdown.`;
   const handleCancel = () => {
     stopListening();
     setShowInput(false);
+    setShowTextInput(false);
     setInputText('');
     setLiveTranscript('');
   };
@@ -324,11 +320,11 @@ Return valid JSON only — no explanation, no markdown.`;
 
     setIsProcessing(true);
     setShowInput(false);
+    setShowTextInput(false);
 
     let savedItems: any[] = [];
 
     try {
-      // Convert image to base64
       const base64 = await new Promise<string>((resolve) => {
         const reader = new FileReader();
         reader.onload = () => {
@@ -422,7 +418,6 @@ Return valid JSON array only — no explanation, no markdown.`;
 
       showToast(`Found ${newItems.length} thing${newItems.length > 1 ? 's' : ''} in that photo`);
 
-      // Save to Supabase
       savedItems = [];
       if (userId) {
         for (const item of newItems) {
@@ -466,7 +461,6 @@ Return valid JSON array only — no explanation, no markdown.`;
       showToast("Couldn't read that photo — want to try again?");
     } finally {
       setIsProcessing(false);
-      // Reset file input
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
@@ -481,7 +475,7 @@ Return valid JSON array only — no explanation, no markdown.`;
     }
   }, [autoOpenFAB]);
 
-  if (showInput) {
+  if (showInput || showTextInput) {
     return (
       <>
         {(isListening || liveTranscript || isProcessing) && (
@@ -520,7 +514,7 @@ Return valid JSON array only — no explanation, no markdown.`;
                   placeholder="Tell me everything on your plate — dates, times, whatever comes to mind."
                   className="w-full bg-cream border border-border rounded-xl px-4 py-3 font-ui text-text placeholder:text-muted focus:outline-none focus:border-accent/50 transition-colors"
                   disabled={isListening || isProcessing}
-                  autoFocus={!isBrowserSupported}
+                  autoFocus={showTextInput || !isBrowserSupported}
                 />
               </div>
               {inputText && !isListening && (
@@ -574,7 +568,6 @@ Return valid JSON array only — no explanation, no markdown.`;
 
   const handleRecurringYes = async () => {
     if (recurringConfirmation && userId) {
-      // The item is already saved with recurring field, just acknowledge
       showToast('Got it — added to Carry');
     }
     setRecurringConfirmation(null);
@@ -582,14 +575,6 @@ Return valid JSON array only — no explanation, no markdown.`;
 
   const handleRecurringNo = async () => {
     if (recurringConfirmation && userId) {
-      // Remove recurring flag from the saved item
-      const savedItem = savedItems.find((i: any) => i.title === recurringConfirmation.item.title);
-      if (savedItem) {
-        await supabase
-          .from('items')
-          .update({ recurring: false, recurring_pattern: null })
-          .eq('id', savedItem.id);
-      }
       showToast('Got it — added to Carry');
     }
     setRecurringConfirmation(null);
@@ -637,84 +622,47 @@ Return valid JSON array only — no explanation, no markdown.`;
         </div>
       )}
 
-      {showMenu && (
-        <div className="fixed inset-0 bg-text/20 z-40 animate-fade-up" onClick={() => setShowMenu(false)}>
-          <div className="fixed right-8 bg-surface rounded-2xl border border-border shadow-lg p-2 space-y-1 animate-fade-up" style={{ bottom: 'max(6rem, calc(env(safe-area-inset-bottom) + 4.5rem))' }}>
+      <div className="fixed bottom-0 left-0 right-0 bg-surface border-t border-border shadow-lg" style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom))' }}>
+        <div className="max-w-2xl mx-auto px-6 pt-4 flex items-center justify-center gap-8">
+
+          {/* Camera */}
+          <div className="flex flex-col items-center gap-1.5">
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowMenu(false);
-                onCalendarClick?.();
-              }}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-cream transition-all text-left"
+              onClick={() => fileInputRef.current?.click()}
+              className="w-12 h-12 bg-surface border border-border rounded-full flex items-center justify-center hover:border-accent/30 active:scale-95 transition-all"
+              aria-label="Camera"
             >
-              <Calendar className="w-5 h-5 text-muted" />
-              <span className="font-ui text-text">Calendar</span>
+              <Camera size={20} className="text-muted" />
             </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowMenu(false);
-                onEverythingClick?.();
-              }}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-cream transition-all text-left"
-            >
-              <Archive className="w-5 h-5 text-muted" />
-              <span className="font-ui text-text">Everything you Carry</span>
-            </button>
-            <button
-              onClick={async (e) => {
-                e.stopPropagation();
-                if (userId) {
-                  localStorage.removeItem(`carry_onboarded_${userId}`);
-                  localStorage.removeItem(`carry_name_${userId}`);
-                  await supabase
-                    .from('profiles')
-                    .update({ onboarding_complete: false })
-                    .eq('id', userId);
-                }
-                window.location.reload();
-              }}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-cream transition-all text-left"
-            >
-              <X className="w-5 h-5 text-muted" />
-              <span className="font-ui text-text">Reset & re-onboard</span>
-            </button>
+            <span className="font-ui text-xs text-muted">Camera</span>
           </div>
+
+          {/* Voice — centre, larger */}
+          <div className="flex flex-col items-center gap-1.5">
+            <button
+              onClick={handleFABClick}
+              className={`relative w-16 h-16 bg-text rounded-full flex items-center justify-center text-surface shadow-lg hover:scale-105 active:scale-95 transition-transform ${isListening ? 'scale-110' : ''}`}
+              aria-label="Voice input"
+            >
+              <div className={`absolute inset-0 rounded-full bg-text/40 ${isListening ? 'animate-ping' : 'animate-pulse-ring'}`}></div>
+              <Mic size={24} />
+            </button>
+            <span className="font-ui text-xs text-muted">Voice</span>
+          </div>
+
+          {/* Type */}
+          <div className="flex flex-col items-center gap-1.5">
+            <button
+              onClick={() => setShowTextInput(true)}
+              className="w-12 h-12 bg-surface border border-border rounded-full flex items-center justify-center hover:border-accent/30 active:scale-95 transition-all"
+              aria-label="Type input"
+            >
+              <Keyboard size={20} className="text-muted" />
+            </button>
+            <span className="font-ui text-xs text-muted">Type</span>
+          </div>
+
         </div>
-      )}
-
-      <div className="fixed left-0 right-0 flex items-center justify-center gap-4 animate-fade-up stagger-6" style={{ bottom: 'max(2rem, calc(env(safe-area-inset-bottom) + 0.5rem))' }}>
-        <button
-          onClick={() => setShowMenu(!showMenu)}
-          className="w-10 h-10 bg-surface border border-border rounded-full flex items-center justify-center hover:border-accent/30 active:scale-95 transition-all"
-          aria-label="Menu"
-        >
-          <Menu size={18} className="text-muted" />
-        </button>
-
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="w-10 h-10 bg-surface border border-border rounded-full flex items-center justify-center hover:border-accent/30 active:scale-95 transition-all"
-            aria-label="Camera"
-          >
-            <Camera size={18} className="text-muted" />
-          </button>
-          <button
-            onClick={handleFABClick}
-            className={`relative w-16 h-16 bg-text rounded-full flex items-center justify-center text-surface shadow-lg hover:scale-105 active:scale-95 transition-transform ${isListening ? 'scale-110' : ''}`}
-            aria-label="Add new item"
-          >
-            <div className={`absolute inset-0 rounded-full bg-text/40 ${isListening ? 'animate-ping' : 'animate-pulse-ring'}`}></div>
-            <Mic size={24} />
-          </button>
-          <span className="text-xs text-muted font-ui font-light">
-            {isBrowserSupported ? 'or type' : 'type'}
-          </span>
-        </div>
-
-        <div className="w-10"></div>
       </div>
     </>
   );
