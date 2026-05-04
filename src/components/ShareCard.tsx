@@ -1,6 +1,5 @@
 import { useRef, useState } from 'react';
 import { X, Share } from 'lucide-react';
-import { QRCodeSVG } from 'qrcode.react';
 
 interface ShareCardProps {
   onClose: () => void;
@@ -17,7 +16,7 @@ export function ShareCard({ onClose }: ShareCardProps) {
     try {
       const html2canvas = (await import('html2canvas')).default;
       const canvas = await html2canvas(cardRef.current, {
-        backgroundColor: '#E8DDD0',
+        backgroundColor: '#FDF9F4',
         scale: 3,
         useCORS: true,
         logging: false,
@@ -31,6 +30,8 @@ export function ShareCard({ onClose }: ShareCardProps) {
           await navigator.share({
             files: [file],
             title: 'Carry — Mental Load Assistant',
+            text: "I use this app to manage my mental load — it's free on iPhone:",
+            url: 'https://carry-the-app.com',
           });
         } else {
           const url = URL.createObjectURL(blob);
@@ -80,19 +81,20 @@ export function ShareCard({ onClose }: ShareCardProps) {
         <X size={18} />
       </button>
 
+      {/* The shareable card */}
       <div
         ref={cardRef}
         style={{
-          backgroundColor: '#E8DDD0',
+          backgroundColor: '#FDF9F4',
           borderRadius: '20px',
           padding: '28px 24px',
           width: '280px',
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'flex-start',
           gap: '16px',
         }}
       >
+        {/* Header */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
           <div style={{
             fontSize: '10px',
@@ -115,53 +117,88 @@ export function ShareCard({ onClose }: ShareCardProps) {
           </div>
         </div>
 
-        <div style={{
-          width: '100%',
-          height: '1px',
-          backgroundColor: 'rgba(196,113,74,0.2)',
-        }} />
+        {/* Divider */}
+        <div style={{ width: '100%', height: '1px', backgroundColor: 'rgba(196,113,74,0.2)' }} />
 
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '16px',
-          width: '100%',
-        }}>
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '8px',
-            padding: '8px',
-            flexShrink: 0,
-          }}>
-            <QRCodeSVG
-              value="https://carry-the-app.com"
-              size={90}
-              fgColor="#C4714A"
-              bgColor="white"
-              level="M"
-            />
-          </div>
+        {/* Content row: text + phone mockup */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          {/* Left: text */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1 }}>
             <div style={{
               fontSize: '11px',
               color: '#6b6460',
-              lineHeight: 1.5,
+              lineHeight: 1.6,
               fontFamily: "'DM Sans', sans-serif",
             }}>
-              Scan to download free on iPhone
+              The app for everything you're holding in your head.
             </div>
             <div style={{
               fontSize: '10px',
-              color: '#b0a99a',
+              color: '#C4714A',
               fontFamily: "'DM Sans', sans-serif",
+              letterSpacing: '0.02em',
+              marginTop: '4px',
             }}>
               carry-the-app.com
+            </div>
+          </div>
+
+          {/* Right: phone mockup */}
+          <div style={{
+            width: '72px',
+            height: '122px',
+            borderRadius: '14px',
+            border: '3px solid #2c2c2a',
+            backgroundColor: '#E8DDD0',
+            flexShrink: 0,
+            position: 'relative',
+            overflow: 'hidden',
+          }}>
+            {/* Notch */}
+            <div style={{
+              position: 'absolute',
+              top: '5px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: '24px',
+              height: '5px',
+              backgroundColor: '#2c2c2a',
+              borderRadius: '4px',
+            }} />
+
+            {/* Screen content */}
+            <div style={{ padding: '16px 5px 5px', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+              <div style={{
+                fontFamily: "'Fraunces', Georgia, serif",
+                fontStyle: 'italic',
+                fontSize: '7px',
+                color: '#C4714A',
+                lineHeight: 1.3,
+              }}>
+                Friday looks<br />good, <em>Tiffany.</em>
+              </div>
+              <div style={{ height: '2px', background: 'rgba(196,113,74,0.2)', borderRadius: '2px', width: '90%', marginTop: '3px' }} />
+              <div style={{ height: '2px', background: 'rgba(196,113,74,0.1)', borderRadius: '2px', width: '65%' }} />
+              <div style={{ marginTop: '5px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px' }}>
+                {[['🫶', '3'], ['🏠', '2'], ['❤️', '1'], ['🛒', '4']].map(([emoji, count]) => (
+                  <div key={emoji} style={{
+                    background: '#FDF9F4',
+                    borderRadius: '4px',
+                    padding: '3px 2px',
+                    textAlign: 'center',
+                  }}>
+                    <div style={{ fontSize: '8px' }}>{emoji}</div>
+                    <div style={{ fontSize: '5px', color: '#C4714A' }}>{count}</div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
+      {/* Share button */}
       <button
         onClick={handleShare}
         disabled={isSharing}
@@ -191,6 +228,7 @@ export function ShareCard({ onClose }: ShareCardProps) {
         fontSize: '12px',
         color: 'rgba(255,255,255,0.6)',
         fontFamily: "'DM Sans', sans-serif",
+        textAlign: 'center',
       }}>
         Share via Messages, WhatsApp, AirDrop and more
       </p>
