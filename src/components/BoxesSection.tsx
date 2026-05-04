@@ -13,7 +13,7 @@ function BoxCard({ name, emoji, count, onClick }: BoxCardProps) {
   return (
     <button
       onClick={onClick}
-      className="flex-shrink-0 bg-surface rounded-xl p-5 border border-border w-36 hover:border-accent/30 transition-all active:scale-95"
+      className="w-full bg-surface rounded-xl p-4 border border-border hover:border-accent/30 transition-all active:scale-95 text-left"
     >
       <div className="text-3xl mb-3">{emoji}</div>
       <h3 className="font-ui font-medium text-text mb-1">{displayName}</h3>
@@ -33,7 +33,7 @@ export function BoxesSection({ categoryCounts, onBoxClick }: BoxesSectionProps) 
       <h2 className="text-xs uppercase tracking-wider text-muted font-ui font-medium mb-3">
         Your boxes
       </h2>
-      <div className="flex gap-3 overflow-x-auto pb-2 -mx-5 px-5 scrollbar-hide">
+      <div className="grid grid-cols-2 gap-3">
         {DEFAULT_CATEGORIES.map((category) => (
           <BoxCard
             key={category.id}
