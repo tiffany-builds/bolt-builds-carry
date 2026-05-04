@@ -47,9 +47,9 @@ Each item must have:
 - detail: one warm conversational sentence
 - category: exactly one of: Family, Home, Errands, Me, Health, Work
 - type: event, task, reminder, idea, mind or lookforward
-- date: YYYY-MM-DD or null. Always go FORWARD from today, never backwards.
-- time: HH:MM or null
-- hasDateTime: true or false
+- date: YYYY-MM-DD or null. Set to today's date if user says "today". Always go FORWARD from today, never backwards. If a time is mentioned without a date, assume today.
+- time: HH:MM (24hr) if user mentioned a specific time like "at 1pm", "2:30", "noon" etc. Always set this when a time is mentioned.
+- hasDateTime: true if the item has a specific date, time, or the user said "today", "tomorrow", "this week", or any day reference. false only if completely timeless.
 - emoji: most specific contextual emoji
 - recurring: true or false
 - recurringPattern: "weekly", "daily", "yearly" or null
