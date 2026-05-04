@@ -31,7 +31,6 @@ export function ShareCard({ onClose }: ShareCardProps) {
             files: [file],
             title: 'Carry — Mental Load Assistant',
             text: "I use this app to manage my mental load — it's free on iPhone:",
-            url: 'https://carry-the-app.com',
           });
         } else {
           const url = URL.createObjectURL(blob);
