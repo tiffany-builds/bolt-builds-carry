@@ -1,4 +1,17 @@
 import { useState } from 'react';
+
+const CLEARED_MESSAGES = [
+  "Look at you. All done.",
+  "That's all of it. Well done, you.",
+  "Everything's been taken care of.",
+  "All of it — done. That wasn't nothing.",
+  "Today: handled.",
+  "You carried it. And you put it down.",
+  "Nothing left to hold. Rest a moment.",
+];
+
+const getRandomClearedMessage = () =>
+  CLEARED_MESSAGES[Math.floor(Math.random() * CLEARED_MESSAGES.length)];
 import { TimelineItem } from '../types';
 import { getCategoryColor } from '../utils/categoryColors';
 import { formatDayLabel, formatTime, getWeekDays, getTodayDateString, parseDateString } from '../utils/dateFormatting';
@@ -132,6 +145,7 @@ export function TimelineSection({ items, onItemComplete, onItemDelete, onShowToa
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [touchStartX, setTouchStartX] = useState(0);
   const [showAll, setShowAll] = useState(false);
+  const [completedTodayCount, setCompletedTodayCount] = useState(0);
 
   const weekDays = getWeekDays(showAll ? 28 : 7);
   const todayStr = getTodayDateString();
@@ -156,6 +170,7 @@ export function TimelineSection({ items, onItemComplete, onItemDelete, onShowToa
   const handleComplete = (itemId: string) => {
     onItemComplete(itemId);
     onShowToast('Done — one less thing to carry');
+    setCompletedTodayCount(prev => prev + 1);
   };
 
   const handleTouchStart = (e: React.TouchEvent, id: string) => {
@@ -172,6 +187,7 @@ export function TimelineSection({ items, onItemComplete, onItemDelete, onShowToa
   const handleTouchEnd = async (itemId: string) => {
     if (swipeOffset > 80) {
       onItemDelete(itemId);
+      setCompletedTodayCount(prev => prev + 1);
     }
     setSwipeOffset(0);
     setSwipingId(null);
@@ -187,7 +203,7 @@ export function TimelineSection({ items, onItemComplete, onItemDelete, onShowToa
           <div className="space-y-3">
             {day.items.length === 0 && day.isToday ? (
               <p className="font-ui text-sm text-muted font-light py-4">
-                A quiet day. Rare — enjoy it.
+                {completedTodayCount > 0 ? getRandomClearedMessage() : 'A quiet day. Rare — enjoy it.'}
               </p>
             ) : (
               day.items.map((item) => (
