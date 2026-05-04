@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { ArrowLeft, LogOut, Trash2, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, LogOut, Trash2, AlertTriangle, Share2 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
+import { ShareCard } from './ShareCard';
 
 interface SettingsProps {
   userEmail: string;
@@ -11,6 +12,7 @@ interface SettingsProps {
 export function Settings({ userEmail, onBack }: SettingsProps) {
   const { signOut } = useAuth();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showShareCard, setShowShareCard] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -89,6 +91,19 @@ export function Settings({ userEmail, onBack }: SettingsProps) {
 
           <section className="bg-surface border border-border rounded-2xl p-5 space-y-4">
             <h2 className="font-ui text-xs uppercase tracking-wide text-muted">
+              Share
+            </h2>
+            <button
+              onClick={() => setShowShareCard(true)}
+              className="flex items-center gap-3 text-text font-ui hover:text-accent transition-colors w-full text-left"
+            >
+              <Share2 className="w-4 h-4" />
+              <span>Share Carry</span>
+            </button>
+          </section>
+
+          <section className="bg-surface border border-border rounded-2xl p-5 space-y-4">
+            <h2 className="font-ui text-xs uppercase tracking-wide text-muted">
               Danger zone
             </h2>
 
@@ -142,6 +157,10 @@ export function Settings({ userEmail, onBack }: SettingsProps) {
           </section>
         </div>
       </div>
+
+      {showShareCard && (
+        <ShareCard onClose={() => setShowShareCard(false)} />
+      )}
     </div>
   );
 }
