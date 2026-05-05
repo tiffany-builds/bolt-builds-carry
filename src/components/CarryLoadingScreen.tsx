@@ -1,4 +1,13 @@
+const LOADING_MESSAGES = [
+  "Good to have you back.",
+  "What's on your mind?",
+  "Say it out loud.",
+  "What are you carrying today?",
+  "Ready when you are.",
+];
+
 export function CarryLoadingScreen() {
+  const message = LOADING_MESSAGES[Math.floor(Math.random() * LOADING_MESSAGES.length)];
   return (
     <div style={{
       minHeight: '100vh',
@@ -34,7 +43,7 @@ export function CarryLoadingScreen() {
           letterSpacing: '0.02em',
           fontFamily: "'DM Sans', sans-serif",
         }}>
-          Good to have you back.
+          {message}
         </div>
 
         <div style={{
