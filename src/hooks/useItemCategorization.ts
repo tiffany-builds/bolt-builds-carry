@@ -18,9 +18,9 @@ interface CategorizedItem {
   excitement?: string;
 }
 
-export async function categorizeAndCreateItems(text: string, userId: string) {
+export async function categorizeAndCreateItems(text: string, userId: string, caringFor?: string[]) {
   try {
-    const systemPrompt = buildSystemPrompt({ includeRecurring: false });
+    const systemPrompt = buildSystemPrompt({ includeRecurring: false, caringFor });
 
     const { data: { session } } = await supabase.auth.getSession();
     const token = session?.access_token;
@@ -140,13 +140,7 @@ export async function categorizeAndCreateItems(text: string, userId: string) {
           .select();
 
         if (error) {
-          // Create local item with temporary ID if Supabase fails
-          const localItem = {
-            ...itemToInsert,
-            id: `temp-${Date.now()}-${Math.random()}`,
-            created_at: new Date().toISOString(),
-          };
-          createdItems.push(localItem);
+          continue;
         } else if (inserted) {
           createdItems.push(inserted[0]);
         }
