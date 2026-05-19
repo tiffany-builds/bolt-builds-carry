@@ -24,6 +24,7 @@ import { supabase } from './lib/supabase';
 import { categorizeAndCreateItems } from './hooks/useItemCategorization';
 import { generateRecurringInstances } from './utils/recurringItems';
 import { getTodayDateString } from './utils/dateFormatting';
+import { requestNotificationPermission, scheduleMorningBriefing, scheduleItemReminders } from './utils/notifications';
 
 type OnboardingStep = 'welcome' | 'name' | 'family' | 'ready' | 'complete';
 type View = 'home' | 'boxDetail' | 'everything' | 'calendar' | 'settings';
@@ -143,6 +144,12 @@ function App() {
     }
   }, [hasCompletedOnboardingThisSession]);
 
+  useEffect(() => {
+    if (items.length === 0) return;
+    scheduleMorningBriefing(items);
+    scheduleItemReminders(items);
+  }, [items]);
+
   if (authLoading || isLoading) {
     return <LoadingScreen />;
   }
@@ -235,6 +242,7 @@ function App() {
           setIsLoading(false);
           setHasCompletedOnboardingThisSession(true);
           setOnboardingStep('complete');
+          requestNotificationPermission();
         }}
       />
     );
