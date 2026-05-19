@@ -21,6 +21,7 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
   const [isProcessing, setIsProcessing] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [recurringConfirmation, setRecurringConfirmation] = useState<{item: any, index: number} | null>(null);
+  const [pendingItems, setPendingItems] = useState<{ recurring: any[], nonRecurring: any[] } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const showToast = (message: string) => {
@@ -196,58 +197,54 @@ Return valid JSON only — no explanation, no markdown.`;
         recurring_day_of_week: item.recurringDayOfWeek ?? null,
       }));
 
-      const hasRecurring = newItems.some((item: any) => item.recurring);
+      const recurringItems = newItems.filter((item: any) => item.recurring);
+      const nonRecurringItems = newItems.filter((item: any) => !item.recurring);
 
+      // Save non-recurring items immediately
       savedItems = [];
-
       if (userId) {
-        for (const item of newItems) {
-          try {
-            const supabaseItem = {
-              user_id: userId,
-              title: item.title,
-              description: item.description,
-              category: item.category,
-              emoji: item.emoji || null,
-              completed: false,
-              time_frame: 'anytime',
-              date: item.type === 'lookforward'
-                ? (item.start_date || item.date)
-                : (item.date || null),
-              time: item.time || null,
-              has_date_time: item.type === 'lookforward' ? true : (item.has_date_time || false),
-              type: item.type,
-              recurring: item.recurring || false,
-              recurring_pattern: item.recurring_pattern || null,
-              recurring_day_of_week: item.recurring_day_of_week ?? null,
-              target_month: item.target_month || null,
-              start_date: item.start_date || null,
-              end_date: item.end_date || null,
-              excitement: item.excitement || null,
-            };
+        for (const item of nonRecurringItems) {
+          const supabaseItem = {
+            user_id: userId,
+            title: item.title,
+            description: item.description,
+            category: item.category,
+            emoji: item.emoji || null,
+            completed: false,
+            time_frame: 'anytime',
+            date: item.type === 'lookforward'
+              ? (item.start_date || item.date)
+              : (item.date || null),
+            time: item.time || null,
+            has_date_time: item.type === 'lookforward' ? true : (item.has_date_time || false),
+            type: item.type,
+            recurring: false,
+            recurring_pattern: null,
+            recurring_day_of_week: null,
+            target_month: item.target_month || null,
+            start_date: item.start_date || null,
+            end_date: item.end_date || null,
+            excitement: item.excitement || null,
+          };
 
-            const { data: inserted } = await supabase.from('items').insert(supabaseItem).select().single();
-
-            if (inserted) {
-              savedItems.push(inserted);
-            } else {
-              savedItems.push({ ...item, id: crypto.randomUUID(), created_at: new Date().toISOString(), user_id: userId });
-            }
-          } catch (saveErr) {
-            savedItems.push({ ...item, id: crypto.randomUUID(), created_at: new Date().toISOString(), user_id: userId });
+          const { data: inserted, error: insertError } = await supabase.from('items').insert(supabaseItem).select().single();
+          if (insertError || !inserted) {
+            showToast("Couldn't save — please try again");
+            continue;
           }
+          savedItems.push(inserted);
         }
-      } else {
-        savedItems.push(...newItems.map(item => ({ ...item, id: crypto.randomUUID(), created_at: new Date().toISOString() })));
       }
 
-      if (onItemsAdded) {
+      if (savedItems.length > 0 && onItemsAdded) {
         onItemsAdded(savedItems);
       }
 
-      if (hasRecurring) {
-        setRecurringConfirmation({ item: newItems.find((i: any) => i.recurring), index: 0 });
-      } else {
+      if (recurringItems.length > 0) {
+        // Hold recurring items — user must confirm before saving
+        setPendingItems({ recurring: recurringItems, nonRecurring: [] });
+        setRecurringConfirmation({ item: recurringItems[0], index: 0 });
+      } else if (savedItems.length > 0) {
         showToast('Got it — added to Carry');
       }
 
@@ -421,41 +418,39 @@ Return valid JSON array only — no explanation, no markdown.`;
       savedItems = [];
       if (userId) {
         for (const item of newItems) {
-          try {
-            const supabaseItem = {
-              user_id: userId,
-              title: item.title,
-              description: item.description,
-              category: item.category,
-              emoji: item.emoji || null,
-              completed: false,
-              time_frame: 'anytime',
-              date: item.type === 'lookforward'
-                ? (item.start_date || item.date)
-                : (item.date || null),
-              time: item.time || null,
-              has_date_time: item.type === 'lookforward' ? true : (item.has_date_time || false),
-              type: item.type,
-              recurring: item.recurring || false,
-              recurring_pattern: item.recurring_pattern || null,
-              recurring_day_of_week: item.recurring_day_of_week ?? null,
-              target_month: item.target_month || null,
-              start_date: item.start_date || null,
-              end_date: item.end_date || null,
-              excitement: item.excitement || null,
-            };
+          const supabaseItem = {
+            user_id: userId,
+            title: item.title,
+            description: item.description,
+            category: item.category,
+            emoji: item.emoji || null,
+            completed: false,
+            time_frame: 'anytime',
+            date: item.type === 'lookforward'
+              ? (item.start_date || item.date)
+              : (item.date || null),
+            time: item.time || null,
+            has_date_time: item.type === 'lookforward' ? true : (item.has_date_time || false),
+            type: item.type,
+            recurring: false,
+            recurring_pattern: null,
+            recurring_day_of_week: null,
+            target_month: item.target_month || null,
+            start_date: item.start_date || null,
+            end_date: item.end_date || null,
+            excitement: item.excitement || null,
+          };
 
-            const { data: inserted } = await supabase.from('items').insert(supabaseItem).select().single();
-
-            if (inserted) savedItems.push(inserted);
-            else savedItems.push({ ...item, id: crypto.randomUUID(), created_at: new Date().toISOString(), user_id: userId });
-          } catch {
-            savedItems.push({ ...item, id: crypto.randomUUID(), created_at: new Date().toISOString(), user_id: userId });
+          const { data: inserted, error: insertError } = await supabase.from('items').insert(supabaseItem).select().single();
+          if (insertError || !inserted) {
+            showToast("Couldn't save — please try again");
+            continue;
           }
+          savedItems.push(inserted);
         }
       }
 
-      if (onItemsAdded) onItemsAdded(savedItems);
+      if (savedItems.length > 0 && onItemsAdded) onItemsAdded(savedItems);
 
     } catch (err) {
       showToast("Couldn't read that photo — want to try again?");
@@ -567,17 +562,89 @@ Return valid JSON array only — no explanation, no markdown.`;
   }
 
   const handleRecurringYes = async () => {
-    if (recurringConfirmation && userId) {
+    if (!pendingItems || !userId) {
+      setRecurringConfirmation(null);
+      setPendingItems(null);
+      return;
+    }
+    const savedItems: any[] = [];
+    for (const item of pendingItems.recurring) {
+      const supabaseItem = {
+        user_id: userId,
+        title: item.title,
+        description: item.description,
+        category: item.category,
+        emoji: item.emoji || null,
+        completed: false,
+        time_frame: 'anytime',
+        date: item.date || null,
+        time: item.time || null,
+        has_date_time: item.has_date_time || true,
+        type: item.type,
+        recurring: true,
+        recurring_pattern: item.recurring_pattern || null,
+        recurring_day_of_week: item.recurring_day_of_week ?? null,
+        target_month: item.target_month || null,
+        start_date: item.start_date || null,
+        end_date: item.end_date || null,
+        excitement: item.excitement || null,
+      };
+      const { data: inserted, error: insertError } = await supabase.from('items').insert(supabaseItem).select().single();
+      if (insertError || !inserted) {
+        showToast("Couldn't save — please try again");
+        continue;
+      }
+      savedItems.push(inserted);
+    }
+    if (savedItems.length > 0) {
+      if (onItemsAdded) onItemsAdded(savedItems);
       showToast('Got it — added to Carry');
     }
     setRecurringConfirmation(null);
+    setPendingItems(null);
   };
 
   const handleRecurringNo = async () => {
-    if (recurringConfirmation && userId) {
+    if (!pendingItems || !userId) {
+      setRecurringConfirmation(null);
+      setPendingItems(null);
+      return;
+    }
+    const savedItems: any[] = [];
+    for (const item of pendingItems.recurring) {
+      const supabaseItem = {
+        user_id: userId,
+        title: item.title,
+        description: item.description,
+        category: item.category,
+        emoji: item.emoji || null,
+        completed: false,
+        time_frame: 'anytime',
+        date: item.date || null,
+        time: item.time || null,
+        has_date_time: item.has_date_time || false,
+        type: item.type,
+        recurring: false,
+        recurring_pattern: null,
+        recurring_day_of_week: null,
+        target_month: item.target_month || null,
+        start_date: item.start_date || null,
+        end_date: item.end_date || null,
+        excitement: item.excitement || null,
+      };
+      const { data: inserted, error: insertError } = await supabase.from('items').insert(supabaseItem).select().single();
+      if (insertError || !inserted) {
+        showToast("Couldn't save — please try again");
+        continue;
+      }
+      savedItems.push(inserted);
+    }
+    if (savedItems.length > 0) {
+      if (onItemsAdded) onItemsAdded(savedItems);
       showToast('Got it — added to Carry');
     }
     setRecurringConfirmation(null);
+    setPendingItems(null);
   };
 
   return (
