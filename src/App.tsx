@@ -82,6 +82,7 @@ function App() {
 
           const count = await getLastWeekItemCount(user.id);
           setLastWeekCount(count);
+          requestNotificationPermission();
         } else {
           // Check localStorage as fallback
           const locallyOnboarded = localStorage.getItem(`carry_onboarded_${user.id}`);
