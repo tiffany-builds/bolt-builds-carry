@@ -7,6 +7,8 @@ export interface MindItem {
   targetMonth?: number;
   date?: string | null;
   created_at?: string;
+  emoji?: string | null;
+  isOptimistic?: boolean;
 }
 
 export interface MindItemWithNudge extends MindItem {

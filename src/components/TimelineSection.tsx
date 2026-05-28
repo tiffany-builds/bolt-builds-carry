@@ -88,7 +88,7 @@ function TimelineItemCard({ item, onComplete, onDelete, swipingId, swipeOffset, 
             </button>
           </div>
           <div className="flex-1">
-            <h3 className={`font-ui font-medium text-text mb-1 ${isCompleted ? 'line-through' : ''}`}>
+            <h3 className={`font-ui font-medium text-text mb-1 ${isCompleted ? 'line-through' : ''} ${(item as any).isOptimistic ? 'animate-pulse' : ''}`}>
               {displayEmoji} {item.title}
               {((item as any).recurring || (item as any).recurring_parent_id) && (
                 <span style={{

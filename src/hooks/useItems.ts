@@ -57,6 +57,7 @@ export function useItems(userId: string | null) {
   const getCategoryCounts = useCallback(() => {
     const counts: Record<string, number> = {};
     items.forEach(item => {
+      if ((item as any).isOptimistic) return;
       counts[item.category] = (counts[item.category] || 0) + 1;
     });
     return counts;
@@ -86,9 +87,8 @@ export function useItems(userId: string | null) {
 
   const addItemsToLocalState = useCallback((newItems: Item[]) => {
     setItems(prev => {
-      // Remove any temp items and add the new ones at the top
-      const withoutTemps = prev.filter(item => !item.id.startsWith('temp-'));
-      return [...newItems, ...withoutTemps];
+      const withoutOptimistic = prev.filter(item => !item.id.startsWith('temp-') && !item.id.startsWith('optimistic-'));
+      return [...newItems, ...withoutOptimistic];
     });
   }, []);
 

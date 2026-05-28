@@ -53,7 +53,7 @@ export function OnYourMindSection({ items, onItemsChange }: OnYourMindSectionPro
               </div>
 
               <div className="flex-1 min-w-0">
-                <h3 className="font-ui font-medium text-text text-[15px]">
+                <h3 className={`font-ui font-medium text-text text-[15px] ${item.isOptimistic ? 'animate-pulse' : ''}`}>
                   {item.title}
                 </h3>
                 {item.detail && (

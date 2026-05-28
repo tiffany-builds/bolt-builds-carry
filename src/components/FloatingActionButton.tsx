@@ -29,10 +29,40 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
     setToastMessage(message);
   };
 
+  function buildOptimisticItems(text: string): any[] {
+    const words = text.trim().split(/\s+/);
+    const title = words.slice(0, 6).join(' ');
+    const now = Date.now();
+    return [{
+      id: `optimistic-${now}-0`,
+      title,
+      description: null,
+      category: 'Me',
+      emoji: '⏳',
+      completed: false,
+      type: 'task',
+      date: null,
+      time: null,
+      has_date_time: false,
+      isOptimistic: true,
+    }];
+  }
+
+  function removeOptimisticItems() {
+    if (onItemsAdded) {
+      // Signal removal by passing an empty replacement — useItems will strip optimistic ids
+      onItemsAdded([]);
+    }
+  }
+
   async function processInput(inputText: string) {
     if (!inputText.trim()) return;
 
-    setIsProcessing(true);
+    // 1. Show optimistic placeholder immediately and close the panel
+    const optimisticItems = buildOptimisticItems(inputText);
+    if (onItemsAdded) onItemsAdded(optimisticItems);
+    setShowInput(false);
+    setShowTextInput(false);
     setLiveTranscript('');
     setInputText('');
 
@@ -93,7 +123,7 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
       const recurringItems = newItems.filter((item: any) => item.recurring);
       const nonRecurringItems = newItems.filter((item: any) => !item.recurring);
 
-      // Save non-recurring items immediately
+      // Save non-recurring items
       savedItems = [];
       if (userId) {
         for (const item of nonRecurringItems) {
@@ -129,12 +159,10 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
         }
       }
 
-      if (savedItems.length > 0 && onItemsAdded) {
-        onItemsAdded(savedItems);
-      }
+      // 3. Replace optimistic items with real ones
+      if (onItemsAdded) onItemsAdded(savedItems);
 
       if (recurringItems.length > 0) {
-        // Hold recurring items — user must confirm before saving
         setPendingItems({ recurring: recurringItems, nonRecurring: [] });
         setRecurringConfirmation({ item: recurringItems[0], index: 0 });
       } else if (savedItems.length > 0) {
@@ -142,12 +170,9 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
       }
 
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      showToast(`Error: ${message}`);
-    } finally {
-      setIsProcessing(false);
-      setShowInput(false);
-      setShowTextInput(false);
+      // 4. Remove optimistic items on failure and show error
+      removeOptimisticItems();
+      showToast("Couldn't save — please try again");
     }
   }
 
