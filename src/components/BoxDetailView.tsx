@@ -5,6 +5,7 @@ import { getCategoryDisplayName } from '../utils/categoryHelpers';
 import { parseDateString } from '../utils/dateFormatting';
 import { supabase } from '../lib/supabase';
 import { DEFAULT_CATEGORIES } from '../data/defaultCategories';
+import { removeItemFromCalendar } from '../utils/calendar';
 
 interface Item {
   id: string;
@@ -21,6 +22,7 @@ interface Item {
   start_date?: string | null;
   end_date?: string | null;
   emoji?: string | null;
+  calendar_event_id?: string | null;
 }
 
 interface BoxDetailViewProps {
@@ -58,6 +60,8 @@ export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onIt
 
   const handleTouchEnd = () => {
     if (swipeOffset > 60 && swipingItemId) {
+      const item = items.find(i => i.id === swipingItemId);
+      if (item?.calendar_event_id) removeItemFromCalendar(item.calendar_event_id);
       onItemDelete(swipingItemId);
       setSwipingItemId(null);
       setSwipeOffset(0);
@@ -166,7 +170,10 @@ export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onIt
                 >
                   <div className="flex items-start gap-3">
                     <button
-                      onClick={() => onItemComplete(item.id)}
+                      onClick={() => {
+                        if (item.calendar_event_id) removeItemFromCalendar(item.calendar_event_id);
+                        onItemComplete(item.id);
+                      }}
                       className="flex-shrink-0 w-6 h-6 rounded-full border-2 border-border hover:border-accent transition-all flex items-center justify-center mt-0.5 active:scale-95"
                     >
                       {item.completed && (

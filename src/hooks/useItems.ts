@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import { removeItemFromCalendar } from '../utils/calendar';
 
 interface Item {
   id: string;
@@ -93,7 +94,13 @@ export function useItems(userId: string | null) {
   }, []);
 
   const removeItemFromState = useCallback((itemId: string) => {
-    setItems(prev => prev.filter(item => item.id !== itemId));
+    setItems(prev => {
+      const item = prev.find(i => i.id === itemId);
+      if (item && (item as any).calendar_event_id) {
+        removeItemFromCalendar((item as any).calendar_event_id);
+      }
+      return prev.filter(i => i.id !== itemId);
+    });
   }, []);
 
   return {

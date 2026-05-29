@@ -25,6 +25,7 @@ import { categorizeAndCreateItems } from './hooks/useItemCategorization';
 import { generateRecurringInstances } from './utils/recurringItems';
 import { getTodayDateString } from './utils/dateFormatting';
 import { requestNotificationPermission, scheduleMorningBriefing, scheduleItemReminders } from './utils/notifications';
+import { requestCalendarPermission } from './utils/calendar';
 
 type OnboardingStep = 'welcome' | 'name' | 'family' | 'ready' | 'complete';
 type View = 'home' | 'boxDetail' | 'everything' | 'calendar' | 'settings';
@@ -42,6 +43,7 @@ function App() {
   const [hasCompletedOnboardingThisSession, setHasCompletedOnboardingThisSession] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [autoOpenFAB, setAutoOpenFAB] = useState(false);
+  const [calendarPermission, setCalendarPermission] = useState(false);
   const [showNavSheet, setShowNavSheet] = useState(false);
   const [isCheckingProfile, setIsCheckingProfile] = useState(true);
 
@@ -83,6 +85,7 @@ function App() {
           const count = await getLastWeekItemCount(user.id);
           setLastWeekCount(count);
           requestNotificationPermission();
+          requestCalendarPermission().then(setCalendarPermission);
         } else {
           // Check localStorage as fallback
           const locallyOnboarded = localStorage.getItem(`carry_onboarded_${user.id}`);
@@ -244,6 +247,7 @@ function App() {
           setHasCompletedOnboardingThisSession(true);
           setOnboardingStep('complete');
           requestNotificationPermission();
+          requestCalendarPermission().then(setCalendarPermission);
         }}
       />
     );
@@ -290,6 +294,7 @@ function App() {
           onItemsAdded={addItemsToLocalState}
           autoOpenFAB={autoOpenFAB}
           onAutoOpenComplete={() => setAutoOpenFAB(false)}
+          calendarPermission={calendarPermission}
         />
       </>
     );
@@ -445,6 +450,7 @@ function App() {
         onItemsAdded={addItemsToLocalState}
         autoOpenFAB={autoOpenFAB}
         onAutoOpenComplete={() => setAutoOpenFAB(false)}
+        calendarPermission={calendarPermission}
       />
       {toastMessage && (
         <Toast

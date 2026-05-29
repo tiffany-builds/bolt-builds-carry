@@ -4,6 +4,7 @@ import { useSpeechRecognition } from '../utils/useSpeechRecognition';
 import { Toast } from './Toast';
 import { supabase } from '../lib/supabase';
 import { buildSystemPrompt } from '../utils/buildSystemPrompt';
+import { addItemToCalendar } from '../utils/calendar';
 
 interface FloatingActionButtonProps {
   userId: string | null;
@@ -12,9 +13,10 @@ interface FloatingActionButtonProps {
   onSubmitSuccess?: () => void;
   autoOpenFAB?: boolean;
   onAutoOpenComplete?: () => void;
+  calendarPermission?: boolean;
 }
 
-export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmitSuccess, autoOpenFAB, onAutoOpenComplete }: FloatingActionButtonProps) {
+export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmitSuccess, autoOpenFAB, onAutoOpenComplete, calendarPermission }: FloatingActionButtonProps) {
   const [showInput, setShowInput] = useState(false);
   const [showTextInput, setShowTextInput] = useState(false);
   const [inputText, setInputText] = useState('');
@@ -154,6 +156,13 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
           if (insertError || !inserted) {
             showToast("Couldn't save — please try again");
             continue;
+          }
+          if (inserted.date && calendarPermission) {
+            const eventId = await addItemToCalendar({ title: inserted.title, date: inserted.date, time: inserted.time });
+            if (eventId) {
+              await supabase.from('items').update({ calendar_event_id: eventId }).eq('id', inserted.id);
+              inserted.calendar_event_id = eventId;
+            }
           }
           savedItems.push(inserted);
         }
