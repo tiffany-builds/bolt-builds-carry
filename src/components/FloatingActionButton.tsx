@@ -157,14 +157,13 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
             showToast("Couldn't save — please try again");
             continue;
           }
+          savedItems.push(inserted);
           if (inserted.date && calendarPermission) {
             const eventId = await addItemToCalendar({ title: inserted.title, date: inserted.date, time: inserted.time });
             if (eventId) {
               await supabase.from('items').update({ calendar_event_id: eventId }).eq('id', inserted.id);
-              inserted.calendar_event_id = eventId;
             }
           }
-          savedItems.push(inserted);
         }
       }
 
@@ -374,6 +373,12 @@ Return valid JSON array only — no explanation, no markdown.`;
             continue;
           }
           savedItems.push(inserted);
+          if (inserted.date && calendarPermission) {
+            const eventId = await addItemToCalendar({ title: inserted.title, date: inserted.date, time: inserted.time });
+            if (eventId) {
+              await supabase.from('items').update({ calendar_event_id: eventId }).eq('id', inserted.id);
+            }
+          }
         }
       }
 
