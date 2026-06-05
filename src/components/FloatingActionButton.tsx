@@ -1,10 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
 import { Mic, Check, X, ImageUp, Keyboard } from 'lucide-react';
+import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
 import { useSpeechRecognition } from '../utils/useSpeechRecognition';
 import { Toast } from './Toast';
 import { supabase } from '../lib/supabase';
 import { buildSystemPrompt } from '../utils/buildSystemPrompt';
 import { addItemToCalendar } from '../utils/calendar';
+
+async function haptic(style: ImpactStyle) {
+  try { await Haptics.impact({ style }); } catch {}
+}
 
 interface FloatingActionButtonProps {
   userId: string | null;
@@ -155,6 +160,7 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
 
           const { data: inserted, error: insertError } = await supabase.from('items').insert(supabaseItem).select().single();
           if (insertError || !inserted) {
+            await Haptics.notification({ type: NotificationType.Error });
             showToast("Couldn't save — please try again");
             continue;
           }
@@ -172,6 +178,7 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
         setPendingItems({ recurring: recurringItems, nonRecurring: [] });
         setRecurringConfirmation({ item: recurringItems[0], index: 0 });
       } else if (savedItems.length > 0) {
+        await Haptics.notification({ type: NotificationType.Success });
         showToast('Got it — added to Carry');
       }
 
@@ -208,6 +215,7 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
 
   const handleFABClick = () => {
     if (!showInput) {
+      haptic(ImpactStyle.Medium);
       setShowInput(true);
       setInputText('');
       setLiveTranscript('');
@@ -366,6 +374,7 @@ Return valid JSON array only — no explanation, no markdown.`;
 
           const { data: inserted, error: insertError } = await supabase.from('items').insert(supabaseItem).select().single();
           if (insertError || !inserted) {
+            await Haptics.notification({ type: NotificationType.Error });
             showToast("Couldn't save — please try again");
             continue;
           }
@@ -473,6 +482,7 @@ Return valid JSON array only — no explanation, no markdown.`;
             {isListening && (
               <button
                 onClick={() => {
+                  haptic(ImpactStyle.Heavy);
                   stopListening();
                 }}
                 className="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-accent/10 border border-accent/20 text-accent font-ui text-sm font-medium transition-all active:scale-95"
@@ -647,7 +657,7 @@ Return valid JSON array only — no explanation, no markdown.`;
           {/* Camera */}
           <div className="flex flex-col items-center gap-1.5">
             <button
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => { haptic(ImpactStyle.Light); fileInputRef.current?.click(); }}
               className="w-12 h-12 bg-surface border border-border rounded-full flex items-center justify-center hover:border-accent/30 active:scale-95 transition-all"
               aria-label="Upload"
             >
@@ -672,7 +682,7 @@ Return valid JSON array only — no explanation, no markdown.`;
           {/* Type */}
           <div className="flex flex-col items-center gap-1.5">
             <button
-              onClick={() => setShowTextInput(true)}
+              onClick={() => { haptic(ImpactStyle.Light); setShowTextInput(true); }}
               className="w-12 h-12 bg-surface border border-border rounded-full flex items-center justify-center hover:border-accent/30 active:scale-95 transition-all"
               aria-label="Type input"
             >
