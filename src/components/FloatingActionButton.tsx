@@ -673,7 +673,8 @@ Return valid JSON array only — no explanation, no markdown.`;
               className={`relative w-16 h-16 bg-text rounded-full flex items-center justify-center text-surface shadow-lg hover:scale-105 active:scale-95 transition-transform ${isListening ? 'scale-110' : ''}`}
               aria-label="Voice input"
             >
-              <div className={`absolute inset-0 rounded-full bg-text/40 ${isListening ? 'animate-ping' : 'animate-pulse-ring'}`}></div>
+              <div className={`absolute inset-0 rounded-full bg-text/30 ${isListening ? 'animate-ping' : 'animate-pulse-ring'}`}></div>
+              <div className={`absolute inset-0 rounded-full bg-text/20 ${isListening ? 'animate-ping' : 'animate-pulse-ring'}`} style={{ animationDelay: '0.75s', transform: 'scale(1.15)' }}></div>
               <Mic size={24} />
             </button>
             <span className="font-ui text-xs text-muted">Voice</span>
