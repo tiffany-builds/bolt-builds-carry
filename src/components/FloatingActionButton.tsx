@@ -405,9 +405,20 @@ Return valid JSON array only — no explanation, no markdown.`;
     }
   }, [autoOpenFAB]);
 
+  const hiddenFileInput = (
+    <input
+      ref={fileInputRef}
+      type="file"
+      accept="image/*"
+      style={{ display: 'none' }}
+      onChange={handlePhotoCapture}
+    />
+  );
+
   if (showInput || showTextInput) {
     return (
       <>
+        {hiddenFileInput}
         {(isListening || liveTranscript || isProcessing) && (
           <div className="fixed left-1/2 -translate-x-1/2 bg-surface border border-border rounded-2xl px-6 py-4 shadow-lg animate-fade-up max-w-sm" style={{ bottom: 'max(10rem, calc(env(safe-area-inset-bottom) + 8.5rem))' }}>
             <div className="font-ui text-sm">
@@ -585,14 +596,7 @@ Return valid JSON array only — no explanation, no markdown.`;
 
   return (
     <>
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        style={{ display: 'none' }}
-        onChange={handlePhotoCapture}
-      />
-
+      {hiddenFileInput}
       {toastMessage && (
         <Toast
           message={toastMessage}
