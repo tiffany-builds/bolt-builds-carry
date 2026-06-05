@@ -25,6 +25,7 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [recurringConfirmation, setRecurringConfirmation] = useState<{item: any, index: number} | null>(null);
   const [pendingItems, setPendingItems] = useState<{ recurring: any[], nonRecurring: any[] } | null>(null);
+  const [calendarPrompt, setCalendarPrompt] = useState<any | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const showToast = (message: string) => {
@@ -158,11 +159,8 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
             continue;
           }
           savedItems.push(inserted);
-          if (inserted.date && calendarPermission) {
-            const eventId = await addItemToCalendar({ title: inserted.title, date: inserted.date, time: inserted.time });
-            if (eventId) {
-              await supabase.from('items').update({ calendar_event_id: eventId }).eq('id', inserted.id);
-            }
+          if (inserted.date && inserted.time) {
+            setCalendarPrompt(inserted);
           }
         }
       }
@@ -373,11 +371,8 @@ Return valid JSON array only — no explanation, no markdown.`;
             continue;
           }
           savedItems.push(inserted);
-          if (inserted.date && calendarPermission) {
-            const eventId = await addItemToCalendar({ title: inserted.title, date: inserted.date, time: inserted.time });
-            if (eventId) {
-              await supabase.from('items').update({ calendar_event_id: eventId }).eq('id', inserted.id);
-            }
+          if (inserted.date && inserted.time) {
+            setCalendarPrompt(inserted);
           }
         }
       }
@@ -595,6 +590,33 @@ Return valid JSON array only — no explanation, no markdown.`;
           message={toastMessage}
           onClose={() => setToastMessage(null)}
         />
+      )}
+
+      {calendarPrompt && (
+        <div className="fixed inset-0 bg-text/20 z-50 flex items-end justify-center animate-fade-up">
+          <div className="bg-surface rounded-t-3xl w-full max-w-2xl p-6 space-y-4 shadow-lg" style={{ paddingBottom: 'max(1.5rem, calc(env(safe-area-inset-bottom) + 1.5rem))' }}>
+            <p className="font-ui text-text text-center">
+              Want to add this to your calendar too?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={async () => {
+                  await addItemToCalendar({ title: calendarPrompt.title, date: calendarPrompt.date, time: calendarPrompt.time, emoji: calendarPrompt.emoji });
+                  setCalendarPrompt(null);
+                }}
+                className="flex-1 bg-accent text-surface rounded-xl py-3 font-ui font-medium hover:bg-accent/90 transition-all active:scale-95"
+              >
+                Add to Calendar
+              </button>
+              <button
+                onClick={() => setCalendarPrompt(null)}
+                className="flex-1 bg-surface border border-border text-text rounded-xl py-3 font-ui font-medium hover:border-accent/30 transition-all active:scale-95"
+              >
+                Not now
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {recurringConfirmation && (
