@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Mic, Check, X, Camera, Keyboard } from 'lucide-react';
+import { Mic, Check, X, ImageUp, Keyboard } from 'lucide-react';
 import { useSpeechRecognition } from '../utils/useSpeechRecognition';
 import { Toast } from './Toast';
 import { supabase } from '../lib/supabase';
@@ -259,9 +259,8 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
       const dayName = today.toLocaleDateString('en-GB', { weekday: 'long' });
       const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
-      const photoSystemPrompt = `You are Carry, a personal assistant for parents. Today is ${dayName} ${dateStr}.
-
-Extract all actionable information from this image — events, appointments, tasks, dates, times, deadlines.
+      const photoSystemPrompt = `You are Carry, a personal assistant. Today is ${dayName} ${dateStr}.
+Extract all actionable information from this image — it may be a photo, screenshot, confirmation email, booking, reservation, WhatsApp message, or any other content containing dates, times, appointments or tasks.
 
 CATEGORIES — choose exactly one:
 - Family: children's activities, school letters, sports, childcare, pets
@@ -459,7 +458,7 @@ Return valid JSON array only — no explanation, no markdown.`;
                 className="flex-shrink-0 w-12 h-12 bg-surface border-2 border-accent text-accent rounded-full flex items-center justify-center hover:bg-accent hover:text-surface active:scale-95 transition-all disabled:opacity-50"
                 aria-label="Add photo"
               >
-                <Camera size={20} />
+                <ImageUp size={20} />
               </button>
               <button
                 onClick={handleCancel}
@@ -580,7 +579,6 @@ Return valid JSON array only — no explanation, no markdown.`;
         ref={fileInputRef}
         type="file"
         accept="image/*"
-        capture="environment"
         style={{ display: 'none' }}
         onChange={handlePhotoCapture}
       />
@@ -651,11 +649,11 @@ Return valid JSON array only — no explanation, no markdown.`;
             <button
               onClick={() => fileInputRef.current?.click()}
               className="w-12 h-12 bg-surface border border-border rounded-full flex items-center justify-center hover:border-accent/30 active:scale-95 transition-all"
-              aria-label="Camera"
+              aria-label="Upload"
             >
-              <Camera size={20} className="text-muted" />
+              <ImageUp size={20} className="text-muted" />
             </button>
-            <span className="font-ui text-xs text-muted">Camera</span>
+            <span className="font-ui text-xs text-muted">Upload</span>
           </div>
 
           {/* Voice — centre, larger */}
