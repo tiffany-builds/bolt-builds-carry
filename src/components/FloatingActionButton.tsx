@@ -370,7 +370,7 @@ Return valid JSON array only — no explanation, no markdown.`;
             continue;
           }
           savedItems.push(inserted);
-          if (inserted.date && inserted.time) {
+          if (inserted.date && inserted.time && !calendarPrompt) {
             setCalendarPrompt(inserted);
           }
         }
