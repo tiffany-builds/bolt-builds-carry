@@ -37,6 +37,7 @@ export async function scheduleMorningBriefing(
           title: 'Good morning ☀️',
           body: `You have ${count} ${count === 1 ? 'thing' : 'things'} on today`,
           schedule: { at: scheduledAt },
+          sound: 'Hello.caf',
         },
       ],
     });
@@ -83,6 +84,7 @@ export async function scheduleItemReminders(
         title,
         body: 'Coming up in an hour',
         schedule: { at: notifyAt },
+        sound: 'Hello.caf',
       });
     }
 
