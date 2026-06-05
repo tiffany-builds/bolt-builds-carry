@@ -113,6 +113,14 @@ Add an "emoji" field to every item. Choose the most specific and contextually ap
 ${caringContext}
 ${familyContext}
 
+LANGUAGE RULES:
+- Detect the language the user is writing or speaking in
+- Respond with title and detail fields in the same language as the user's input
+- If the user mixes languages (e.g. French and English), use the dominant language
+- Category names must always be in English: Family, Home, Health, Errands, Me, Work
+- All other fields (title, detail, excitement) should match the user's language
+- Never translate the user's input into English if they wrote in another language
+
 ${categoryRules}
 
 ${birthdayRules}
