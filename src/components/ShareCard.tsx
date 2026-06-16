@@ -26,11 +26,14 @@ export function ShareCard({ onClose }: ShareCardProps) {
         if (!blob) return;
         const file = new File([blob], 'carry-share.png', { type: 'image/png' });
 
-        if (navigator.share && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            files: [file],
+        const { Share } = await import('@capacitor/share');
+        const { Capacitor } = await import('@capacitor/core');
+
+        if (Capacitor.isNativePlatform()) {
+          await Share.share({
             title: 'Carry — Mental Load Assistant',
-            text: "I use this app to manage my mental load — it's free on iPhone:",
+            text: "I use this app to manage my mental load. It's free on the App Store: https://apps.apple.com/us/app/carry-mental-load-assistant/id6763794641",
+            dialogTitle: 'Share Carry',
           });
         } else {
           const url = URL.createObjectURL(blob);
