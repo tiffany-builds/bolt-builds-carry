@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { ArrowLeft, Check } from 'lucide-react';
+import { ArrowLeft, Check, Share2 } from 'lucide-react';
 import { getContextualEmoji } from '../utils/mindNudges';
 import { getCategoryDisplayName } from '../utils/categoryHelpers';
 import { parseDateString } from '../utils/dateFormatting';
 import { supabase } from '../lib/supabase';
 import { DEFAULT_CATEGORIES } from '../data/defaultCategories';
 import { removeItemFromCalendar } from '../utils/calendar';
+import { shareItem } from '../utils/shareItem';
 
 interface Item {
   id: string;
@@ -211,7 +212,6 @@ export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onIt
                       {item.description && (
                         <p className="font-ui text-sm text-muted mt-1">{item.description}</p>
                       )}
-                      {/* Date display */}
                       {(item.date || item.start_date) && (
                         <p className="font-ui text-xs text-accent font-medium mt-1">
                           {parseDateString(item.date || item.start_date).toLocaleDateString('en-GB', {
@@ -228,7 +228,6 @@ export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onIt
                         </p>
                       )}
 
-                      {/* Category pill — tap to change */}
                       {editingCategoryId === item.id ? (
                         <div className="mt-2 flex flex-wrap gap-2">
                           {DEFAULT_CATEGORIES.map(cat => (
@@ -262,6 +261,16 @@ export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onIt
                         </button>
                       )}
                     </div>
+
+                    {!item.completed && (
+                      <button
+                        onClick={() => shareItem({ title: item.title, description: item.description, emoji: item.emoji, date: item.date, time: item.time, category: item.category })}
+                        className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center hover:bg-border/40 transition-all active:scale-95"
+                        aria-label="Share item"
+                      >
+                        <Share2 size={13} className="text-muted" />
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

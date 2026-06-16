@@ -17,7 +17,8 @@ import { getCategoryColor } from '../utils/categoryColors';
 import { formatDayLabel, formatTime, getWeekDays, getTodayDateString, parseDateString } from '../utils/dateFormatting';
 import { getContextualEmoji } from '../utils/mindNudges';
 import { supabase } from '../lib/supabase';
-import { Check } from 'lucide-react';
+import { Check, Share2 } from 'lucide-react';
+import { shareItem } from '../utils/shareItem';
 
 interface TimelineItemProps {
   item: TimelineItem;
@@ -112,13 +113,22 @@ function TimelineItemCard({ item, onComplete, onDelete, swipingId, swipeOffset, 
               </p>
             )}
           </div>
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 flex flex-col items-end gap-2">
             <span
               className="text-xs font-ui font-medium px-2 py-1 rounded-full"
               style={{ backgroundColor: `${borderColor}20`, color: borderColor }}
             >
               {item.category}
             </span>
+            {!isCompleted && (
+              <button
+                onClick={() => shareItem({ title: item.title, description: item.detail, emoji: item.emoji, date: item.date, time: item.time, category: item.category })}
+                className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-border/40 transition-all active:scale-95"
+                aria-label="Share item"
+              >
+                <Share2 size={13} className="text-muted" />
+              </button>
+            )}
           </div>
         </div>
       </div>
