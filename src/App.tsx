@@ -24,7 +24,7 @@ import { supabase } from './lib/supabase';
 import { categorizeAndCreateItems } from './hooks/useItemCategorization';
 import { generateRecurringInstances } from './utils/recurringItems';
 import { getTodayDateString } from './utils/dateFormatting';
-import { requestNotificationPermission, scheduleMorningBriefing, scheduleItemReminders } from './utils/notifications';
+import { requestNotificationPermission, scheduleMorningBriefing, scheduleItemReminders, scheduleSundayNotification } from './utils/notifications';
 import { requestCalendarPermission } from './utils/calendar';
 
 type OnboardingStep = 'welcome' | 'name' | 'family' | 'ready' | 'complete';
@@ -152,6 +152,7 @@ function App() {
     if (items.length === 0) return;
     scheduleMorningBriefing(items);
     scheduleItemReminders(items);
+    scheduleSundayNotification(items);
   }, [items]);
 
   if (authLoading || isLoading) {
