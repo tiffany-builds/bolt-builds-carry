@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { ArrowLeft, LogOut, Trash2, AlertTriangle, Share2 } from 'lucide-react';
+import { ArrowLeft, LogOut, Trash2, AlertTriangle, Share2, BookOpen } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { ShareCard } from './ShareCard';
+import { Browser } from '@capacitor/browser';
 
 interface SettingsProps {
   userEmail: string;
@@ -100,6 +101,22 @@ export function Settings({ userEmail, onBack }: SettingsProps) {
               <Share2 className="w-4 h-4" />
               <span>Share Carry</span>
             </button>
+          </section>
+
+          <section className="bg-surface border border-border rounded-2xl p-5 space-y-4">
+            <h2 className="font-ui text-xs uppercase tracking-wide text-muted">
+              Read
+            </h2>
+            <button
+              onClick={() => Browser.open({ url: 'https://carry-the-app.com/at-capacity' })}
+              className="flex items-center gap-3 text-text font-ui hover:text-accent transition-colors w-full text-left"
+            >
+              <BookOpen className="w-4 h-4" />
+              <span>At Capacity</span>
+            </button>
+            <p className="font-ui text-xs text-muted">
+              The editorial side of Carry — science, stories and the mental load of modern life.
+            </p>
           </section>
 
           <section className="bg-surface border border-border rounded-2xl p-5 space-y-4">
