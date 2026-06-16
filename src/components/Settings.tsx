@@ -108,7 +108,7 @@ export function Settings({ userEmail, onBack }: SettingsProps) {
               Read
             </h2>
             <button
-              onClick={() => Browser.open({ url: 'https://carry-the-app.com/at-capacity' })}
+              onClick={() => Browser.open({ url: 'https://carry-the-app.com/editorial' })}
               className="flex items-center gap-3 text-text font-ui hover:text-accent transition-colors w-full text-left"
             >
               <BookOpen className="w-4 h-4" />
