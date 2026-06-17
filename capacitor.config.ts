@@ -11,6 +11,8 @@ const config: CapacitorConfig = {
     contentInset: 'automatic',
     backgroundColor: '#E8DDD0',
     scrollEnabled: true,
+    bounce: true,
+    allowsLinkPreview: false,
     limitsNavigationsToAppBoundDomains: false,
   },
   plugins: {

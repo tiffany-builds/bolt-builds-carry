@@ -131,7 +131,6 @@ button {
 
 @supports (-webkit-touch-callout: none) {
   body {
-    overscroll-behavior-y: none;
   }
 
   .prevent-ios-bounce {
