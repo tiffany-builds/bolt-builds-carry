@@ -60,8 +60,10 @@ export function useSpeechRecognition({
         }
       );
 
+      const deviceLanguage = navigator.language || 'en-US';
+
       await NativeSpeechRecognition.start({
-        language: 'en-US',
+        language: deviceLanguage,
         maxResults: 1,
         partialResults: true,
         popup: false,
@@ -110,7 +112,7 @@ export function useSpeechRecognition({
     const recognition = new SpeechRecognition();
     recognition.continuous = true;
     recognition.interimResults = true;
-    recognition.lang = 'en-US';
+    recognition.lang = navigator.language || 'en-US';
     recognition.maxAlternatives = 1;
 
     let finalTranscript = '';
