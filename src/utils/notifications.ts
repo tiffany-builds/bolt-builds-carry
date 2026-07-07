@@ -190,7 +190,7 @@ export async function scheduleSundayNotification(
     const now = new Date();
     const nextSunday = new Date();
     nextSunday.setDate(now.getDate() + (7 - now.getDay()) % 7 || 7);
-    nextSunday.setHours(18, 0, 0, 0);
+    nextSunday.setHours(21, 0, 0, 0);
 
     if (nextSunday <= now) {
       nextSunday.setDate(nextSunday.getDate() + 7);

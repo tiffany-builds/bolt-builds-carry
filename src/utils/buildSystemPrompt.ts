@@ -6,7 +6,7 @@ export function buildSystemPrompt(options: {
 
   const today = new Date();
   const dayName = today.toLocaleDateString('en-GB', { weekday: 'long' });
-  const dateStr = today.toISOString().split('T')[0];
+  const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
   const hasPets = caringFor?.includes('pets');
   const hasChildren = caringFor?.includes('children');
