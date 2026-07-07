@@ -315,7 +315,7 @@ function App() {
       .filter(item => {
         const todayStr = getTodayDateString();
         return (
-          (item.has_date_time && item.date) ||
+          (item.date) ||
           (item.date === todayStr) ||
           (item.type === 'lookforward' && (item.start_date || item.date))
         );
@@ -366,7 +366,7 @@ function App() {
     .filter(item => {
       const todayStr = getTodayDateString();
       return (
-        (item.has_date_time && item.date) ||
+        (item.date) ||
         (item.date === todayStr) ||
         (item.type === 'lookforward' && (item.start_date || item.date))
       );

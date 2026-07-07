@@ -45,7 +45,8 @@ export function buildSystemPrompt(options: {
 - "Remind me to call the school" → Family (calling school is about children)
 - "Remind me to take my medication" → Health
 - "Remind me to book a haircut" → Me
-- If a reminder has a specific time/date, set hasDateTime: true`;
+- If an item has a date OR a specific time, set hasDateTime: true
+- hasDateTime should be true whenever date is not null`;
 
   const dateRules = `DATE RULES:
 - When user says "Saturday" mean the NEXT upcoming Saturday from today
