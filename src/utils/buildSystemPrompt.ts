@@ -137,5 +137,18 @@ ${lookforwardRules}
 
 ${emojiRules}
 
+LIST RULES:
+- If the user mentions a list (shopping list, to-do list, packing list, grocery list, etc.) create ONE single item, not multiple items
+- The title should be the list name e.g. "Shopping list", "Packing list"
+- The description should contain all the list items formatted as bullet points using the • character, one per line
+- Example: "shopping list — milk, eggs, bread, butter" should create:
+  title: "Shopping list"
+  description: "• Milk\n• Eggs\n• Bread\n• Butter"
+- Category should be Errands for shopping/grocery lists
+- Category should be Home for household task lists
+- Category should be Me for personal lists (packing, reading, etc)
+- If someone says "add X to my shopping list" and a list already exists, treat it as a new list item to capture
+- Always use the • bullet character, never dashes or numbers
+
 Return valid JSON only — no explanation, no markdown.`;
 }
