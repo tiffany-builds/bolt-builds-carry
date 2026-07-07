@@ -138,8 +138,9 @@ ${lookforwardRules}
 ${emojiRules}
 
 LIST RULES:
-- If the user mentions a list (shopping list, to-do list, packing list, grocery list, etc.) create ONE single item, not multiple items
-- The title should be the list name e.g. "Shopping list", "Packing list"
+- If the user mentions a list OR uses the word "list" in any context (shopping list, pharmacy list, packing list, grocery list, to-do list, birthday list, gift list, etc.) create ONE single item, not multiple items
+- Also detect when a user says multiple items of the same type together e.g. "get milk, eggs, bread and butter" — treat this as a shopping list
+- The title should reflect what kind of list it is e.g. "Pharmacy list", "Shopping list", "Packing list"
 - The description should contain all the list items formatted as bullet points using the • character, one per line
 - Example: "shopping list — milk, eggs, bread, butter" should create:
   title: "Shopping list"
