@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Capacitor } from '@capacitor/core';
 import { StatusBar } from './components/StatusBar';
 import { Header } from './components/Header';
 import { AffirmationCard } from './components/AffirmationCard';
@@ -47,23 +46,18 @@ function App() {
   const [calendarPermission, setCalendarPermission] = useState(false);
   const [showNavSheet, setShowNavSheet] = useState(false);
   const [isCheckingProfile, setIsCheckingProfile] = useState(true);
+  const [showReviewPrompt, setShowReviewPrompt] = useState(false);
 
   const { user, isLoading: authLoading } = useAuth();
   const { items, setItems, isLoading: itemsLoading, loadItems, getCategoryCounts, getOnYourMindItems, getLastWeekItemCount, addItemsToLocalState: addItemsToLocalStateBase, removeItemFromState } = useItems(user?.id || null);
 
-  const addItemsToLocalState = async (newItems: any[]) => {
+  const addItemsToLocalState = (newItems: any[]) => {
     addItemsToLocalStateBase(newItems);
-    // Request review after 10th item
-    const totalItems = items.length + newItems.length;
+    const newTotal = items.length + (newItems?.length || 0);
     const hasRequestedReview = localStorage.getItem('carry_review_requested');
-    if (totalItems >= 10 && !hasRequestedReview && Capacitor.isNativePlatform()) {
+    if (newTotal >= 10 && !hasRequestedReview) {
       localStorage.setItem('carry_review_requested', 'true');
-      try {
-        const { RateApp } = await import('@capacitor-community/rate-app');
-        await RateApp.requestReview();
-      } catch {
-        // fail silently
-      }
+      setTimeout(() => setShowReviewPrompt(true), 2000);
     }
   };
 
@@ -484,6 +478,55 @@ function App() {
           onCalendarClick={() => setCurrentView('calendar')}
           onSettingsClick={() => setCurrentView('settings')}
         />
+      )}
+      {showReviewPrompt && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
+          zIndex: 9999, display: 'flex', alignItems: 'flex-end',
+          justifyContent: 'center', padding: '0 16px 32px'
+        }}>
+          <div style={{
+            background: '#FDF9F4', borderRadius: '24px', padding: '28px 24px',
+            width: '100%', maxWidth: '400px', textAlign: 'center'
+          }}>
+            <p style={{
+              fontFamily: 'Georgia, serif', fontStyle: 'italic',
+              fontSize: '22px', color: '#2C2420', marginBottom: '8px'
+            }}>Enjoying Carry?</p>
+            <p style={{
+              fontFamily: 'DM Sans, sans-serif', fontSize: '14px',
+              color: '#6B5C52', marginBottom: '24px', lineHeight: 1.5
+            }}>
+              I know you have a lot going on — but a quick review means a lot.
+              It takes 30 seconds. 🧡
+            </p>
+            <button
+              onClick={() => {
+                window.open('https://apps.apple.com/app/id6763794641?action=write-review', '_system');
+                setShowReviewPrompt(false);
+              }}
+              style={{
+                width: '100%', background: '#C4714A', color: '#FDF9F4',
+                border: 'none', borderRadius: '24px', padding: '16px',
+                fontFamily: 'DM Sans, sans-serif', fontSize: '15px',
+                fontWeight: 500, cursor: 'pointer', marginBottom: '12px'
+              }}
+            >
+              Leave a review ✨
+            </button>
+            <button
+              onClick={() => setShowReviewPrompt(false)}
+              style={{
+                width: '100%', background: 'transparent', color: '#9E8E80',
+                border: 'none', padding: '12px',
+                fontFamily: 'DM Sans, sans-serif', fontSize: '14px',
+                cursor: 'pointer'
+              }}
+            >
+              Maybe later
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

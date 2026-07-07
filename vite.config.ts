@@ -13,14 +13,12 @@ export default defineConfig({
           input: {
             app: 'app.html',
           },
-          external: ['@capacitor-community/rate-app'],
         }
       : {
           input: {
             main: 'app.html',
             index: 'index.html',
           },
-          external: ['@capacitor-community/rate-app'],
         },
   },
   server: {
