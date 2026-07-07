@@ -51,11 +51,17 @@ function getNextOccurrences(
   return [...new Set(dates)];
 }
 
-function getNextDailyOccurrences(daysAhead: number = 14): string[] {
+function getNextDailyOccurrences(daysAhead: number = 14, startDate?: string | null): string[] {
   const dates: string[] = [];
-  const now = new Date();
+  const startFrom = startDate
+    ? new Date(startDate + 'T00:00:00')
+    : new Date();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const baseDate = startFrom > today ? startFrom : today;
+
   for (let i = 0; i < daysAhead; i++) {
-    const target = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
+    const target = new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate() + i);
     const year = target.getFullYear();
     const month = String(target.getMonth() + 1).padStart(2, '0');
     const day = String(target.getDate()).padStart(2, '0');
@@ -141,7 +147,7 @@ export async function generateRecurringInstances(userId: string): Promise<void> 
       }
 
       if (item.recurring_pattern === 'daily') {
-        const dates = getNextDailyOccurrences(14);
+        const dates = getNextDailyOccurrences(14, (item as any).date);
         for (const dateStr of dates) {
           const exists = await instanceExists(userId, item.id, dateStr);
           if (!exists) {
