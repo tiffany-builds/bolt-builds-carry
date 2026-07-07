@@ -508,6 +508,7 @@ Return valid JSON array only — no explanation, no markdown.`;
     );
   }
 
+  // TODO: Handle expiry extension when user taps notification
   const handleRecurringYes = async () => {
     if (!pendingItems || !userId) {
       setRecurringConfirmation(null);

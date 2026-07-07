@@ -96,6 +96,82 @@ export async function scheduleItemReminders(
   }
 }
 
+export async function scheduleRecurringExpiryReminders(
+  items: Array<{
+    id: string;
+    title: string;
+    emoji: string | null;
+    date: string | null;
+    recurring: boolean;
+    recurring_parent_id: string | null;
+  }>
+): Promise<void> {
+  try {
+    const EXPIRY_ID_START = 3000;
+    const EXPIRY_ID_END = 3099;
+
+    // Cancel existing expiry notifications
+    const existingIds = Array.from(
+      { length: EXPIRY_ID_END - EXPIRY_ID_START + 1 },
+      (_, i) => ({ id: EXPIRY_ID_START + i })
+    );
+    await LocalNotifications.cancel({ notifications: existingIds });
+
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+    // Find recurring parent items
+    const recurringParents = items.filter(i => i.recurring && !i.recurring_parent_id);
+
+    // For each recurring parent, find its latest instance
+    const toSchedule = [];
+    let notifIndex = 0;
+
+    for (const parent of recurringParents) {
+      // Find all instances of this parent
+      const instances = items.filter(i =>
+        i.recurring_parent_id === parent.id &&
+        i.date &&
+        i.date >= todayStr
+      );
+
+      if (instances.length === 0) continue;
+
+      // Find the last instance date
+      const sortedDates = instances.map(i => i.date!).sort();
+      const lastDate = sortedDates[sortedDates.length - 1];
+
+      // Calculate 2 days before last instance
+      const lastDateObj = new Date(lastDate + 'T00:00:00');
+      const notifyDate = new Date(lastDateObj);
+      notifyDate.setDate(notifyDate.getDate() - 2);
+      notifyDate.setHours(21, 0, 0, 0); // 9pm
+
+      if (notifyDate <= new Date()) continue;
+      if (notifIndex >= 100) break;
+
+      const emoji = parent.emoji || '';
+      const title = `${emoji} ${parent.title}`.trim();
+
+      toSchedule.push({
+        id: EXPIRY_ID_START + notifIndex,
+        title: 'Carry 🧡',
+        body: `Your "${title}" reminder is nearly up. Want to keep it going?`,
+        schedule: { at: notifyDate },
+        sound: 'Hello.caf',
+      });
+
+      notifIndex++;
+    }
+
+    if (toSchedule.length > 0) {
+      await LocalNotifications.schedule({ notifications: toSchedule });
+    }
+  } catch {
+    // fail silently
+  }
+}
+
 export async function scheduleSundayNotification(
   items: Array<{
     title: string;
