@@ -635,14 +635,14 @@ Return valid JSON array only — no explanation, no markdown.`;
         <div className="fixed inset-0 bg-text/20 z-50 flex items-end justify-center animate-fade-up">
           <div className="bg-surface rounded-t-3xl w-full max-w-2xl p-6 space-y-4 shadow-lg" style={{ paddingBottom: 'max(1.5rem, calc(env(safe-area-inset-bottom) + 1.5rem))' }}>
             <p className="font-ui text-text text-center">
-              Sounds like this happens regularly — want me to remember that?
+              Looks like this happens regularly. I'll remind you for the next 14 days — you can always re-add it after that. 🧡
             </p>
             <div className="flex gap-3">
               <button
                 onClick={handleRecurringYes}
                 className="flex-1 bg-accent text-surface rounded-xl py-3 font-ui font-medium hover:bg-accent/90 transition-all active:scale-95"
               >
-                Yes, add {recurringConfirmation.item.recurring_pattern}
+                Yes, remind me
               </button>
               <button
                 onClick={handleRecurringNo}

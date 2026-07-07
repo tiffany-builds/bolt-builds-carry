@@ -51,6 +51,33 @@ function getNextOccurrences(
   return [...new Set(dates)];
 }
 
+function getNextDailyOccurrences(daysAhead: number = 14): string[] {
+  const dates: string[] = [];
+  const now = new Date();
+  for (let i = 0; i < daysAhead; i++) {
+    const target = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
+    const year = target.getFullYear();
+    const month = String(target.getMonth() + 1).padStart(2, '0');
+    const day = String(target.getDate()).padStart(2, '0');
+    dates.push(`${year}-${month}-${day}`);
+  }
+  return dates;
+}
+
+function getNextMonthlyOccurrences(monthsAhead: number = 3): string[] {
+  const dates: string[] = [];
+  const now = new Date();
+  const todayLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  for (let i = 0; i < monthsAhead; i++) {
+    const target = new Date(todayLocal.getFullYear(), todayLocal.getMonth() + i, todayLocal.getDate());
+    const year = target.getFullYear();
+    const month = String(target.getMonth() + 1).padStart(2, '0');
+    const day = String(target.getDate()).padStart(2, '0');
+    dates.push(`${year}-${month}-${day}`);
+  }
+  return dates;
+}
+
 async function instanceExists(
   userId: string,
   parentId: string,
@@ -114,18 +141,32 @@ export async function generateRecurringInstances(userId: string): Promise<void> 
       }
 
       if (item.recurring_pattern === 'daily') {
-        const today = new Date();
-        for (let i = 0; i < 14; i++) {
-          const target = new Date(
-            today.getFullYear(),
-            today.getMonth(),
-            today.getDate() + i
-          );
-          const year = target.getFullYear();
-          const month = String(target.getMonth() + 1).padStart(2, '0');
-          const day = String(target.getDate()).padStart(2, '0');
-          const dateStr = `${year}-${month}-${day}`;
+        const dates = getNextDailyOccurrences(14);
+        for (const dateStr of dates) {
+          const exists = await instanceExists(userId, item.id, dateStr);
+          if (!exists) {
+            await supabase.from('items').insert({
+              user_id: userId,
+              title: item.title,
+              description: item.description,
+              category: item.category,
+              emoji: item.emoji,
+              completed: false,
+              time_frame: 'anytime',
+              date: dateStr,
+              time: item.time,
+              has_date_time: true,
+              type: item.type,
+              recurring: false,
+              recurring_parent_id: item.id,
+            });
+          }
+        }
+      }
 
+      if (item.recurring_pattern === 'monthly') {
+        const dates = getNextMonthlyOccurrences(3);
+        for (const dateStr of dates) {
           const exists = await instanceExists(userId, item.id, dateStr);
           if (!exists) {
             await supabase.from('items').insert({
