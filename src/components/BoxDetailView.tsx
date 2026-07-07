@@ -118,7 +118,9 @@ export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onIt
         .update({ category: newCategory })
         .eq('id', itemId);
 
-      onItemDelete(itemId);
+      if (onItemUpdate) {
+        onItemUpdate(itemId, { category: newCategory });
+      }
     } catch (err) {
     }
     setEditingCategoryId(null);
