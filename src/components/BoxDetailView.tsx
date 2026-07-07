@@ -212,7 +212,7 @@ export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onIt
                         </h3>
                       )}
                       {item.description && (
-                        <p className="font-ui text-sm text-muted mt-1">{item.description}</p>
+                        <p className="font-ui text-sm text-muted mt-1" style={{ whiteSpace: 'pre-line' }}>{item.description}</p>
                       )}
                       {(item.date || item.start_date) && (
                         <p className="font-ui text-xs text-accent font-medium mt-1">
