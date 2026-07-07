@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Capacitor } from '@capacitor/core';
 import { StatusBar } from './components/StatusBar';
 import { Header } from './components/Header';
 import { AffirmationCard } from './components/AffirmationCard';
@@ -48,7 +49,23 @@ function App() {
   const [isCheckingProfile, setIsCheckingProfile] = useState(true);
 
   const { user, isLoading: authLoading } = useAuth();
-  const { items, setItems, isLoading: itemsLoading, loadItems, getCategoryCounts, getOnYourMindItems, getLastWeekItemCount, addItemsToLocalState, removeItemFromState } = useItems(user?.id || null);
+  const { items, setItems, isLoading: itemsLoading, loadItems, getCategoryCounts, getOnYourMindItems, getLastWeekItemCount, addItemsToLocalState: addItemsToLocalStateBase, removeItemFromState } = useItems(user?.id || null);
+
+  const addItemsToLocalState = async (newItems: any[]) => {
+    addItemsToLocalStateBase(newItems);
+    // Request review after 10th item
+    const totalItems = items.length + newItems.length;
+    const hasRequestedReview = localStorage.getItem('carry_review_requested');
+    if (totalItems >= 10 && !hasRequestedReview && Capacitor.isNativePlatform()) {
+      localStorage.setItem('carry_review_requested', 'true');
+      try {
+        const { RateApp } = await import('@capacitor-community/rate-app');
+        await RateApp.requestReview();
+      } catch {
+        // fail silently
+      }
+    }
+  };
 
   const checkBirthday = (profile: UserProfile | null) => {
     if (!profile?.birthday_day || !profile?.birthday_month) return false;
