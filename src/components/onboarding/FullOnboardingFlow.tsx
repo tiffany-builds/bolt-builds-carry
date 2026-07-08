@@ -5,6 +5,7 @@ import { OnboardingInitialThoughts } from './OnboardingInitialThoughts';
 
 interface FullOnboardingFlowProps {
   userId: string;
+  initialName?: string;
   onComplete: (data: OnboardingData) => void;
 }
 
@@ -15,9 +16,9 @@ export interface OnboardingData {
   initialThoughts?: string;
 }
 
-export function FullOnboardingFlow({ userId, onComplete }: FullOnboardingFlowProps) {
-  const [step, setStep] = useState(0);
-  const dataRef = useRef<Partial<OnboardingData>>({});
+export function FullOnboardingFlow({ userId, initialName, onComplete }: FullOnboardingFlowProps) {
+  const [step, setStep] = useState(initialName ? 1 : 0);
+  const dataRef = useRef<Partial<OnboardingData>>(initialName ? { name: initialName } : {});
 
   const updateData = (newData: Partial<OnboardingData>) => {
     dataRef.current = { ...dataRef.current, ...newData };

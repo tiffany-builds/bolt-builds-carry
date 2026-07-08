@@ -69,6 +69,14 @@ function App() {
   };
 
   useEffect(() => {
+    const appleName = localStorage.getItem('carry_apple_first_name');
+    if (appleName && !userName) {
+      setUserName(appleName);
+      localStorage.removeItem('carry_apple_first_name');
+    }
+  }, [user]);
+
+  useEffect(() => {
     const checkExistingUser = async () => {
       if (!user) return;
 
@@ -203,6 +211,7 @@ function App() {
     return (
       <FullOnboardingFlow
         userId={user.id}
+        initialName={userName || undefined}
         onComplete={async (onboardingData: OnboardingData) => {
           setIsLoading(true);
 

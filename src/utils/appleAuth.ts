@@ -15,7 +15,7 @@ export async function initializeAppleAuth() {
   }
 }
 
-export async function signInWithApple(): Promise<{ success: boolean; error?: string }> {
+export async function signInWithApple(): Promise<{ success: boolean; firstName?: string; email?: string; error?: string }> {
   try {
     const result = await SocialLogin.login({
       provider: 'apple',
@@ -28,13 +28,18 @@ export async function signInWithApple(): Promise<{ success: boolean; error?: str
       return { success: false, error: 'No token received from Apple' };
     }
 
+    const firstName = result?.result?.profile?.givenName ||
+                      result?.result?.profile?.name?.split(' ')[0] ||
+                      null;
+    const email = result?.result?.profile?.email || null;
+
     const { error } = await supabase.auth.signInWithIdToken({
       provider: 'apple',
       token: result.result.idToken,
     });
 
     if (error) return { success: false, error: error.message };
-    return { success: true };
+    return { success: true, firstName: firstName || undefined, email: email || undefined };
   } catch (err: any) {
     if (err?.message?.includes('cancel') || err?.message?.includes('dismiss')) {
       return { success: false };

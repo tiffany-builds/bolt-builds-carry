@@ -32,6 +32,9 @@ export function SignIn({ onSuccess }: SignInProps) {
     const result = await signInWithApple();
     setAppleLoading(false);
     if (result.success) {
+      if (result.firstName) {
+        localStorage.setItem('carry_apple_first_name', result.firstName);
+      }
       onSuccess();
     } else if (result.error) {
       setError(result.error);
