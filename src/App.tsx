@@ -47,6 +47,11 @@ function App() {
   const [showNavSheet, setShowNavSheet] = useState(false);
   const [isCheckingProfile, setIsCheckingProfile] = useState(true);
   const [showReviewPrompt, setShowReviewPrompt] = useState(false);
+  const [recurringDeletePrompt, setRecurringDeletePrompt] = useState<{
+    itemId: string;
+    parentId: string | null;
+    recurring: boolean;
+  } | null>(null);
 
   const { user, isLoading: authLoading } = useAuth();
   const { items, setItems, isLoading: itemsLoading, loadItems, getCategoryCounts, getOnYourMindItems, getLastWeekItemCount, addItemsToLocalState: addItemsToLocalStateBase, removeItemFromState } = useItems(user?.id || null);
@@ -301,8 +306,17 @@ function App() {
             setItems(prev => prev.filter(i => i.id !== itemId));
           }}
           onItemDelete={async (itemId) => {
-            await supabase.from('items').delete().eq('id', itemId);
-            setItems(prev => prev.filter(i => i.id !== itemId));
+            const item = items.find(i => i.id === itemId);
+            if (item && (item.recurring || (item as any).recurring_parent_id)) {
+              setRecurringDeletePrompt({
+                itemId,
+                parentId: (item as any).recurring_parent_id || itemId,
+                recurring: true,
+              });
+            } else {
+              await supabase.from('items').delete().eq('id', itemId);
+              setItems(prev => prev.filter(i => i.id !== itemId));
+            }
           }}
           onItemUpdate={(itemId, updates) => {
             setItems(prev => prev.map(item =>
@@ -443,8 +457,17 @@ function App() {
             items={todayItems}
             onItemComplete={removeItemFromState}
             onItemDelete={async (itemId) => {
-              await supabase.from('items').delete().eq('id', itemId);
-              removeItemFromState(itemId);
+              const item = items.find(i => i.id === itemId);
+              if (item && (item.recurring || (item as any).recurring_parent_id)) {
+                setRecurringDeletePrompt({
+                  itemId,
+                  parentId: (item as any).recurring_parent_id || itemId,
+                  recurring: true,
+                });
+              } else {
+                await supabase.from('items').delete().eq('id', itemId);
+                removeItemFromState(itemId);
+              }
             }}
             onShowToast={setToastMessage}
           />
@@ -487,6 +510,79 @@ function App() {
           onCalendarClick={() => setCurrentView('calendar')}
           onSettingsClick={() => setCurrentView('settings')}
         />
+      )}
+      {recurringDeletePrompt && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
+          zIndex: 9999, display: 'flex', alignItems: 'flex-end',
+          justifyContent: 'center', padding: '0 16px 32px'
+        }}>
+          <div style={{
+            background: '#FDF9F4', borderRadius: '24px', padding: '28px 24px',
+            width: '100%', maxWidth: '400px',
+          }}>
+            <p style={{
+              fontFamily: 'Georgia, serif', fontStyle: 'italic',
+              fontSize: '20px', color: '#2C2420', marginBottom: '8px',
+              textAlign: 'center'
+            }}>This is a recurring item</p>
+            <p style={{
+              fontFamily: 'DM Sans, sans-serif', fontSize: '14px',
+              color: '#6B5C52', marginBottom: '24px', textAlign: 'center',
+              lineHeight: 1.5
+            }}>
+              Do you want to remove just this one, or stop all future reminders?
+            </p>
+            <button
+              onClick={async () => {
+                await supabase.from('items').delete().eq('id', recurringDeletePrompt.itemId);
+                removeItemFromState(recurringDeletePrompt.itemId);
+                setRecurringDeletePrompt(null);
+              }}
+              style={{
+                width: '100%', background: '#E8DDD0', color: '#2C2420',
+                border: 'none', borderRadius: '24px', padding: '16px',
+                fontFamily: 'DM Sans, sans-serif', fontSize: '15px',
+                fontWeight: 500, cursor: 'pointer', marginBottom: '12px'
+              }}
+            >
+              Just this one
+            </button>
+            <button
+              onClick={async () => {
+                const parentId = recurringDeletePrompt.parentId;
+                if (parentId) {
+                  await supabase.from('items').delete().eq('recurring_parent_id', parentId);
+                  await supabase.from('items').delete().eq('id', parentId);
+                  setItems(prev => prev.filter(i =>
+                    i.id !== parentId &&
+                    (i as any).recurring_parent_id !== parentId
+                  ));
+                }
+                setRecurringDeletePrompt(null);
+              }}
+              style={{
+                width: '100%', background: '#C4714A', color: '#FDF9F4',
+                border: 'none', borderRadius: '24px', padding: '16px',
+                fontFamily: 'DM Sans, sans-serif', fontSize: '15px',
+                fontWeight: 500, cursor: 'pointer', marginBottom: '12px'
+              }}
+            >
+              Stop all future reminders
+            </button>
+            <button
+              onClick={() => setRecurringDeletePrompt(null)}
+              style={{
+                width: '100%', background: 'transparent', color: '#9E8E80',
+                border: 'none', padding: '12px',
+                fontFamily: 'DM Sans, sans-serif', fontSize: '14px',
+                cursor: 'pointer'
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
       )}
       {showReviewPrompt && (
         <div style={{
