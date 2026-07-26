@@ -17,8 +17,10 @@ export interface OnboardingData {
 }
 
 export function FullOnboardingFlow({ userId, initialName, onComplete }: FullOnboardingFlowProps) {
-  const [step, setStep] = useState(initialName ? 1 : 0);
-  const dataRef = useRef<Partial<OnboardingData>>(initialName ? { name: initialName } : {});
+  const appleName = localStorage.getItem('carry_apple_first_name');
+  const resolvedName = initialName || appleName || null;
+  const [step, setStep] = useState(resolvedName ? 1 : 0);
+  const dataRef = useRef<Partial<OnboardingData>>(resolvedName ? { name: resolvedName } : {});
 
   const updateData = (newData: Partial<OnboardingData>) => {
     dataRef.current = { ...dataRef.current, ...newData };
