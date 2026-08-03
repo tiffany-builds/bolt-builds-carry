@@ -25,6 +25,8 @@ import { generateRecurringInstances } from './utils/recurringItems';
 import { getTodayDateString } from './utils/dateFormatting';
 import { requestNotificationPermission, scheduleMorningBriefing, scheduleItemReminders, scheduleSundayNotification, scheduleRecurringExpiryReminders } from './utils/notifications';
 import { requestCalendarPermission } from './utils/calendar';
+import { requestHealthKitPermission, isHealthKitEnabled, setHealthKitEnabled } from './utils/healthKit';
+import { Capacitor } from '@capacitor/core';
 
 type OnboardingStep = 'welcome' | 'name' | 'family' | 'ready' | 'complete';
 type View = 'home' | 'boxDetail' | 'everything' | 'calendar' | 'settings';
@@ -46,6 +48,8 @@ function App() {
   const [showNavSheet, setShowNavSheet] = useState(false);
   const [isCheckingProfile, setIsCheckingProfile] = useState(true);
   const [showReviewPrompt, setShowReviewPrompt] = useState(false);
+  const [showHealthKitPrompt, setShowHealthKitPrompt] = useState(false);
+  const [healthKitEnabled, setHealthKitEnabledState] = useState(isHealthKitEnabled());
   const [recurringDeletePrompt, setRecurringDeletePrompt] = useState<{
     itemId: string;
     parentId: string | null;
@@ -55,13 +59,22 @@ function App() {
   const { user, isLoading: authLoading } = useAuth();
   const { items, setItems, isLoading: itemsLoading, loadItems, getCategoryCounts, getOnYourMindItems, getLastWeekItemCount, addItemsToLocalState: addItemsToLocalStateBase, removeItemFromState } = useItems(user?.id || null);
 
-  const addItemsToLocalState = (newItems: any[]) => {
+  const addItemsToLocalState = async (newItems: any[]) => {
     addItemsToLocalStateBase(newItems);
     const newTotal = items.length + (newItems?.length || 0);
     const hasRequestedReview = localStorage.getItem('carry_review_requested');
     if (newTotal >= 10 && !hasRequestedReview) {
       localStorage.setItem('carry_review_requested', 'true');
       setTimeout(() => setShowReviewPrompt(true), 2000);
+    }
+    const hasAskedHealthKit = localStorage.getItem('carry_healthkit_asked');
+    if (!hasAskedHealthKit && Capacitor.isNativePlatform()) {
+      localStorage.setItem('carry_healthkit_asked', 'true');
+      setTimeout(() => setShowHealthKitPrompt(true), 1500);
+    }
+    if (isHealthKitEnabled()) {
+      const { logMindfulMinutes } = await import('./utils/healthKit');
+      await logMindfulMinutes(2);
     }
   };
 
@@ -587,6 +600,59 @@ function App() {
               }}
             >
               Cancel
+            </button>
+          </div>
+        </div>
+      )}
+      {showHealthKitPrompt && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
+          zIndex: 9999, display: 'flex', alignItems: 'flex-end',
+          justifyContent: 'center', padding: '0 16px 32px'
+        }}>
+          <div style={{
+            background: '#FDF9F4', borderRadius: '24px', padding: '28px 24px',
+            width: '100%', maxWidth: '400px', textAlign: 'center'
+          }}>
+            <p style={{
+              fontFamily: 'Georgia, serif', fontStyle: 'italic',
+              fontSize: '20px', color: '#2C2420', marginBottom: '8px'
+            }}>Getting things out of your head is good for you.</p>
+            <p style={{
+              fontFamily: 'DM Sans, sans-serif', fontSize: '14px',
+              color: '#6B5C52', marginBottom: '24px', lineHeight: 1.5
+            }}>
+              Would you like Carry to log your brain dumps as Mindful Minutes 
+              in Apple Health? 🧡
+            </p>
+            <button
+              onClick={async () => {
+                const granted = await requestHealthKitPermission();
+                if (granted) {
+                  setHealthKitEnabled(true);
+                  setHealthKitEnabledState(true);
+                }
+                setShowHealthKitPrompt(false);
+              }}
+              style={{
+                width: '100%', background: '#C4714A', color: '#FDF9F4',
+                border: 'none', borderRadius: '24px', padding: '16px',
+                fontFamily: 'DM Sans, sans-serif', fontSize: '15px',
+                fontWeight: 500, cursor: 'pointer', marginBottom: '12px'
+              }}
+            >
+              Yes, log to Apple Health
+            </button>
+            <button
+              onClick={() => setShowHealthKitPrompt(false)}
+              style={{
+                width: '100%', background: 'transparent', color: '#9E8E80',
+                border: 'none', padding: '12px',
+                fontFamily: 'DM Sans, sans-serif', fontSize: '14px',
+                cursor: 'pointer'
+              }}
+            >
+              Not right now
             </button>
           </div>
         </div>
