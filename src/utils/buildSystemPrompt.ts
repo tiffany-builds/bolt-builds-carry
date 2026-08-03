@@ -151,5 +151,16 @@ LIST RULES:
 - If someone says "add X to my shopping list" and a list already exists, treat it as a new list item to capture
 - Always use the • bullet character, never dashes or numbers
 
+PERIOD/CYCLE TRACKING RULES:
+- If the user mentions their period starting (e.g. "my period started", "period day 1", "period started today", "got my period", "time of the month") detect this as a cycle log
+- Create a Health item as normal with an appropriate title like "Period started"
+- Add a special field to the response: "isCycleLog": true
+- Keep the tone warm and completely normal — no clinical language
+- Examples of cycle language to detect:
+  "my period started" → title: "Period started", isCycleLog: true
+  "period day 1" → title: "Period day 1", isCycleLog: true
+  "got my period today" → title: "Period started", isCycleLog: true
+  "my period ended" → title: "Period ended", isCycleLog: false (just a normal item)
+
 Return valid JSON only — no explanation, no markdown.`;
 }
