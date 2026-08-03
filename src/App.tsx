@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { StatusBar } from './components/StatusBar';
 import { Header } from './components/Header';
-import { AffirmationCard } from './components/AffirmationCard';
 import { TimelineSection } from './components/TimelineSection';
 import { BoxesSection } from './components/BoxesSection';
 import { FloatingActionButton } from './components/FloatingActionButton';
@@ -445,14 +444,23 @@ function App() {
             isBirthday={isBirthday}
             onOpenMenu={() => setShowNavSheet(true)}
           />
-          <AffirmationCard
-            isBirthday={isBirthday}
-            allDoneToday={
-              todayItems.filter(i => i.date === getTodayDateString()).length > 0 &&
-              todayItems.filter(i => i.date === getTodayDateString() && !i.completed).length === 0
-            }
-            lastWeekCount={lastWeekCount}
-          />
+          {lastWeekCount > 0 && (
+            <p style={{ 
+              fontFamily: 'DM Sans, sans-serif',
+              fontSize: '12px', 
+              color: '#9E8E80',
+              fontStyle: 'italic',
+              marginTop: '2px'
+            }}>
+              You carried {lastWeekCount} things last week.
+            </p>
+          )}
+          {onYourMindItems.length > 0 && (
+            <OnYourMindSection
+              items={items}
+              onItemsChange={removeItemFromState}
+            />
+          )}
           <TimelineSection
             items={todayItems}
             onItemComplete={removeItemFromState}
@@ -480,10 +488,6 @@ function App() {
               setSelectedCategory(category as UserCategory);
               setCurrentView('boxDetail');
             }}
-          />
-          <OnYourMindSection
-            items={items}
-            onItemsChange={removeItemFromState}
           />
           <LookForwardSection
             items={todayItems}
