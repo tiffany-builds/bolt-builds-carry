@@ -470,6 +470,9 @@ function App() {
               }
             }}
             onShowToast={setToastMessage}
+            onItemUpdate={(itemId, updates) => {
+              setItems(prev => prev.map(i => i.id === itemId ? { ...i, ...updates } : i));
+            }}
           />
           <BoxesSection
             categoryCounts={categoryCounts}

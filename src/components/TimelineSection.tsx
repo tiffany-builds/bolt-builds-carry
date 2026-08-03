@@ -29,9 +29,19 @@ interface TimelineItemProps {
   onTouchStart: (e: React.TouchEvent, id: string) => void;
   onTouchMove: (e: React.TouchEvent) => void;
   onTouchEnd: (itemId: string) => void;
+  editingId: string | null;
+  editingText: string;
+  setEditingText: (v: string) => void;
+  setEditingId: (id: string | null) => void;
+  editingTimeId: string | null;
+  editingTimeValue: string;
+  setEditingTimeValue: (v: string) => void;
+  setEditingTimeId: (id: string | null) => void;
+  updateItemTitle: (itemId: string, newTitle: string) => Promise<void>;
+  updateItemTime: (itemId: string, newTime: string) => Promise<void>;
 }
 
-function TimelineItemCard({ item, onComplete, onDelete, swipingId, swipeOffset, onTouchStart, onTouchMove, onTouchEnd }: TimelineItemProps) {
+function TimelineItemCard({ item, onComplete, onDelete, swipingId, swipeOffset, onTouchStart, onTouchMove, onTouchEnd, editingId, editingText, setEditingText, setEditingId, editingTimeId, editingTimeValue, setEditingTimeValue, setEditingTimeId, updateItemTitle, updateItemTime }: TimelineItemProps) {
   const borderColor = getCategoryColor(item.category);
   const isCompleted = item.completed;
   const displayEmoji = item.emoji || getContextualEmoji(item.title, item.category);
@@ -73,9 +83,39 @@ function TimelineItemCard({ item, onComplete, onDelete, swipingId, swipeOffset, 
           style={{ borderLeftColor: borderColor }}
         >
           <div className="flex-shrink-0 w-12 flex flex-col items-center gap-2">
-            <p className={`font-ui text-sm font-medium ${isCompleted ? 'line-through' : ''}`}>
-              {item.time ? formatTime(item.time) : '—'}
-            </p>
+            {editingTimeId === item.id ? (
+              <input
+                type="time"
+                value={editingTimeValue}
+                onChange={e => setEditingTimeValue(e.target.value)}
+                onBlur={async () => {
+                  await updateItemTime(item.id, editingTimeValue);
+                  setEditingTimeId(null);
+                }}
+                autoFocus
+                style={{
+                  fontFamily: 'DM Sans, sans-serif',
+                  fontSize: '12px',
+                  color: '#6B5C52',
+                  background: 'transparent',
+                  border: 'none',
+                  borderBottom: '1px solid #C4714A',
+                  outline: 'none',
+                  width: '80px',
+                }}
+              />
+            ) : (
+              <p
+                className={`font-ui text-sm font-medium ${isCompleted ? 'line-through' : ''}`}
+                style={{ cursor: 'pointer' }}
+                onClick={() => {
+                  setEditingTimeId(item.id);
+                  setEditingTimeValue(item.time?.slice(0, 5) || '');
+                }}
+              >
+                {item.time ? formatTime(item.time) : '—'}
+              </p>
+            )}
             <button
               onClick={handleComplete}
               className="w-5 h-5 rounded-full border-[1.5px] flex items-center justify-center transition-all duration-200 ease-in-out"
@@ -89,8 +129,39 @@ function TimelineItemCard({ item, onComplete, onDelete, swipingId, swipeOffset, 
             </button>
           </div>
           <div className="flex-1">
-            <h3 className={`font-ui font-medium text-text mb-1 ${isCompleted ? 'line-through' : ''} ${(item as any).isOptimistic ? 'animate-pulse' : ''}`}>
-              {displayEmoji} {item.title}
+            {editingId === item.id ? (
+              <input
+                type="text"
+                value={editingText}
+                onChange={e => setEditingText(e.target.value)}
+                onBlur={async () => {
+                  if (editingText.trim() && editingText !== item.title) {
+                    await updateItemTitle(item.id, editingText);
+                  }
+                  setEditingId(null);
+                }}
+                onKeyDown={async (e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (editingText.trim() && editingText !== item.title) {
+                      await updateItemTitle(item.id, editingText);
+                    }
+                    setEditingId(null);
+                  }
+                }}
+                className={`font-ui font-medium text-text mb-1 bg-transparent border-b border-accent/30 outline-none w-full ${isCompleted ? 'line-through' : ''} ${(item as any).isOptimistic ? 'animate-pulse' : ''}`}
+                autoFocus
+              />
+            ) : (
+              <h3
+                className={`font-ui font-medium text-text mb-1 ${isCompleted ? 'line-through' : ''} ${(item as any).isOptimistic ? 'animate-pulse' : ''}`}
+                style={{ cursor: 'pointer' }}
+                onClick={() => {
+                  setEditingId(item.id);
+                  setEditingText(item.title);
+                }}
+              >
+                {displayEmoji} {item.title}
               {((item as any).recurring || (item as any).recurring_parent_id) && (
                 <span style={{
                   fontSize: '10px',
@@ -99,7 +170,8 @@ function TimelineItemCard({ item, onComplete, onDelete, swipingId, swipeOffset, 
                   opacity: 0.7
                 }}>↻</span>
               )}
-            </h3>
+              </h3>
+            )}
             {item.detail && (
               <p className="font-ui text-sm text-muted font-light">{item.detail}</p>
             )}
@@ -141,6 +213,7 @@ interface TimelineSectionProps {
   onItemComplete: (itemId: string) => void;
   onItemDelete: (itemId: string) => void;
   onShowToast: (message: string) => void;
+  onItemUpdate?: (itemId: string, updates: any) => void;
 }
 
 interface DayGroup {
@@ -150,12 +223,31 @@ interface DayGroup {
   items: TimelineItem[];
 }
 
-export function TimelineSection({ items, onItemComplete, onItemDelete, onShowToast }: TimelineSectionProps) {
+export function TimelineSection({ items, onItemComplete, onItemDelete, onShowToast, onItemUpdate }: TimelineSectionProps) {
   const [swipingId, setSwipingId] = useState<string | null>(null);
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [touchStartX, setTouchStartX] = useState(0);
   const [showAll, setShowAll] = useState(false);
   const [completedTodayCount, setCompletedTodayCount] = useState(0);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingText, setEditingText] = useState('');
+  const [editingTimeId, setEditingTimeId] = useState<string | null>(null);
+  const [editingTimeValue, setEditingTimeValue] = useState('');
+
+  const updateItemTitle = async (itemId: string, newTitle: string) => {
+    if (!newTitle.trim()) return;
+    await supabase.from('items').update({ title: newTitle.trim() }).eq('id', itemId);
+    if (onItemUpdate) onItemUpdate(itemId, { title: newTitle.trim() });
+  };
+
+  const updateItemTime = async (itemId: string, newTime: string) => {
+    const timeValue = newTime.trim() || null;
+    await supabase.from('items').update({ 
+      time: timeValue,
+      has_date_time: timeValue ? true : false 
+    }).eq('id', itemId);
+    if (onItemUpdate) onItemUpdate(itemId, { time: timeValue, has_date_time: !!timeValue });
+  };
 
   const weekDays = getWeekDays(showAll ? 28 : 7);
   const todayStr = getTodayDateString();
@@ -227,6 +319,16 @@ export function TimelineSection({ items, onItemComplete, onItemDelete, onShowToa
                   onTouchStart={handleTouchStart}
                   onTouchMove={handleTouchMove}
                   onTouchEnd={handleTouchEnd}
+                  editingId={editingId}
+                  editingText={editingText}
+                  setEditingText={setEditingText}
+                  setEditingId={setEditingId}
+                  editingTimeId={editingTimeId}
+                  editingTimeValue={editingTimeValue}
+                  setEditingTimeValue={setEditingTimeValue}
+                  setEditingTimeId={setEditingTimeId}
+                  updateItemTitle={updateItemTitle}
+                  updateItemTime={updateItemTime}
                 />
               ))
             )}

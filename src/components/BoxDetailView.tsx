@@ -44,6 +44,8 @@ export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onIt
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
+  const [editingTimeId, setEditingTimeId] = useState<string | null>(null);
+  const [editingTimeValue, setEditingTimeValue] = useState('');
 
   const handleTouchStart = (e: React.TouchEvent, itemId: string) => {
     setTouchStart(e.touches[0].clientX);
@@ -85,6 +87,22 @@ export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onIt
       }
     } catch (err) {
     }
+  };
+
+  const updateItemTime = async (itemId: string, newTime: string) => {
+    try {
+      const timeValue = newTime.trim() || null;
+      await supabase
+        .from('items')
+        .update({ 
+          time: timeValue,
+          has_date_time: timeValue ? true : false
+        })
+        .eq('id', itemId);
+      if (onItemUpdate) {
+        onItemUpdate(itemId, { time: timeValue, has_date_time: !!timeValue });
+      }
+    } catch {}
   };
 
   const handleTitleClick = (item: Item) => {
@@ -221,7 +239,38 @@ export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onIt
                             day: 'numeric',
                             month: 'short',
                           })}
-                          {item.time && ` · ${item.time.slice(0, 5)}`}
+                          {editingTimeId === item.id ? (
+                            <input
+                              type="time"
+                              value={editingTimeValue}
+                              onChange={e => setEditingTimeValue(e.target.value)}
+                              onBlur={async () => {
+                                await updateItemTime(item.id, editingTimeValue);
+                                setEditingTimeId(null);
+                              }}
+                              autoFocus
+                              style={{
+                                fontFamily: 'DM Sans, sans-serif',
+                                fontSize: '12px',
+                                color: '#6B5C52',
+                                background: 'transparent',
+                                border: 'none',
+                                borderBottom: '1px solid #C4714A',
+                                outline: 'none',
+                                width: '80px',
+                              }}
+                            />
+                          ) : (
+                            <span
+                              onClick={() => {
+                                setEditingTimeId(item.id);
+                                setEditingTimeValue(item.time?.slice(0, 5) || '');
+                              }}
+                              style={{ cursor: 'pointer' }}
+                            >
+                              {item.time ? ` · ${item.time.slice(0, 5)}` : ' · add time'}
+                            </span>
+                          )}
                         </p>
                       )}
                       {item.time_frame && item.time_frame !== 'future' && (
