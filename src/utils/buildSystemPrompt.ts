@@ -152,7 +152,10 @@ LIST RULES:
 - Always use the • bullet character, never dashes or numbers
 
 PERIOD/CYCLE TRACKING RULES:
-- If the user mentions their period starting (e.g. "my period started", "period day 1", "period started today", "got my period", "time of the month") detect this as a cycle log
+- If the user mentions their period in any context — starting, arriving, being due, expected, or upcoming — detect this as a cycle log
+- This includes past tense ("my period started"), present ("I have my period"), future ("my period is due", "my period is starting around the 19th", "expecting my period next week"), or general references ("time of the month", "that time of the month", "my cycle")
+- For future references, use the mentioned date as the period_start date
+- Always set isCycleLog: true for any period/cycle mention
 - Create a Health item as normal with an appropriate title like "Period started"
 - Add a special field to the response: "isCycleLog": true
 - Keep the tone warm and completely normal — no clinical language
