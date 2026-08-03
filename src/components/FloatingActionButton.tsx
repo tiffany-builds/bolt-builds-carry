@@ -6,6 +6,7 @@ import { Toast } from './Toast';
 import { supabase } from '../lib/supabase';
 import { buildSystemPrompt } from '../utils/buildSystemPrompt';
 import { addItemToCalendar } from '../utils/calendar';
+import { logCycleStart, isCycleTrackingEnabled, enableCycleTracking, scheduleCycleReminder } from '../utils/cycleTracking';
 
 async function haptic(style: ImpactStyle) {
   try { await Haptics.impact({ style }); } catch {}
@@ -31,6 +32,8 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
   const [recurringConfirmation, setRecurringConfirmation] = useState<{item: any, index: number} | null>(null);
   const [pendingItems, setPendingItems] = useState<{ recurring: any[], nonRecurring: any[] } | null>(null);
   const [calendarPrompt, setCalendarPrompt] = useState<any | null>(null);
+  const [cycleTrackingPrompt, setCycleTrackingPrompt] = useState(false);
+  const [pendingCycleLog, setPendingCycleLog] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const showToast = (message: string) => {
@@ -126,6 +129,7 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
         recurring: item.recurring || false,
         recurring_pattern: item.recurringPattern || null,
         recurring_day_of_week: item.recurringDayOfWeek ?? null,
+        isCycleLog: item.isCycleLog || false,
       }));
 
       const recurringItems = newItems.filter((item: any) => item.recurring);
@@ -167,6 +171,19 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
           savedItems.push(inserted);
           if (inserted.date && inserted.time) {
             setCalendarPrompt(inserted);
+          }
+        }
+      }
+
+      for (const parsedItem of parsedItems) {
+        if (parsedItem.isCycleLog && userId) {
+          const isTracking = await isCycleTrackingEnabled(userId);
+          if (isTracking) {
+            await logCycleStart(userId);
+            await scheduleCycleReminder(userId);
+          } else {
+            setPendingCycleLog(true);
+            setCycleTrackingPrompt(true);
           }
         }
       }
@@ -652,6 +669,63 @@ Return valid JSON array only — no explanation, no markdown.`;
                 Just this once
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {cycleTrackingPrompt && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
+          zIndex: 9999, display: 'flex', alignItems: 'flex-end',
+          justifyContent: 'center', padding: '0 16px 32px'
+        }}>
+          <div style={{
+            background: '#FDF9F4', borderRadius: '24px', padding: '28px 24px',
+            width: '100%', maxWidth: '400px', textAlign: 'center'
+          }}>
+            <p style={{
+              fontFamily: 'Georgia, serif', fontStyle: 'italic',
+              fontSize: '20px', color: '#2C2420', marginBottom: '8px'
+            }}>Would you like me to keep track?</p>
+            <p style={{
+              fontFamily: 'DM Sans, sans-serif', fontSize: '14px',
+              color: '#6B5C52', marginBottom: '24px', lineHeight: 1.5
+            }}>
+              I can give you a gentle heads up a few days before your next period. 🧡
+            </p>
+            <button
+              onClick={async () => {
+                if (userId) {
+                  await enableCycleTracking(userId);
+                  await logCycleStart(userId);
+                  await scheduleCycleReminder(userId);
+                }
+                setCycleTrackingPrompt(false);
+                setPendingCycleLog(false);
+              }}
+              style={{
+                width: '100%', background: '#C4714A', color: '#FDF9F4',
+                border: 'none', borderRadius: '24px', padding: '16px',
+                fontFamily: 'DM Sans, sans-serif', fontSize: '15px',
+                fontWeight: 500, cursor: 'pointer', marginBottom: '12px'
+              }}
+            >
+              Yes please
+            </button>
+            <button
+              onClick={() => {
+                setCycleTrackingPrompt(false);
+                setPendingCycleLog(false);
+              }}
+              style={{
+                width: '100%', background: 'transparent', color: '#9E8E80',
+                border: 'none', padding: '12px',
+                fontFamily: 'DM Sans, sans-serif', fontSize: '14px',
+                cursor: 'pointer'
+              }}
+            >
+              Not right now
+            </button>
           </div>
         </div>
       )}
