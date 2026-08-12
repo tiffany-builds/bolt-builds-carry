@@ -456,6 +456,7 @@ function App() {
             todayCount={todayItems.filter(i => i.date === getTodayDateString()).length}
             isBirthday={isBirthday}
             onOpenMenu={() => setShowNavSheet(true)}
+            onOpenCalendar={() => setCurrentView('calendar')}
           />
           {lastWeekCount > 0 && (
             <p style={{ 
