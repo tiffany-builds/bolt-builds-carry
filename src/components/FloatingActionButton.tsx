@@ -34,6 +34,12 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
   const [calendarPrompt, setCalendarPrompt] = useState<any | null>(null);
   const [cycleTrackingPrompt, setCycleTrackingPrompt] = useState(false);
   const [pendingCycleLog, setPendingCycleLog] = useState(false);
+  const [needsDateItems, setNeedsDateItems] = useState<Array<{
+    id: string;
+    title: string;
+    emoji: string | null;
+  }>>([]);
+  const [showNeedsDatePrompt, setShowNeedsDatePrompt] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const showToast = (message: string) => {
@@ -199,6 +205,16 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
       } else if (savedItems.length > 0) {
         await Haptics.notification({ type: NotificationType.Success });
         showToast('Got it — added to Carry');
+      }
+
+      const deadlineItems = savedItems.filter((i: any) => i.needs_date);
+      if (deadlineItems.length > 0) {
+        setNeedsDateItems(deadlineItems.map((i: any) => ({
+          id: i.id,
+          title: i.title,
+          emoji: i.emoji || null,
+        })));
+        setTimeout(() => setShowNeedsDatePrompt(true), 800);
       }
 
     } catch (err) {
@@ -406,6 +422,16 @@ Return valid JSON array only — no explanation, no markdown.`;
       }
 
       if (savedItems.length > 0 && onItemsAdded) onItemsAdded(savedItems);
+
+      const deadlineItems = savedItems.filter((i: any) => i.needs_date);
+      if (deadlineItems.length > 0) {
+        setNeedsDateItems(deadlineItems.map((i: any) => ({
+          id: i.id,
+          title: i.title,
+          emoji: i.emoji || null,
+        })));
+        setTimeout(() => setShowNeedsDatePrompt(true), 800);
+      }
 
     } catch (err) {
       showToast("Couldn't read that photo — want to try again?");
@@ -847,6 +873,96 @@ Return valid JSON array only — no explanation, no markdown.`;
             >
               Not right now
             </button>
+          </div>
+        </div>
+      )}
+
+      {showNeedsDatePrompt && needsDateItems.length > 0 && (
+        <div style={{
+          position: 'fixed',
+          bottom: 'calc(env(safe-area-inset-bottom) + 90px)',
+          left: '14px',
+          right: '14px',
+          background: 'rgba(253,249,244,0.92)',
+          borderRadius: '20px',
+          border: '1px solid rgba(212,196,180,0.7)',
+          padding: '18px 16px',
+          zIndex: 50,
+          boxShadow: '0 -4px 24px rgba(44,36,32,0.07), 0 8px 24px rgba(44,36,32,0.06)',
+        }}>
+          <div style={{
+            fontSize: '9px', fontWeight: 700, textTransform: 'uppercase',
+            letterSpacing: '0.08em', color: '#C4714A', marginBottom: '8px',
+            fontFamily: 'DM Sans, sans-serif',
+          }}>✦ Carry noticed</div>
+          <div style={{
+            fontFamily: 'Georgia, serif', fontStyle: 'italic',
+            fontSize: '14px', color: '#2C2420', lineHeight: 1.5,
+            marginBottom: '14px',
+          }}>
+            {needsDateItems.length === 1
+              ? 'This one looks time-sensitive. When would you like it to happen?'
+              : `${needsDateItems.length} things look time-sensitive. When would you like these to happen?`
+            }
+          </div>
+          <div style={{ borderTop: '1px solid rgba(212,196,180,0.6)', paddingTop: '10px' }}>
+            {needsDateItems.map((item, index) => (
+              <div key={item.id} style={{
+                display: 'flex', alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '7px 0',
+                borderBottom: index < needsDateItems.length - 1
+                  ? '1px solid rgba(212,196,180,0.4)' : 'none',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                  <span style={{ fontSize: '15px' }}>{item.emoji || '📋'}</span>
+                  <span style={{ fontSize: '12px', fontWeight: 500, color: '#2C2420', fontFamily: 'DM Sans, sans-serif' }}>
+                    {item.title}
+                  </span>
+                </div>
+                <div
+                  onClick={() => {
+                    const dateInput = document.createElement('input');
+                    dateInput.type = 'date';
+                    dateInput.style.display = 'none';
+                    dateInput.min = new Date().toISOString().split('T')[0];
+                    dateInput.onchange = async (e) => {
+                      const target = e.target as HTMLInputElement;
+                      if (target.value) {
+                        await supabase
+                          .from('items')
+                          .update({ date: target.value, has_date_time: true, needs_date: false })
+                          .eq('id', item.id);
+                        setNeedsDateItems(prev => prev.filter(i => i.id !== item.id));
+                        if (needsDateItems.length <= 1) setShowNeedsDatePrompt(false);
+                      }
+                      document.body.removeChild(dateInput);
+                    };
+                    document.body.appendChild(dateInput);
+                    dateInput.click();
+                  }}
+                  style={{
+                    fontSize: '10px', color: '#C4714A',
+                    border: '1px solid rgba(196,113,74,0.3)',
+                    borderRadius: '8px', padding: '3px 8px',
+                    background: 'rgba(196,113,74,0.06)',
+                    cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
+                  }}
+                >
+                  + Add date
+                </div>
+              </div>
+            ))}
+          </div>
+          <div
+            onClick={() => setShowNeedsDatePrompt(false)}
+            style={{
+              fontSize: '11px', color: '#9E8E80',
+              textAlign: 'center', marginTop: '10px',
+              cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
+            }}
+          >
+            Maybe later
           </div>
         </div>
       )}
