@@ -443,6 +443,14 @@ Return valid JSON array only — no explanation, no markdown.`;
   };
 
   useEffect(() => {
+    if (!isListening) return;
+    const interval = setInterval(() => {
+      haptic(ImpactStyle.Light);
+    }, 1500);
+    return () => clearInterval(interval);
+  }, [isListening]);
+
+  useEffect(() => {
     if (autoOpenFAB) {
       const timer = setTimeout(() => {
         handleFABClick();
@@ -474,10 +482,10 @@ Return valid JSON array only — no explanation, no markdown.`;
             bottom: 'calc(env(safe-area-inset-bottom) + 90px)',
             left: '16px',
             right: '16px',
-            background: 'rgba(253,249,244,0.92)',
+            background: 'rgba(245,235,225,0.96)',
             borderRadius: '20px',
             cursor: 'pointer',
-            border: '1px solid #D4C4B4',
+            border: '2px solid rgba(196,113,74,0.35)',
             padding: '20px',
             display: 'flex',
             flexDirection: 'column',
@@ -485,13 +493,13 @@ Return valid JSON array only — no explanation, no markdown.`;
             gap: '14px',
             boxShadow: '0 -4px 24px rgba(44,36,32,0.08), 0 8px 24px rgba(44,36,32,0.06)',
             zIndex: 50,
+            animation: 'borderPulse 2.5s ease-in-out infinite',
           }}>
             {/* Header row */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <span style={{
                 fontSize: '9px',
                 fontWeight: 700,
-                textTransform: 'uppercase',
                 letterSpacing: '0.08em',
                 color: '#C4714A',
               }}>
@@ -760,6 +768,11 @@ Return valid JSON array only — no explanation, no markdown.`;
         @keyframes pdotPulse {
           0%, 100% { opacity: 0.3; transform: scale(0.8); }
           50% { opacity: 1; transform: scale(1.2); }
+        }
+        @keyframes borderPulse {
+          0%   { border-color: rgba(196,113,74,0.2); box-shadow: 0 -4px 24px rgba(44,36,32,0.07), 0 8px 24px rgba(44,36,32,0.05); }
+          50%  { border-color: rgba(196,113,74,0.5); box-shadow: 0 -4px 28px rgba(196,113,74,0.12), 0 8px 28px rgba(44,36,32,0.08); }
+          100% { border-color: rgba(196,113,74,0.2); box-shadow: 0 -4px 24px rgba(44,36,32,0.07), 0 8px 24px rgba(44,36,32,0.05); }
         }
       `}</style>
       {hiddenFileInput}
