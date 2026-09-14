@@ -437,13 +437,16 @@ Return valid JSON array only — no explanation, no markdown.`;
       <>
         {hiddenFileInput}
         {(isListening || liveTranscript || isProcessing) && (
-          <div style={{
+          <div
+            onClick={() => { haptic(ImpactStyle.Heavy); stopListening(); }}
+            style={{
             position: 'fixed',
             bottom: 'calc(env(safe-area-inset-bottom) + 90px)',
             left: '16px',
             right: '16px',
-            background: '#FDF9F4',
+            background: 'rgba(253,249,244,0.92)',
             borderRadius: '20px',
+            cursor: 'pointer',
             border: '1px solid #D4C4B4',
             padding: '20px',
             display: 'flex',
@@ -534,8 +537,7 @@ Return valid JSON array only — no explanation, no markdown.`;
 
             {/* Stop button — only when listening, not processing */}
             {!isProcessing && (
-              <button
-                onClick={() => { haptic(ImpactStyle.Heavy); stopListening(); }}
+              <div
                 style={{
                   fontSize: '11px',
                   color: '#6B5C52',
@@ -543,12 +545,11 @@ Return valid JSON array only — no explanation, no markdown.`;
                   borderRadius: '12px',
                   padding: '5px 16px',
                   background: '#E8DDD0',
-                  cursor: 'pointer',
                   fontFamily: 'DM Sans, sans-serif',
                 }}
               >
                 Tap to stop
-              </button>
+              </div>
             )}
 
             {/* Processing message */}
