@@ -99,6 +99,7 @@ Always include these fields in the JSON alongside the standard fields.` : '';
 - date (YYYY-MM-DD or null)
 - time (HH:MM or null)
 - hasDateTime (true or false)
+- needsDate (true if item needs a date but none was given — for appointments, renewals, payments, bookings, gifts)
 - recurring (true or false)
 - recurringPattern (daily, weekly, monthly or null)
 - recurringDayOfWeek (0-6 or null)
