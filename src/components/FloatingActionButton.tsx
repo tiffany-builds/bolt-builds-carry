@@ -437,22 +437,131 @@ Return valid JSON array only — no explanation, no markdown.`;
       <>
         {hiddenFileInput}
         {(isListening || liveTranscript || isProcessing) && (
-          <div className="fixed left-1/2 -translate-x-1/2 bg-surface border border-border rounded-2xl px-6 py-4 shadow-lg animate-fade-up max-w-sm" style={{ bottom: 'max(10rem, calc(env(safe-area-inset-bottom) + 8.5rem))' }}>
-            <div className="font-ui text-sm">
-              {isProcessing ? (
-                <div className="flex items-center gap-2 text-muted">
-                  <div className="w-2 h-2 bg-accent rounded-full animate-pulse"></div>
-                  <span>Processing...</span>
+          <div style={{
+            position: 'fixed',
+            bottom: 'calc(env(safe-area-inset-bottom) + 90px)',
+            left: '16px',
+            right: '16px',
+            background: '#FDF9F4',
+            borderRadius: '20px',
+            border: '1px solid #D4C4B4',
+            padding: '20px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '14px',
+            boxShadow: '0 -4px 24px rgba(44,36,32,0.08), 0 8px 24px rgba(44,36,32,0.06)',
+            zIndex: 50,
+          }}>
+            {/* Header row */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{
+                fontSize: '9px',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+                color: '#C4714A',
+              }}>
+                {isProcessing ? '✦ Sorting your thoughts' : '✦ Carry is listening'}
+              </span>
+              {!isProcessing && (
+                <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                  {[0, 0.15, 0.3].map((delay, i) => (
+                    <div key={i} style={{
+                      width: '5px', height: '5px', borderRadius: '50%',
+                      background: '#C4714A',
+                      animation: `pdotPulse 1.2s ease-in-out ${delay}s infinite`,
+                    }} />
+                  ))}
                 </div>
-              ) : isListening && !liveTranscript ? (
-                <div className="flex items-center gap-2 text-accent">
-                  <div className="w-2 h-2 bg-accent rounded-full animate-pulse"></div>
-                  <span>Listening — say everything, tap stop when done</span>
-                </div>
-              ) : (
-                <span className="text-text">{liveTranscript}</span>
               )}
             </div>
+
+            {/* Transcript */}
+            {liveTranscript && (
+              <div style={{
+                fontFamily: 'Georgia, serif',
+                fontStyle: 'italic',
+                fontSize: '14px',
+                color: '#2C2420',
+                lineHeight: 1.6,
+                textAlign: 'center',
+                opacity: isProcessing ? 0.4 : 1,
+              }}>
+                "{liveTranscript}"
+              </div>
+            )}
+
+            {/* Pulsing circle OR processing dots */}
+            {isProcessing ? (
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', margin: '4px 0' }}>
+                {[
+                  { bg: '#C4714A', delay: '0s' },
+                  { bg: '#D4C4B4', delay: '0.15s' },
+                  { bg: '#D4A96A', delay: '0.3s' },
+                ].map((d, i) => (
+                  <div key={i} style={{
+                    width: '10px', height: '10px', borderRadius: '50%',
+                    background: d.bg,
+                    animation: `pdotPulse 1s ease-in-out ${d.delay} infinite`,
+                  }} />
+                ))}
+              </div>
+            ) : (
+              <div style={{ position: 'relative', width: '80px', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {[
+                  { size: '80px', bg: 'rgba(196,113,74,0.08)', delay: '0s' },
+                  { size: '62px', bg: 'rgba(196,113,74,0.12)', delay: '0.3s' },
+                  { size: '46px', bg: 'rgba(212,196,180,0.5)', delay: '0.6s' },
+                ].map((ring, i) => (
+                  <div key={i} style={{
+                    position: 'absolute',
+                    width: ring.size, height: ring.size,
+                    borderRadius: '50%',
+                    background: ring.bg,
+                    animation: `ringPulse 2s ease-out ${ring.delay} infinite`,
+                  }} />
+                ))}
+                <div style={{
+                  width: '34px', height: '34px',
+                  borderRadius: '50%',
+                  position: 'relative',
+                  zIndex: 2,
+                  animation: 'colourCycle 3s ease-in-out infinite',
+                }} />
+              </div>
+            )}
+
+            {/* Stop button — only when listening, not processing */}
+            {!isProcessing && (
+              <button
+                onClick={() => { haptic(ImpactStyle.Heavy); stopListening(); }}
+                style={{
+                  fontSize: '11px',
+                  color: '#6B5C52',
+                  border: '1px solid #D4C4B4',
+                  borderRadius: '12px',
+                  padding: '5px 16px',
+                  background: '#E8DDD0',
+                  cursor: 'pointer',
+                  fontFamily: 'DM Sans, sans-serif',
+                }}
+              >
+                Tap to stop
+              </button>
+            )}
+
+            {/* Processing message */}
+            {isProcessing && (
+              <div style={{
+                fontSize: '11px',
+                color: '#6B5C52',
+                fontStyle: 'italic',
+                fontFamily: 'DM Sans, sans-serif',
+              }}>
+                Carry is organising everything...
+              </div>
+            )}
           </div>
         )}
 
@@ -507,18 +616,7 @@ Return valid JSON array only — no explanation, no markdown.`;
               </button>
             </div>
 
-            {isListening && (
-              <button
-                onClick={() => {
-                  haptic(ImpactStyle.Heavy);
-                  stopListening();
-                }}
-                className="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-accent/10 border border-accent/20 text-accent font-ui text-sm font-medium transition-all active:scale-95"
-              >
-                <div className="w-2 h-2 bg-accent rounded-full animate-pulse"></div>
-                Tap to stop
-              </button>
-            )}
+
           </div>
         </div>
       </>
@@ -614,6 +712,23 @@ Return valid JSON array only — no explanation, no markdown.`;
 
   return (
     <>
+      <style>{`
+        @keyframes ringPulse {
+          0% { transform: scale(0.88); opacity: 0.5; }
+          50% { transform: scale(1.06); opacity: 1; }
+          100% { transform: scale(0.88); opacity: 0.5; }
+        }
+        @keyframes colourCycle {
+          0%   { background: #C4714A; }
+          33%  { background: #D4A96A; }
+          66%  { background: #D4C4B4; }
+          100% { background: #C4714A; }
+        }
+        @keyframes pdotPulse {
+          0%, 100% { opacity: 0.3; transform: scale(0.8); }
+          50% { opacity: 1; transform: scale(1.2); }
+        }
+      `}</style>
       {hiddenFileInput}
       {toastMessage && (
         <Toast
@@ -747,16 +862,41 @@ Return valid JSON array only — no explanation, no markdown.`;
 
           {/* Voice — centre, larger */}
           <div className="flex flex-col items-center gap-1.5">
-            <button
-              onClick={handleFABClick}
-              className={`relative w-16 h-16 bg-text rounded-full flex items-center justify-center text-surface shadow-lg hover:scale-105 active:scale-95 transition-transform ${isListening ? 'scale-110' : ''}`}
-              aria-label="Voice input"
-            >
-              <div className={`absolute inset-0 rounded-full bg-text/30 ${isListening ? 'animate-ping' : 'animate-pulse-ring'}`}></div>
-              <div className={`absolute inset-0 rounded-full bg-text/20 ${isListening ? 'animate-ping' : 'animate-pulse-ring'}`} style={{ animationDelay: '0.75s', transform: 'scale(1.15)' }}></div>
-              <Mic size={24} />
-            </button>
-            <span className="font-ui text-xs text-muted">Voice</span>
+            {isListening ? (
+              <div style={{ position: 'relative', width: '52px', height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {[
+                  { size: '52px', bg: 'rgba(196,113,74,0.1)', delay: '0s' },
+                  { size: '38px', bg: 'rgba(196,113,74,0.15)', delay: '0.3s' },
+                ].map((ring, i) => (
+                  <div key={i} style={{
+                    position: 'absolute',
+                    width: ring.size, height: ring.size,
+                    borderRadius: '50%',
+                    background: ring.bg,
+                    animation: `ringPulse 2s ease-out ${ring.delay} infinite`,
+                  }} />
+                ))}
+                <div style={{
+                  width: '24px', height: '24px',
+                  borderRadius: '50%',
+                  position: 'relative', zIndex: 2,
+                  animation: 'colourCycle 3s ease-in-out infinite',
+                }} />
+              </div>
+            ) : (
+              <button
+                onClick={handleFABClick}
+                className="relative w-16 h-16 bg-text rounded-full flex items-center justify-center text-surface shadow-lg hover:scale-105 active:scale-95 transition-transform"
+                aria-label="Voice input"
+              >
+                <div className="absolute inset-0 rounded-full bg-text/30 animate-pulse-ring"></div>
+                <div className="absolute inset-0 rounded-full bg-text/20 animate-pulse-ring" style={{ animationDelay: '0.75s', transform: 'scale(1.15)' }}></div>
+                <Mic size={24} />
+              </button>
+            )}
+            <span className="font-ui text-xs" style={{ color: isListening ? '#C4714A' : undefined }}>
+              {isListening ? 'Listening' : 'Voice'}
+            </span>
           </div>
 
           {/* Type */}
