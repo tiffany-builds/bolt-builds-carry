@@ -48,6 +48,7 @@ export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onIt
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
   const [editingTimeId, setEditingTimeId] = useState<string | null>(null);
   const [editingTimeValue, setEditingTimeValue] = useState('');
+  const [datePickerItemId, setDatePickerItemId] = useState<string | null>(null);
 
   const handleTouchStart = (e: React.TouchEvent, itemId: string) => {
     setTouchStart(e.touches[0].clientX);
@@ -235,48 +236,89 @@ export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onIt
                         <p className="font-ui text-sm text-muted mt-1" style={{ whiteSpace: 'pre-line' }}>{item.description}</p>
                       )}
                       {item.needs_date && !item.date && (
-                        <div
-                          onClick={() => {
-                            Haptics.impact({ style: ImpactStyle.Light });
-                            setEditingTimeId(null);
-                            const dateInput = document.createElement('input');
-                            dateInput.type = 'date';
-                            dateInput.style.display = 'none';
-                            dateInput.min = new Date().toISOString().split('T')[0];
-                            dateInput.onchange = async (e) => {
-                              const target = e.target as HTMLInputElement;
-                              if (target.value) {
-                                await supabase
-                                  .from('items')
-                                  .update({ date: target.value, has_date_time: true, needs_date: false })
-                                  .eq('id', item.id);
-                                if (onItemUpdate) {
-                                  onItemUpdate(item.id, { date: target.value, has_date_time: true, needs_date: false });
-                                }
-                              }
-                              document.body.removeChild(dateInput);
-                            };
-                            document.body.appendChild(dateInput);
-                            dateInput.click();
-                          }}
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            background: 'rgba(196,113,74,0.08)',
-                            border: '1px solid rgba(196,113,74,0.25)',
-                            borderRadius: '10px',
-                            padding: '4px 9px',
-                            fontSize: '11px',
-                            color: '#C4714A',
-                            cursor: 'pointer',
-                            marginTop: '7px',
-                            fontStyle: 'italic',
-                            fontFamily: 'DM Sans, sans-serif',
-                          }}
-                        >
-                          📅 When would you like this to happen?
-                        </div>
+                        datePickerItemId === item.id ? (
+                          <div style={{ marginTop: '8px' }}>
+                            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                              {[
+                                { label: 'Today', days: 0 },
+                                { label: 'Tomorrow', days: 1 },
+                                { label: 'This week', days: 3 },
+                                { label: 'Next week', days: 7 },
+                              ].map(({ label, days }) => {
+                                const d = new Date();
+                                d.setDate(d.getDate() + days);
+                                const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                                return (
+                                  <div
+                                    key={label}
+                                    onClick={async () => {
+                                      await Haptics.impact({ style: ImpactStyle.Light });
+                                      await supabase
+                                        .from('items')
+                                        .update({ date: dateStr, has_date_time: true, needs_date: false })
+                                        .eq('id', item.id);
+                                      if (onItemUpdate) {
+                                        onItemUpdate(item.id, { date: dateStr, has_date_time: true, needs_date: false });
+                                      }
+                                      setDatePickerItemId(null);
+                                    }}
+                                    style={{
+                                      background: '#FDF9F4',
+                                      border: '1px solid #D4C4B4',
+                                      borderRadius: '12px',
+                                      padding: '6px 12px',
+                                      fontSize: '12px',
+                                      color: '#2C2420',
+                                      cursor: 'pointer',
+                                      fontFamily: 'DM Sans, sans-serif',
+                                    }}
+                                  >
+                                    {label}
+                                  </div>
+                                );
+                              })}
+                              <div
+                                onClick={() => setDatePickerItemId(null)}
+                                style={{
+                                  background: 'transparent',
+                                  border: '1px solid #D4C4B4',
+                                  borderRadius: '12px',
+                                  padding: '6px 12px',
+                                  fontSize: '12px',
+                                  color: '#9E8E80',
+                                  cursor: 'pointer',
+                                  fontFamily: 'DM Sans, sans-serif',
+                                }}
+                              >
+                                Cancel
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div
+                            onClick={async () => {
+                              await Haptics.impact({ style: ImpactStyle.Light });
+                              setDatePickerItemId(item.id);
+                            }}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              background: 'rgba(196,113,74,0.08)',
+                              border: '1px solid rgba(196,113,74,0.25)',
+                              borderRadius: '10px',
+                              padding: '6px 10px',
+                              fontSize: '11px',
+                              color: '#C4714A',
+                              cursor: 'pointer',
+                              marginTop: '7px',
+                              fontStyle: 'italic',
+                              fontFamily: 'DM Sans, sans-serif',
+                            }}
+                          >
+                            📅 When would you like this to happen?
+                          </div>
+                        )
                       )}
                       {(item.date || item.start_date) && (
                         <p className="font-ui text-xs text-accent font-medium mt-1">
