@@ -28,6 +28,7 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
   const [inputText, setInputText] = useState('');
   const [liveTranscript, setLiveTranscript] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [processingTranscript, setProcessingTranscript] = useState('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [recurringConfirmation, setRecurringConfirmation] = useState<{item: any, index: number} | null>(null);
   const [pendingItems, setPendingItems] = useState<{ recurring: any[], nonRecurring: any[] } | null>(null);
@@ -81,6 +82,7 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
     if (onItemsAdded) onItemsAdded(optimisticItems);
     setShowInput(false);
     setShowTextInput(false);
+    setProcessingTranscript(inputText.trim().slice(0, 80));
     setLiveTranscript('');
     setInputText('');
 
@@ -438,6 +440,7 @@ Return valid JSON array only — no explanation, no markdown.`;
       showToast("Couldn't read that photo — want to try again?");
     } finally {
       setIsProcessing(false);
+      setProcessingTranscript('');
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
@@ -503,7 +506,7 @@ Return valid JSON array only — no explanation, no markdown.`;
                 letterSpacing: '0.08em',
                 color: '#C4714A',
               }}>
-                {isProcessing ? '✦ Sorting your thoughts' : '✦ Carry is listening'}
+                {isProcessing ? '✦ Got it — sorting now' : '✦ Carry is listening'}
               </span>
               {!isProcessing && (
                 <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
@@ -519,7 +522,7 @@ Return valid JSON array only — no explanation, no markdown.`;
             </div>
 
             {/* Transcript */}
-            {liveTranscript && (
+            {liveTranscript && !isProcessing && (
               <div style={{
                 fontFamily: 'Georgia, serif',
                 fontStyle: 'italic',
@@ -527,9 +530,22 @@ Return valid JSON array only — no explanation, no markdown.`;
                 color: '#2C2420',
                 lineHeight: 1.6,
                 textAlign: 'center',
-                opacity: isProcessing ? 0.4 : 1,
+                opacity: 1,
               }}>
                 "{liveTranscript}"
+              </div>
+            )}
+            {isProcessing && processingTranscript && (
+              <div style={{
+                fontFamily: 'Georgia, serif',
+                fontStyle: 'italic',
+                fontSize: '13px',
+                color: '#2C2420',
+                lineHeight: 1.6,
+                textAlign: 'center',
+                opacity: 0.5,
+              }}>
+                "{processingTranscript}{processingTranscript.length >= 80 ? '...' : ''}"
               </div>
             )}
 
@@ -598,7 +614,7 @@ Return valid JSON array only — no explanation, no markdown.`;
                 fontStyle: 'italic',
                 fontFamily: 'DM Sans, sans-serif',
               }}>
-                Carry is organising everything...
+                Just a moment...
               </div>
             )}
           </div>
