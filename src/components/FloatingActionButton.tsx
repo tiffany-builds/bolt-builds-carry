@@ -28,6 +28,7 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
   const [inputText, setInputText] = useState('');
   const [liveTranscript, setLiveTranscript] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isStartingListening, setIsStartingListening] = useState(false);
   const [processingTranscript, setProcessingTranscript] = useState('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [recurringConfirmation, setRecurringConfirmation] = useState<{item: any, index: number} | null>(null);
@@ -257,8 +258,10 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
       setShowInput(true);
       setInputText('');
       setLiveTranscript('');
+      setIsStartingListening(true);
       if (isBrowserSupported) {
         startListening();
+        setTimeout(() => setIsStartingListening(false), 1000);
       }
     }
   };
@@ -271,6 +274,7 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
 
   const handleCancel = () => {
     stopListening();
+    setIsStartingListening(false);
     setShowInput(false);
     setShowTextInput(false);
     setInputText('');
@@ -477,7 +481,7 @@ Return valid JSON array only — no explanation, no markdown.`;
     return (
       <>
         {hiddenFileInput}
-        {(isListening || liveTranscript || isProcessing) && (
+        {(isListening || liveTranscript || isProcessing || isStartingListening) && (
           <div
             onClick={() => { haptic(ImpactStyle.Heavy); stopListening(); }}
             style={{
@@ -485,28 +489,30 @@ Return valid JSON array only — no explanation, no markdown.`;
             bottom: 'calc(env(safe-area-inset-bottom) + 90px)',
             left: '16px',
             right: '16px',
-            background: 'rgba(245,235,225,0.96)',
-            borderRadius: '20px',
+            background: 'rgba(253,249,244,0.70)',
+            backdropFilter: 'blur(8px)',
+            borderRadius: '22px',
             cursor: 'pointer',
-            border: '2px solid rgba(196,113,74,0.35)',
+            border: '1px solid rgba(212,196,180,0.4)',
             padding: '20px',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             gap: '14px',
-            boxShadow: '0 -4px 24px rgba(44,36,32,0.08), 0 8px 24px rgba(44,36,32,0.06)',
+            boxShadow: '0 4px 32px rgba(44,36,32,0.06)',
             zIndex: 50,
-            animation: 'borderPulse 2.5s ease-in-out infinite',
+            animation: 'borderBreath 3s ease-in-out infinite',
           }}>
             {/* Header row */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <span style={{
-                fontSize: '9px',
-                fontWeight: 700,
-                letterSpacing: '0.08em',
+                fontSize: '14px',
+                fontWeight: 400,
                 color: '#C4714A',
+                fontFamily: 'Georgia, serif',
+                fontStyle: 'italic',
               }}>
-                {isProcessing ? '✦ Got it — sorting now' : '✦ Carry is listening'}
+                {isProcessing ? '✦ Got it — sorting now' : 'Go ahead...'}
               </span>
               {!isProcessing && (
                 <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
@@ -565,26 +571,46 @@ Return valid JSON array only — no explanation, no markdown.`;
                 ))}
               </div>
             ) : (
-              <div style={{ position: 'relative', width: '80px', height: '80px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {[
-                  { size: '80px', bg: 'rgba(196,113,74,0.08)', delay: '0s' },
-                  { size: '62px', bg: 'rgba(196,113,74,0.12)', delay: '0.3s' },
-                  { size: '46px', bg: 'rgba(212,196,180,0.5)', delay: '0.6s' },
-                ].map((ring, i) => (
-                  <div key={i} style={{
-                    position: 'absolute',
-                    width: ring.size, height: ring.size,
-                    borderRadius: '50%',
-                    background: ring.bg,
-                    animation: `ringPulse 2s ease-out ${ring.delay} infinite`,
-                  }} />
-                ))}
+              <div style={{ position: 'relative', width: '90px', height: '90px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {/* Orbit ring */}
+                <div style={{ position: 'absolute', width: '90px', height: '90px', borderRadius: '50%', border: '1px solid rgba(196,113,74,0.12)' }} />
+                {/* Dot 1 - terra cotta, fast */}
                 <div style={{
-                  width: '34px', height: '34px',
+                  position: 'absolute', width: '8px', height: '8px',
+                  borderRadius: '50%', background: '#C4714A',
+                  top: '50%', left: '50%',
+                  marginTop: '-4px', marginLeft: '-4px',
+                  transformOrigin: '0 0',
+                  animation: 'orbit1 4s linear infinite',
+                  opacity: 0.9,
+                }} />
+                {/* Dot 2 - warm gold, medium */}
+                <div style={{
+                  position: 'absolute', width: '6px', height: '6px',
+                  borderRadius: '50%', background: '#D4A96A',
+                  top: '50%', left: '50%',
+                  marginTop: '-3px', marginLeft: '-3px',
+                  transformOrigin: '0 0',
+                  animation: 'orbit2 6s linear infinite',
+                  opacity: 0.7,
+                }} />
+                {/* Dot 3 - sand, slow */}
+                <div style={{
+                  position: 'absolute', width: '5px', height: '5px',
+                  borderRadius: '50%', background: '#D4C4B4',
+                  top: '50%', left: '50%',
+                  marginTop: '-2.5px', marginLeft: '-2.5px',
+                  transformOrigin: '0 0',
+                  animation: 'orbit3 9s linear infinite',
+                  opacity: 0.6,
+                }} />
+                {/* Centre core */}
+                <div style={{
+                  width: '16px', height: '16px',
                   borderRadius: '50%',
-                  position: 'relative',
-                  zIndex: 2,
-                  animation: 'colourCycle 3s ease-in-out infinite',
+                  background: '#C4714A',
+                  position: 'relative', zIndex: 2,
+                  animation: 'colourFlow 4s ease-in-out infinite',
                 }} />
               </div>
             )}
@@ -769,28 +795,7 @@ Return valid JSON array only — no explanation, no markdown.`;
 
   return (
     <>
-      <style>{`
-        @keyframes ringPulse {
-          0% { transform: scale(0.88); opacity: 0.5; }
-          50% { transform: scale(1.06); opacity: 1; }
-          100% { transform: scale(0.88); opacity: 0.5; }
-        }
-        @keyframes colourCycle {
-          0%   { background: #C4714A; }
-          33%  { background: #D4A96A; }
-          66%  { background: #D4C4B4; }
-          100% { background: #C4714A; }
-        }
-        @keyframes pdotPulse {
-          0%, 100% { opacity: 0.3; transform: scale(0.8); }
-          50% { opacity: 1; transform: scale(1.2); }
-        }
-        @keyframes borderPulse {
-          0%   { border-color: rgba(196,113,74,0.2); box-shadow: 0 -4px 24px rgba(44,36,32,0.07), 0 8px 24px rgba(44,36,32,0.05); }
-          50%  { border-color: rgba(196,113,74,0.5); box-shadow: 0 -4px 28px rgba(196,113,74,0.12), 0 8px 28px rgba(44,36,32,0.08); }
-          100% { border-color: rgba(196,113,74,0.2); box-shadow: 0 -4px 24px rgba(44,36,32,0.07), 0 8px 24px rgba(44,36,32,0.05); }
-        }
-      `}</style>
+
       {hiddenFileInput}
       {toastMessage && (
         <Toast
@@ -1065,14 +1070,14 @@ Return valid JSON array only — no explanation, no markdown.`;
                     width: ring.size, height: ring.size,
                     borderRadius: '50%',
                     background: ring.bg,
-                    animation: `ringPulse 2s ease-out ${ring.delay} infinite`,
+                    animation: `breathe 4s ease-in-out ${ring.delay} infinite`,
                   }} />
                 ))}
                 <div style={{
                   width: '24px', height: '24px',
                   borderRadius: '50%',
                   position: 'relative', zIndex: 2,
-                  animation: 'colourCycle 3s ease-in-out infinite',
+                  animation: 'colourFlow 4s ease-in-out infinite',
                 }} />
               </div>
             ) : (

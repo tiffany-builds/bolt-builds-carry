@@ -57,5 +57,10 @@
 	<string>Carry uses your microphone so you can speak the things you&apos;re carrying instead of typing them.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Carry uses speech recognition to turn what you say into items you can see in a timeline and organize.</string>
+
+	<key>NSHealthShareUsageDescription</key>
+	<string>Carry logs your voice brain dumps as Mindful Minutes in Apple Health — because getting things out of your head is good for your mind.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Carry logs your voice brain dumps as Mindful Minutes in Apple Health — because getting things out of your head is good for your mind.</string>
 </dict>
 </plist>

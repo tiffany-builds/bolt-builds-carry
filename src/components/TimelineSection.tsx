@@ -16,6 +16,7 @@ import { TimelineItem } from '../types';
 import { getCategoryColor } from '../utils/categoryColors';
 import { formatDayLabel, formatTime, getWeekDays, getTodayDateString, parseDateString } from '../utils/dateFormatting';
 import { getContextualEmoji } from '../utils/mindNudges';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { supabase } from '../lib/supabase';
 import { Check, Share2 } from 'lucide-react';
 import { shareItem } from '../utils/shareItem';
@@ -48,6 +49,7 @@ function TimelineItemCard({ item, onComplete, onDelete, swipingId, swipeOffset, 
 
   const handleComplete = async () => {
     try {
+      await Haptics.impact({ style: ImpactStyle.Medium });
       await supabase
         .from('items')
         .update({ completed: true })
@@ -85,23 +87,27 @@ function TimelineItemCard({ item, onComplete, onDelete, swipingId, swipeOffset, 
           <div className="flex-shrink-0 w-12 flex flex-col items-center gap-2">
             {editingTimeId === item.id ? (
               <input
-                type="time"
-                value={editingTimeValue}
-                onChange={e => setEditingTimeValue(e.target.value)}
-                onBlur={async () => {
-                  await updateItemTime(item.id, editingTimeValue);
+                type="datetime-local"
+                defaultValue={`${item.date || ''}T${item.time?.slice(0,5) || '00:00'}`}
+                autoFocus
+                onChange={async (e) => {
+                  if (!e.target.value) return;
+                  const [datePart, timePart] = e.target.value.split('T');
+                  await Haptics.impact({ style: ImpactStyle.Light });
+                  await updateItemTime(item.id, timePart);
+                  if (datePart && onItemUpdate) {
+                    await supabase.from('items').update({ date: datePart, has_date_time: true }).eq('id', item.id);
+                    onItemUpdate(item.id, { date: datePart, has_date_time: true });
+                  }
                   setEditingTimeId(null);
                 }}
-                autoFocus
+                onBlur={() => setEditingTimeId(null)}
                 style={{
-                  fontFamily: 'DM Sans, sans-serif',
-                  fontSize: '12px',
-                  color: '#6B5C52',
-                  background: 'transparent',
-                  border: 'none',
-                  borderBottom: '1px solid #C4714A',
-                  outline: 'none',
-                  width: '80px',
+                  position: 'absolute',
+                  opacity: 0,
+                  width: '1px',
+                  height: '1px',
+                  pointerEvents: 'none',
                 }}
               />
             ) : (

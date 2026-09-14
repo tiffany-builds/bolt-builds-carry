@@ -155,3 +155,40 @@ select:focus {
     transform: scale(0.95);
   }
 }
+
+/* Prevent black gap on keyboard dismiss */
+html, body {
+  background-color: #E8DDD0 !important;
+  overscroll-behavior: none;
+}
+
+/* Carry listening animations */
+@keyframes orbit1 {
+  from { transform: rotate(0deg) translateX(38px); }
+  to { transform: rotate(360deg) translateX(38px); }
+}
+@keyframes orbit2 {
+  from { transform: rotate(120deg) translateX(28px); }
+  to { transform: rotate(480deg) translateX(28px); }
+}
+@keyframes orbit3 {
+  from { transform: rotate(240deg) translateX(18px); }
+  to { transform: rotate(600deg) translateX(18px); }
+}
+@keyframes colourFlow {
+  0%, 100% { background: #C4714A; }
+  33% { background: #D4A96A; }
+  66% { background: #D4C4B4; }
+}
+@keyframes borderBreath {
+  0%, 100% { border-color: rgba(196,113,74,0.15); }
+  50% { border-color: rgba(196,113,74,0.4); }
+}
+@keyframes pdotPulse {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+@keyframes breathe {
+  0%, 100% { transform: scale(0.92); opacity: 0.4; }
+  50% { transform: scale(1.06); opacity: 1; }
+}

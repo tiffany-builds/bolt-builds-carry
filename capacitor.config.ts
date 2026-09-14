@@ -16,6 +16,12 @@ const config: CapacitorConfig = {
     limitsNavigationsToAppBoundDomains: false,
   },
   plugins: {
+    Keyboard: {
+      resize: 'none',
+      resizeOnFullScreen: true,
+    },
+  },
+  plugins: {
     SplashScreen: {
       launchShowDuration: 1500,
       backgroundColor: '#E8DDD0',

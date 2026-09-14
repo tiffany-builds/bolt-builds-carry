@@ -194,8 +194,9 @@ export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onIt
                 >
                   <div className="flex items-start gap-3">
                     <button
-                      onClick={() => {
+                      onClick={async () => {
                         if (item.calendar_event_id) removeItemFromCalendar(item.calendar_event_id);
+                        await Haptics.impact({ style: ImpactStyle.Medium });
                         onItemComplete(item.id);
                       }}
                       className="flex-shrink-0 w-6 h-6 rounded-full border-2 border-border hover:border-accent transition-all flex items-center justify-center mt-0.5 active:scale-95"
