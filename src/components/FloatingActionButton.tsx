@@ -129,6 +129,7 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
         recurring: item.recurring || false,
         recurring_pattern: item.recurringPattern || null,
         recurring_day_of_week: item.recurringDayOfWeek ?? null,
+        needs_date: item.needsDate || false,
         isCycleLog: item.isCycleLog || false,
       }));
 
@@ -160,6 +161,7 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
             start_date: item.start_date || null,
             end_date: item.end_date || null,
             excitement: item.excitement || null,
+            needs_date: item.needs_date || false,
           };
 
           const { data: inserted, error: insertError } = await supabase.from('items').insert(supabaseItem).select().single();
@@ -387,6 +389,7 @@ Return valid JSON array only — no explanation, no markdown.`;
             start_date: item.start_date || null,
             end_date: item.end_date || null,
             excitement: item.excitement || null,
+            needs_date: item.needs_date || false,
           };
 
           const { data: inserted, error: insertError } = await supabase.from('items').insert(supabaseItem).select().single();
@@ -652,6 +655,7 @@ Return valid JSON array only — no explanation, no markdown.`;
         start_date: item.start_date || null,
         end_date: item.end_date || null,
         excitement: item.excitement || null,
+        needs_date: item.needs_date || false,
       };
       const { data: inserted, error: insertError } = await supabase.from('items').insert(supabaseItem).select().single();
       if (insertError || !inserted) {
@@ -695,6 +699,7 @@ Return valid JSON array only — no explanation, no markdown.`;
         start_date: item.start_date || null,
         end_date: item.end_date || null,
         excitement: item.excitement || null,
+        needs_date: item.needs_date || false,
       };
       const { data: inserted, error: insertError } = await supabase.from('items').insert(supabaseItem).select().single();
       if (insertError || !inserted) {

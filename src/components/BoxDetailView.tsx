@@ -19,6 +19,7 @@ interface Item {
   date: string | null;
   time: string | null;
   has_date_time: boolean;
+  needs_date?: boolean;
   type: string;
   start_date?: string | null;
   end_date?: string | null;
@@ -231,6 +232,49 @@ export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onIt
                       )}
                       {item.description && (
                         <p className="font-ui text-sm text-muted mt-1" style={{ whiteSpace: 'pre-line' }}>{item.description}</p>
+                      )}
+                      {item.needs_date && !item.date && (
+                        <div
+                          onClick={() => {
+                            setEditingTimeId(null);
+                            const dateInput = document.createElement('input');
+                            dateInput.type = 'date';
+                            dateInput.style.display = 'none';
+                            dateInput.min = new Date().toISOString().split('T')[0];
+                            dateInput.onchange = async (e) => {
+                              const target = e.target as HTMLInputElement;
+                              if (target.value) {
+                                await supabase
+                                  .from('items')
+                                  .update({ date: target.value, has_date_time: true, needs_date: false })
+                                  .eq('id', item.id);
+                                if (onItemUpdate) {
+                                  onItemUpdate(item.id, { date: target.value, has_date_time: true, needs_date: false });
+                                }
+                              }
+                              document.body.removeChild(dateInput);
+                            };
+                            document.body.appendChild(dateInput);
+                            dateInput.click();
+                          }}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            background: 'rgba(196,113,74,0.08)',
+                            border: '1px solid rgba(196,113,74,0.25)',
+                            borderRadius: '10px',
+                            padding: '4px 9px',
+                            fontSize: '11px',
+                            color: '#C4714A',
+                            cursor: 'pointer',
+                            marginTop: '7px',
+                            fontStyle: 'italic',
+                            fontFamily: 'DM Sans, sans-serif',
+                          }}
+                        >
+                          📅 When would you like this to happen?
+                        </div>
                       )}
                       {(item.date || item.start_date) && (
                         <p className="font-ui text-xs text-accent font-medium mt-1">

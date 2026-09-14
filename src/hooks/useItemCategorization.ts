@@ -125,6 +125,7 @@ export async function categorizeAndCreateItems(text: string, userId: string, car
           has_date_time: item.type === 'lookforward' ? true : (item.hasDateTime || false),
           type: item.type || 'task',
           target_month: item.targetMonth || null,
+          needs_date: item.needsDate || false,
         };
 
         if (item.type === 'lookforward') {

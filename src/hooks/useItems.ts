@@ -13,6 +13,7 @@ interface Item {
   date: string | null;
   time: string | null;
   has_date_time: boolean;
+  needs_date?: boolean;
   type: string;
   target_month: number | null;
   start_date?: string | null;
