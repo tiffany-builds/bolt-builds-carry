@@ -51,7 +51,29 @@ export function buildSystemPrompt(options: {
   const dateRules = `DATE RULES:
 - When user says "Saturday" mean the NEXT upcoming Saturday from today
 - Always calculate dates going FORWARD, never backwards
-- "Next week" means 7-14 days from today`;
+- "Next week" means 7-14 days from today
+TODAY TASKS — set date to today automatically:
+These types of items should always get today's date even if no date is mentioned:
+- Household chores: clean, tidy, hoover, vacuum, laundry, washing, 
+  dishwasher, bins, rubbish, recycling, mop, sweep, wipe
+- Daily habits: vitamins, medication, eye drops, walk, exercise, gym
+- Quick errands: get coffee, buy [small item], pick up [small item]
+- Daily routines: make bed, meal prep, cook dinner
+DEADLINE TASKS — set needsDate: true, leave date as null:
+These types of items have an implied deadline but the user didn't say when.
+Set a special field needsDate: true for these:
+- Medical appointments: dentist, doctor, scan, hospital, physio, optician
+- Admin and renewals: passport, visa, insurance, membership, licence, tax
+- Payments: pay [person/bill], invoice, transfer money
+- Bookings: book flights, book hotel, reserve, tickets
+- Gifts and occasions: birthday present, order gift, anniversary
+- Important calls: ring about, call the school, contact [person] about
+OPEN TASKS — leave date as null, do not set needsDate:
+- Ideas and aspirations: learn X, start X someday, read more
+- Vague intentions: think about, consider, look into
+- Work in progress with no deadline implied
+Add needsDate to the output fields alongside the other fields.
+needsDate should be true or false.`;
 
   const recurringRules = includeRecurring ? `
 RECURRING ITEM RULES:
