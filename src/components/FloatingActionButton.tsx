@@ -40,6 +40,7 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
     emoji: string | null;
   }>>([]);
   const [showNeedsDatePrompt, setShowNeedsDatePrompt] = useState(false);
+  const [datePickerItemId, setDatePickerItemId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const showToast = (message: string) => {
@@ -908,54 +909,94 @@ Return valid JSON array only — no explanation, no markdown.`;
           <div style={{ borderTop: '1px solid rgba(212,196,180,0.6)', paddingTop: '10px' }}>
             {needsDateItems.map((item, index) => (
               <div key={item.id} style={{
-                display: 'flex', alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '7px 0',
                 borderBottom: index < needsDateItems.length - 1
                   ? '1px solid rgba(212,196,180,0.4)' : 'none',
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
-                  <span style={{ fontSize: '15px' }}>{item.emoji || '📋'}</span>
-                  <span style={{ fontSize: '12px', fontWeight: 500, color: '#2C2420', fontFamily: 'DM Sans, sans-serif' }}>
-                    {item.title}
-                  </span>
-                </div>
-                <div
-                  onClick={() => {
-                    const dateInput = document.createElement('input');
-                    dateInput.type = 'date';
-                    dateInput.style.display = 'none';
-                    dateInput.min = new Date().toISOString().split('T')[0];
-                    dateInput.onchange = async (e) => {
-                      const target = e.target as HTMLInputElement;
-                      if (target.value) {
-                        await supabase
-                          .from('items')
-                          .update({ date: target.value, has_date_time: true, needs_date: false })
-                          .eq('id', item.id);
-                        setNeedsDateItems(prev => prev.filter(i => i.id !== item.id));
-                        if (needsDateItems.length <= 1) setShowNeedsDatePrompt(false);
-                      }
-                      document.body.removeChild(dateInput);
-                    };
-                    document.body.appendChild(dateInput);
-                    dateInput.click();
-                  }}
-                  style={{
-                    fontSize: '10px', color: '#C4714A',
-                    border: '1px solid rgba(196,113,74,0.3)',
-                    borderRadius: '8px', padding: '3px 8px',
-                    background: 'rgba(196,113,74,0.06)',
-                    cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
-                  }}
-                >
-                  + Add date
-                </div>
+                {datePickerItemId === item.id ? (
+                  <div style={{ padding: '8px 0' }}>
+                    <div style={{
+                      fontSize: '12px', fontWeight: 500, color: '#2C2420',
+                      marginBottom: '8px', fontFamily: 'DM Sans, sans-serif'
+                    }}>
+                      {item.emoji} {item.title}
+                    </div>
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                      {[
+                        { label: 'Today', days: 0 },
+                        { label: 'Tomorrow', days: 1 },
+                        { label: 'This week', days: 3 },
+                        { label: 'Next week', days: 7 },
+                      ].map(({ label, days }) => {
+                        const d = new Date();
+                        d.setDate(d.getDate() + days);
+                        const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                        return (
+                          <div
+                            key={label}
+                            onClick={async () => {
+                              haptic(ImpactStyle.Light);
+                              await supabase
+                                .from('items')
+                                .update({ date: dateStr, has_date_time: true, needs_date: false })
+                                .eq('id', item.id);
+                              setNeedsDateItems(prev => prev.filter(i => i.id !== item.id));
+                              setDatePickerItemId(null);
+                              if (needsDateItems.length <= 1) setShowNeedsDatePrompt(false);
+                            }}
+                            style={{
+                              background: '#FDF9F4',
+                              border: '1px solid #D4C4B4',
+                              borderRadius: '12px',
+                              padding: '6px 12px',
+                              fontSize: '12px',
+                              color: '#2C2420',
+                              cursor: 'pointer',
+                              fontFamily: 'DM Sans, sans-serif',
+                            }}
+                          >
+                            {label}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{
+                    display: 'flex', alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '7px 0',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                      <span style={{ fontSize: '15px' }}>{item.emoji || '📋'}</span>
+                      <span style={{ fontSize: '12px', fontWeight: 500, color: '#2C2420', fontFamily: 'DM Sans, sans-serif' }}>
+                        {item.title}
+                      </span>
+                    </div>
+                    <div
+                      onClick={() => {
+                        haptic(ImpactStyle.Light);
+                        setDatePickerItemId(item.id);
+                      }}
+                      style={{
+                        fontSize: '12px', color: '#C4714A',
+                        border: '1px solid rgba(196,113,74,0.3)',
+                        borderRadius: '8px', padding: '8px 14px',
+                        background: 'rgba(196,113,74,0.06)',
+                        cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
+                      }}
+                    >
+                      + Add date
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
           <div
-            onClick={() => setShowNeedsDatePrompt(false)}
+            onClick={() => {
+              haptic(ImpactStyle.Light);
+              setShowNeedsDatePrompt(false);
+            }}
             style={{
               fontSize: '11px', color: '#9E8E80',
               textAlign: 'center', marginTop: '10px',

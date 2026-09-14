@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ArrowLeft, Check, Share2 } from 'lucide-react';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { getContextualEmoji } from '../utils/mindNudges';
 import { getCategoryDisplayName } from '../utils/categoryHelpers';
 import { parseDateString } from '../utils/dateFormatting';
@@ -236,6 +237,7 @@ export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onIt
                       {item.needs_date && !item.date && (
                         <div
                           onClick={() => {
+                            Haptics.impact({ style: ImpactStyle.Light });
                             setEditingTimeId(null);
                             const dateInput = document.createElement('input');
                             dateInput.type = 'date';
