@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ArrowLeft, Check, Share2 } from 'lucide-react';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { playCompletionSound } from '../utils/completionSound';
 import { getContextualEmoji } from '../utils/mindNudges';
 import { getCategoryDisplayName } from '../utils/categoryHelpers';
 import { parseDateString } from '../utils/dateFormatting';
@@ -196,7 +197,11 @@ export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onIt
                     <button
                       onClick={async () => {
                         if (item.calendar_event_id) removeItemFromCalendar(item.calendar_event_id);
-                        await Haptics.impact({ style: ImpactStyle.Medium });
+                        await Haptics.impact({ style: ImpactStyle.Light });
+                        setTimeout(async () => {
+                          await Haptics.impact({ style: ImpactStyle.Medium });
+                        }, 100);
+                        playCompletionSound();
                         onItemComplete(item.id);
                       }}
                       className="flex-shrink-0 w-6 h-6 rounded-full border-2 border-border hover:border-accent transition-all flex items-center justify-center mt-0.5 active:scale-95"

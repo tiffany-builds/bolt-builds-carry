@@ -17,6 +17,7 @@ import { getCategoryColor } from '../utils/categoryColors';
 import { formatDayLabel, formatTime, getWeekDays, getTodayDateString, parseDateString } from '../utils/dateFormatting';
 import { getContextualEmoji } from '../utils/mindNudges';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { playCompletionSound } from '../utils/completionSound';
 import { supabase } from '../lib/supabase';
 import { Check, Share2 } from 'lucide-react';
 import { shareItem } from '../utils/shareItem';
@@ -49,7 +50,11 @@ function TimelineItemCard({ item, onComplete, onDelete, swipingId, swipeOffset, 
 
   const handleComplete = async () => {
     try {
-      await Haptics.impact({ style: ImpactStyle.Medium });
+      await Haptics.impact({ style: ImpactStyle.Light });
+      setTimeout(async () => {
+        await Haptics.impact({ style: ImpactStyle.Medium });
+      }, 100);
+      playCompletionSound();
       await supabase
         .from('items')
         .update({ completed: true })

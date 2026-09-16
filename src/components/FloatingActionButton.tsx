@@ -210,7 +210,7 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
         setRecurringConfirmation({ item: recurringItems[0], index: 0 });
       } else if (savedItems.length > 0) {
         await Haptics.notification({ type: NotificationType.Success });
-        showToast('Got it — added to Carry');
+        showToast('Got it — all sorted 🧡');
       }
 
       const deadlineItems = savedItems.filter((i: any) => i.needs_date);
@@ -748,7 +748,7 @@ Return valid JSON array only — no explanation, no markdown.`;
     }
     if (savedItems.length > 0) {
       if (onItemsAdded) onItemsAdded(savedItems);
-      showToast('Got it — added to Carry');
+      showToast('Got it — all sorted 🧡');
     }
     setRecurringConfirmation(null);
     setPendingItems(null);
@@ -792,7 +792,7 @@ Return valid JSON array only — no explanation, no markdown.`;
     }
     if (savedItems.length > 0) {
       if (onItemsAdded) onItemsAdded(savedItems);
-      showToast('Got it — added to Carry');
+      showToast('Got it — all sorted 🧡');
     }
     setRecurringConfirmation(null);
     setPendingItems(null);
