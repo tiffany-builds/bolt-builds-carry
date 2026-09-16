@@ -340,6 +340,7 @@ function App() {
           userId={user.id}
           onSubmitSuccess={undefined}
           onItemsAdded={addItemsToLocalState}
+          onItemUpdate={(itemId, updates) => setItems(prev => prev.map(i => i.id === itemId ? { ...i, ...updates } : i))}
           autoOpenFAB={autoOpenFAB}
           onAutoOpenComplete={() => setAutoOpenFAB(false)}
           calendarPermission={calendarPermission}
@@ -514,6 +515,7 @@ function App() {
         caringFor={userProfile?.caring_for || []}
         onSubmitSuccess={undefined}
         onItemsAdded={addItemsToLocalState}
+        onItemUpdate={(itemId, updates) => setItems(prev => prev.map(i => i.id === itemId ? { ...i, ...updates } : i))}
         autoOpenFAB={autoOpenFAB}
         onAutoOpenComplete={() => setAutoOpenFAB(false)}
         calendarPermission={calendarPermission}

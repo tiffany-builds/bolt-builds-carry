@@ -13,6 +13,7 @@ async function haptic(style: ImpactStyle) {
 }
 
 interface FloatingActionButtonProps {
+  onItemUpdate?: (itemId: string, updates: any) => void;
   userId: string | null;
   caringFor?: string[];
   onItemsAdded?: (items: any[]) => void;
@@ -22,7 +23,7 @@ interface FloatingActionButtonProps {
   calendarPermission?: boolean;
 }
 
-export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmitSuccess, autoOpenFAB, onAutoOpenComplete, calendarPermission }: FloatingActionButtonProps) {
+export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmitSuccess, autoOpenFAB, onAutoOpenComplete, calendarPermission, onItemUpdate }: FloatingActionButtonProps) {
   const [showInput, setShowInput] = useState(false);
   const [showTextInput, setShowTextInput] = useState(false);
   const [inputText, setInputText] = useState('');
@@ -81,10 +82,11 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
     // 1. Show optimistic placeholder immediately and close the panel
     const optimisticItems = buildOptimisticItems(inputText);
     if (onItemsAdded) onItemsAdded(optimisticItems);
-    setShowInput(false);
-    setShowTextInput(false);
     setProcessingTranscript(inputText.trim().slice(0, 80));
     setLiveTranscript('');
+    setIsProcessing(true);
+    setShowInput(false);
+    setShowTextInput(false);
     setInputText('');
 
     let savedItems: any[] = [];
@@ -225,6 +227,9 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
       // 4. Remove optimistic items on failure and show error
       removeOptimisticItems();
       showToast("Couldn't save — please try again");
+    } finally {
+      setIsProcessing(false);
+      setProcessingTranscript('');
     }
   }
 
@@ -477,7 +482,7 @@ Return valid JSON array only — no explanation, no markdown.`;
     />
   );
 
-  if (showInput || showTextInput) {
+  if (showInput || showTextInput || isProcessing) {
     return (
       <>
         {hiddenFileInput}
@@ -489,7 +494,7 @@ Return valid JSON array only — no explanation, no markdown.`;
             bottom: 'calc(env(safe-area-inset-bottom) + 90px)',
             left: '16px',
             right: '16px',
-            background: 'rgba(253,249,244,0.70)',
+            background: 'rgba(245,235,225,0.60)',
             backdropFilter: 'blur(8px)',
             borderRadius: '22px',
             cursor: 'pointer',
@@ -973,6 +978,9 @@ Return valid JSON array only — no explanation, no markdown.`;
                                 .from('items')
                                 .update({ date: dateStr, has_date_time: true, needs_date: false })
                                 .eq('id', item.id);
+                              if (onItemUpdate) {
+                                onItemUpdate(item.id, { date: dateStr, has_date_time: true, needs_date: false });
+                              }
                               setNeedsDateItems(prev => prev.filter(i => i.id !== item.id));
                               setDatePickerItemId(null);
                               if (needsDateItems.length <= 1) setShowNeedsDatePrompt(false);
