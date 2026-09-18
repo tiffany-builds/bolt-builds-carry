@@ -513,9 +513,9 @@ Return valid JSON array only — no explanation, no markdown.`;
             onClick={() => { haptic(ImpactStyle.Heavy); stopListening(); }}
             style={{
             position: 'fixed',
-            top: '40%',
+            top: '50%',
             left: '50%',
-            transform: 'translateY(-50%)',
+            transform: 'translateX(-50%)',
             width: 'calc(100% - 32px)',
             maxWidth: '500px',
             background: 'rgba(245,235,225,0.60)',
