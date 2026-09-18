@@ -32,6 +32,10 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
   const [isStartingListening, setIsStartingListening] = useState(false);
   const [processingTranscript, setProcessingTranscript] = useState('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [pendingToast, setPendingToast] = useState<string | null>(null);
+  const [pendingShowNeedsDate, setPendingShowNeedsDate] = useState(false);
+  const toastMessageRef = useRef<string | null>(null);
+  const showNeedsDatePromptRef = useRef(false);
   const [recurringConfirmation, setRecurringConfirmation] = useState<{item: any, index: number} | null>(null);
   const [pendingItems, setPendingItems] = useState<{ recurring: any[], nonRecurring: any[] } | null>(null);
   const [calendarPrompt, setCalendarPrompt] = useState<any | null>(null);
@@ -43,11 +47,29 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
     emoji: string | null;
   }>>([]);
   const [showNeedsDatePrompt, setShowNeedsDatePrompt] = useState(false);
+  const setShowNeedsDatePromptWrapped = (value: boolean) => {
+    if (value && toastMessageRef.current) {
+      setPendingShowNeedsDate(true);
+      return;
+    }
+    showNeedsDatePromptRef.current = value;
+    setShowNeedsDatePrompt(value);
+    if (!value && pendingToast) {
+      toastMessageRef.current = pendingToast;
+      setToastMessage(pendingToast);
+      setPendingToast(null);
+    }
+  };
   const [datePickerItemId, setDatePickerItemId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const showToast = (message: string) => {
-    setToastMessage(message);
+    if (showNeedsDatePromptRef.current) {
+      setPendingToast(message);
+    } else {
+      toastMessageRef.current = message;
+      setToastMessage(message);
+    }
   };
 
   function buildOptimisticItems(text: string): any[] {
@@ -220,7 +242,7 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
           title: i.title,
           emoji: i.emoji || null,
         })));
-        setTimeout(() => setShowNeedsDatePrompt(true), 800);
+        setTimeout(() => setShowNeedsDatePromptWrapped(true), 800);
       }
 
     } catch (err) {
@@ -442,7 +464,7 @@ Return valid JSON array only — no explanation, no markdown.`;
           title: i.title,
           emoji: i.emoji || null,
         })));
-        setTimeout(() => setShowNeedsDatePrompt(true), 800);
+        setTimeout(() => setShowNeedsDatePromptWrapped(true), 800);
       }
 
     } catch (err) {
@@ -491,9 +513,11 @@ Return valid JSON array only — no explanation, no markdown.`;
             onClick={() => { haptic(ImpactStyle.Heavy); stopListening(); }}
             style={{
             position: 'fixed',
-            bottom: 'calc(env(safe-area-inset-bottom) + 90px)',
-            left: '16px',
-            right: '16px',
+            top: '40%',
+            left: '50%',
+            transform: 'translateY(-50%)',
+            width: 'calc(100% - 32px)',
+            maxWidth: '500px',
             background: 'rgba(245,235,225,0.60)',
             backdropFilter: 'blur(8px)',
             borderRadius: '22px',
@@ -805,7 +829,15 @@ Return valid JSON array only — no explanation, no markdown.`;
       {toastMessage && (
         <Toast
           message={toastMessage}
-          onClose={() => setToastMessage(null)}
+          onClose={() => {
+            toastMessageRef.current = null;
+            setToastMessage(null);
+            if (pendingShowNeedsDate) {
+              setPendingShowNeedsDate(false);
+              showNeedsDatePromptRef.current = true;
+              setShowNeedsDatePrompt(true);
+            }
+          }}
         />
       )}
 
@@ -917,10 +949,10 @@ Return valid JSON array only — no explanation, no markdown.`;
         </div>
       )}
 
-      {showNeedsDatePrompt && needsDateItems.length > 0 && !isProcessing && (
+      {showNeedsDatePrompt && needsDateItems.length > 0 && (
         <div style={{
           position: 'fixed',
-          bottom: 'calc(env(safe-area-inset-bottom) + 90px)',
+          bottom: 'calc(env(safe-area-inset-bottom) + 120px)',
           left: '14px',
           right: '14px',
           background: 'rgba(253,249,244,0.92)',
@@ -983,7 +1015,7 @@ Return valid JSON array only — no explanation, no markdown.`;
                               }
                               setNeedsDateItems(prev => prev.filter(i => i.id !== item.id));
                               setDatePickerItemId(null);
-                              if (needsDateItems.length <= 1) setShowNeedsDatePrompt(false);
+                              if (needsDateItems.length <= 1) setShowNeedsDatePromptWrapped(false);
                             }}
                             style={{
                               background: '#FDF9F4',
@@ -1037,7 +1069,7 @@ Return valid JSON array only — no explanation, no markdown.`;
           <div
             onClick={() => {
               haptic(ImpactStyle.Light);
-              setShowNeedsDatePrompt(false);
+              setShowNeedsDatePromptWrapped(false);
             }}
             style={{
               fontSize: '11px', color: '#9E8E80',
