@@ -295,3 +295,48 @@ export async function scheduleSundayNotification(
     // fail silently
   }
 }
+
+export async function scheduleWednesdayNotification(
+  items: Array<{ created_at: string }>
+): Promise<void> {
+  try {
+    const WEDNESDAY_ID = 1003;
+    await LocalNotifications.cancel({ notifications: [{ id: WEDNESDAY_ID }] });
+
+    if (items.length === 0) return;
+
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    const addedToday = items.some(i => i.created_at && i.created_at.startsWith(todayStr));
+    if (addedToday) return;
+
+    const nextWed = new Date();
+    const day = nextWed.getDay();
+    const daysUntil = (3 - day + 7) % 7 || 7;
+    nextWed.setDate(nextWed.getDate() + daysUntil);
+    nextWed.setHours(21, 0, 0, 0);
+
+    const messages = [
+      "Midweek already. Anything building up in your head? A good moment to get it out. 🧡",
+      "Halfway there. A great time to clear your head of anything rattling around. 🧡",
+      "Wednesday check-in. How's your mental load feeling this week?",
+      "The week's half done. Anything still sitting in your head that needs a home? 🧡",
+      "Mid-point of the week — a good moment to get things out before they pile up. 🧡",
+      "Wednesday. A good moment to take stock. Anything on your mind? 🧡",
+    ];
+
+    const pick = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
+
+    await LocalNotifications.schedule({
+      notifications: [{
+        id: WEDNESDAY_ID,
+        title: 'Carry 🧡',
+        body: pick(messages),
+        schedule: { at: nextWed },
+        sound: 'Hello.caf',
+      }]
+    });
+  } catch {
+    // fail silently
+  }
+}

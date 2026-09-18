@@ -23,7 +23,7 @@ import { supabase } from './lib/supabase';
 import { categorizeAndCreateItems } from './hooks/useItemCategorization';
 import { generateRecurringInstances } from './utils/recurringItems';
 import { getTodayDateString } from './utils/dateFormatting';
-import { requestNotificationPermission, scheduleMorningBriefing, scheduleItemReminders, scheduleSundayNotification, scheduleRecurringExpiryReminders } from './utils/notifications';
+import { requestNotificationPermission, scheduleMorningBriefing, scheduleItemReminders, scheduleSundayNotification, scheduleWednesdayNotification, scheduleRecurringExpiryReminders } from './utils/notifications';
 import { requestCalendarPermission } from './utils/calendar';
 import { requestHealthKitPermission, isHealthKitEnabled, setHealthKitEnabled } from './utils/healthKit';
 import { Capacitor } from '@capacitor/core';
@@ -189,6 +189,7 @@ function App() {
     scheduleMorningBriefing(items);
     scheduleItemReminders(items);
     scheduleSundayNotification(items);
+    scheduleWednesdayNotification(items);
     scheduleRecurringExpiryReminders(items);
   }, [items]);
 
@@ -335,6 +336,7 @@ function App() {
               item.id === itemId ? { ...item, ...updates } : item
             ));
           }}
+          onDateChange={() => loadItems()}
         />
         <FloatingActionButton
           userId={user.id}
@@ -496,6 +498,7 @@ function App() {
             onItemUpdate={(itemId, updates) => {
               setItems(prev => prev.map(i => i.id === itemId ? { ...i, ...updates } : i));
             }}
+            onDateChange={() => loadItems()}
           />
           <BoxesSection
             categoryCounts={categoryCounts}

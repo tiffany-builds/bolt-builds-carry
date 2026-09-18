@@ -10,6 +10,54 @@ interface HeaderProps {
 export function Header({ userName = 'Tiffany', todayCount = 0, isBirthday = false, onOpenSettings, onOpenMenu, onOpenCalendar }: HeaderProps) {
   const currentDate = new Date();
   const dayName = currentDate.toLocaleDateString('en-US', { weekday: 'long' });
+
+  const getGreeting = () => {
+    const day = currentDate.getDay();
+    const hour = currentDate.getHours();
+    const seed = currentDate.getDate() + currentDate.getMonth() * 31;
+
+    const morning = [
+      `${dayName} looks manageable`,
+      'Good morning',
+      'Here we go',
+      `${dayName}. You've got this`,
+      'Ready when you are',
+      'A new day',
+    ];
+    const evening = [
+      'Good evening',
+      `${dayName} evening`,
+      'Nearly there',
+      'Winding down',
+    ];
+    const monday = [
+      'New week, fresh start',
+      `Monday. Let's go`,
+      `${dayName} looks manageable`,
+      `Here's to a good week`,
+    ];
+    const friday = [
+      'Almost the weekend',
+      'Friday feeling',
+      `${dayName} looks manageable`,
+      'Nearly there',
+    ];
+    const weekend = [
+      `Happy ${dayName}`,
+      'Enjoy the weekend',
+      `${dayName} — take it easy`,
+      'Rest up',
+    ];
+
+    let pool;
+    if (day === 0 || day === 6) pool = weekend;
+    else if (day === 1) pool = monday;
+    else if (day === 5) pool = friday;
+    else if (hour >= 17) pool = evening;
+    else pool = morning;
+
+    return pool[seed % pool.length];
+  };
   const formattedDate = currentDate.toLocaleDateString('en-US', {
     weekday: 'long',
     day: 'numeric',
@@ -24,7 +72,7 @@ export function Header({ userName = 'Tiffany', todayCount = 0, isBirthday = fals
             {isBirthday ? (
               `Happy Birthday, ${userName}. 🎂`
             ) : (
-              <>{dayName} looks manageable, <em style={{color: '#C4714A', fontStyle: 'italic'}}>{userName}</em>.</>
+              <>{getGreeting()}, <em style={{color: '#C4714A', fontStyle: 'italic'}}>{userName}</em>.</>
             )}
           </h1>
           <p className="font-ui text-sm text-muted font-light">

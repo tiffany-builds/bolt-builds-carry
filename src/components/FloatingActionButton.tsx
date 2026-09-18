@@ -917,7 +917,7 @@ Return valid JSON array only — no explanation, no markdown.`;
         </div>
       )}
 
-      {showNeedsDatePrompt && needsDateItems.length > 0 && (
+      {showNeedsDatePrompt && needsDateItems.length > 0 && !isProcessing && (
         <div style={{
           position: 'fixed',
           bottom: 'calc(env(safe-area-inset-bottom) + 90px)',

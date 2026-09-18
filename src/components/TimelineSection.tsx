@@ -100,9 +100,10 @@ function TimelineItemCard({ item, onComplete, onDelete, swipingId, swipeOffset, 
                   const [datePart, timePart] = e.target.value.split('T');
                   await Haptics.impact({ style: ImpactStyle.Light });
                   await updateItemTime(item.id, timePart);
-                  if (datePart && onItemUpdate) {
+                  if (datePart) {
                     await supabase.from('items').update({ date: datePart, has_date_time: true }).eq('id', item.id);
-                    onItemUpdate(item.id, { date: datePart, has_date_time: true });
+                    if (onItemUpdate) onItemUpdate(item.id, { date: datePart, has_date_time: true });
+                    if (onDateChange) onDateChange();
                   }
                   setEditingTimeId(null);
                 }}
@@ -225,6 +226,7 @@ interface TimelineSectionProps {
   onItemDelete: (itemId: string) => void;
   onShowToast: (message: string) => void;
   onItemUpdate?: (itemId: string, updates: any) => void;
+  onDateChange?: () => void;
 }
 
 interface DayGroup {
@@ -234,7 +236,7 @@ interface DayGroup {
   items: TimelineItem[];
 }
 
-export function TimelineSection({ items, onItemComplete, onItemDelete, onShowToast, onItemUpdate }: TimelineSectionProps) {
+export function TimelineSection({ items, onItemComplete, onItemDelete, onShowToast, onItemUpdate, onDateChange }: TimelineSectionProps) {
   const [swipingId, setSwipingId] = useState<string | null>(null);
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [touchStartX, setTouchStartX] = useState(0);

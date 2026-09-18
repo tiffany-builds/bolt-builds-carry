@@ -49,6 +49,7 @@ export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onIt
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
   const [editingTimeId, setEditingTimeId] = useState<string | null>(null);
   const [editingTimeValue, setEditingTimeValue] = useState('');
+  const [editingDateId, setEditingDateId] = useState<string | null>(null);
   const [datePickerItemId, setDatePickerItemId] = useState<string | null>(null);
 
   const handleTouchStart = (e: React.TouchEvent, itemId: string) => {
@@ -327,45 +328,87 @@ export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onIt
                         )
                       )}
                       {(item.date || item.start_date) && (
-                        <p className="font-ui text-xs text-accent font-medium mt-1">
-                          {parseDateString(item.date || item.start_date).toLocaleDateString('en-GB', {
-                            weekday: 'short',
-                            day: 'numeric',
-                            month: 'short',
-                          })}
+                        <div style={{ marginTop: '4px' }}>
+                          {/* Date chips */}
+                          {editingDateId === item.id ? (
+                            <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', marginBottom: '6px' }}>
+                              {[
+                                { label: 'Today', days: 0 },
+                                { label: 'Tomorrow', days: 1 },
+                                { label: 'In 2 days', days: 2 },
+                                { label: 'Next week', days: 7 },
+                              ].map(({ label, days }) => {
+                                const d = new Date();
+                                d.setDate(d.getDate() + days);
+                                const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                                return (
+                                  <span
+                                    key={label}
+                                    onClick={async () => {
+                                      await Haptics.impact({ style: ImpactStyle.Light });
+                                      await supabase.from('items').update({ date: dateStr, has_date_time: true }).eq('id', item.id);
+                                      if (onItemUpdate) onItemUpdate(item.id, { date: dateStr, has_date_time: true });
+                                      setEditingDateId(null);
+                                    }}
+                                    style={{
+                                      background: '#FDF9F4', border: '1px solid #D4C4B4',
+                                      borderRadius: '10px', padding: '3px 8px',
+                                      fontSize: '11px', color: '#2C2420',
+                                      cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
+                                    }}
+                                  >{label}</span>
+                                );
+                              })}
+                              <span onClick={() => setEditingDateId(null)} style={{ fontSize: '11px', color: '#9E8E80', padding: '3px 4px', cursor: 'pointer' }}>Cancel</span>
+                            </div>
+                          ) : (
+                            <p
+                              className="font-ui text-xs text-accent font-medium"
+                              onClick={() => { Haptics.impact({ style: ImpactStyle.Light }); setEditingDateId(item.id); }}
+                              style={{ cursor: 'pointer', display: 'inline-block' }}
+                            >
+                              {parseDateString(item.date || item.start_date).toLocaleDateString('en-GB', {
+                                weekday: 'short', day: 'numeric', month: 'short',
+                              })}
+                            </p>
+                          )}
+                          {/* Time chips */}
                           {editingTimeId === item.id ? (
-                            <input
-                              type="time"
-                              value={editingTimeValue}
-                              onChange={e => setEditingTimeValue(e.target.value)}
-                              onBlur={async () => {
-                                await updateItemTime(item.id, editingTimeValue);
-                                setEditingTimeId(null);
-                              }}
-                              autoFocus
-                              style={{
-                                fontFamily: 'DM Sans, sans-serif',
-                                fontSize: '12px',
-                                color: '#6B5C52',
-                                background: 'transparent',
-                                border: 'none',
-                                borderBottom: '1px solid #C4714A',
-                                outline: 'none',
-                                width: '80px',
-                              }}
-                            />
+                            <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', marginTop: '4px' }}>
+                              {[
+                                { label: '8:00am', value: '08:00' },
+                                { label: '9:00am', value: '09:00' },
+                                { label: '12:00pm', value: '12:00' },
+                                { label: '3:00pm', value: '15:00' },
+                                { label: '5:00pm', value: '17:00' },
+                                { label: '7:00pm', value: '19:00' },
+                              ].map(({ label, value }) => (
+                                <span
+                                  key={value}
+                                  onClick={async () => {
+                                    await Haptics.impact({ style: ImpactStyle.Light });
+                                    await updateItemTime(item.id, value);
+                                    setEditingTimeId(null);
+                                  }}
+                                  style={{
+                                    background: '#FDF9F4', border: '1px solid #D4C4B4',
+                                    borderRadius: '10px', padding: '3px 8px',
+                                    fontSize: '11px', color: '#2C2420',
+                                    cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
+                                  }}
+                                >{label}</span>
+                              ))}
+                              <span onClick={() => setEditingTimeId(null)} style={{ fontSize: '11px', color: '#9E8E80', padding: '3px 4px', cursor: 'pointer' }}>Cancel</span>
+                            </div>
                           ) : (
                             <span
-                              onClick={() => {
-                                setEditingTimeId(item.id);
-                                setEditingTimeValue(item.time?.slice(0, 5) || '');
-                              }}
-                              style={{ cursor: 'pointer' }}
+                              onClick={() => { setEditingTimeId(item.id); setEditingTimeValue(item.time?.slice(0, 5) || ''); }}
+                              style={{ cursor: 'pointer', fontSize: '11px', color: '#6B5C52', fontFamily: 'DM Sans, sans-serif' }}
                             >
                               {item.time ? ` · ${item.time.slice(0, 5)}` : ' · add time'}
                             </span>
                           )}
-                        </p>
+                        </div>
                       )}
                       {item.time_frame && item.time_frame !== 'future' && (
                         <p className="font-ui text-xs text-muted/70 mt-2 capitalize">

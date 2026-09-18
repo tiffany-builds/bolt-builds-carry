@@ -29,9 +29,23 @@ export function useSpeechRecognition({
   const recognitionRef = useRef<any>(null);
   const partialListenerRef = useRef<any>(null);
   const finalTranscriptRef = useRef<string>('');
+  const isNativeActiveRef = useRef(false);
 
   const startListeningNative = useCallback(async () => {
     try {
+      if (isNativeActiveRef.current) {
+        try {
+          await NativeSpeechRecognition.stop();
+        } catch (e) {
+          // ignore - best effort cleanup of a stale session
+        }
+        if (partialListenerRef.current) {
+          partialListenerRef.current.remove();
+          partialListenerRef.current = null;
+        }
+        isNativeActiveRef.current = false;
+      }
+
       const { available } = await NativeSpeechRecognition.available();
       if (!available) {
         onError?.('not-supported');
@@ -69,9 +83,11 @@ export function useSpeechRecognition({
         popup: false,
       });
 
+      isNativeActiveRef.current = true;
       setIsListening(true);
       onStart?.();
     } catch (e: any) {
+      isNativeActiveRef.current = false;
       setIsListening(false);
       onError?.(e?.message || 'start-failed');
     }
@@ -83,6 +99,8 @@ export function useSpeechRecognition({
     } catch (e) {
       // ignore stop errors
     }
+
+    isNativeActiveRef.current = false;
 
     if (partialListenerRef.current) {
       partialListenerRef.current.remove();
@@ -167,12 +185,13 @@ export function useSpeechRecognition({
   }, []);
 
   const startListening = useCallback(() => {
+    if (isListening) return;
     if (isNativePlatform) {
       startListeningNative();
     } else {
       startListeningWeb();
     }
-  }, [startListeningNative, startListeningWeb]);
+  }, [isListening, startListeningNative, startListeningWeb]);
 
   const stopListening = useCallback(() => {
     if (isNativePlatform) {
