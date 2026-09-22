@@ -18,6 +18,7 @@
 		BC202B3F3020D91D00D0771C /* HealthKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC202B3E3020D91D00D0771C /* HealthKitManager.swift */; };
 		BC202B433020DA5500D0771C /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BC202B423020DA5500D0771C /* HealthKit.framework */; };
 		BC202B453020E2E600D0771C /* HealthKitPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC202B443020E2E600D0771C /* HealthKitPlugin.swift */; };
+		BC27F6983062D61300BF87D0 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC27F6973062D61300BF87D0 /* SceneDelegate.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -35,6 +36,7 @@
 		BC202B3E3020D91D00D0771C /* HealthKitManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitManager.swift; sourceTree = "<group>"; };
 		BC202B423020DA5500D0771C /* HealthKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HealthKit.framework; path = System/Library/Frameworks/HealthKit.framework; sourceTree = SDKROOT; };
 		BC202B443020E2E600D0771C /* HealthKitPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitPlugin.swift; sourceTree = "<group>"; };
+		BC27F6973062D61300BF87D0 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		BC9EF4CA2FC8DD82006BD91D /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
 		FC68EB0AF532CFC21C3344DD /* Pods-App.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.debug.xcconfig"; path = "Pods/Target Support Files/Pods-App/Pods-App.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -93,6 +95,7 @@
 				504EC3131FED79650016851F /* Info.plist */,
 				2FAD9762203C412B000D30F8 /* config.xml */,
 				50B271D01FEDC1A000F3C39B /* public */,
+				BC27F6973062D61300BF87D0 /* SceneDelegate.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -224,6 +227,7 @@
 				BC202B3F3020D91D00D0771C /* HealthKitManager.swift in Sources */,
 				BC202B453020E2E600D0771C /* HealthKitPlugin.swift in Sources */,
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
+				BC27F6983062D61300BF87D0 /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
