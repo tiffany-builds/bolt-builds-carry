@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase';
 import { buildSystemPrompt } from '../utils/buildSystemPrompt';
 import { addItemToCalendar } from '../utils/calendar';
 import { logCycleStart, isCycleTrackingEnabled, enableCycleTracking, scheduleCycleReminder } from '../utils/cycleTracking';
+import { playInputSound, playStopSound } from '../utils/inputSound';
 
 async function haptic(style: ImpactStyle) {
   try { await Haptics.impact({ style }); } catch {}
@@ -269,7 +270,8 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
     useSpeechRecognition({
       onTranscript: handleTranscript,
       onInterimTranscript: handleInterimTranscript,
-      onStart: () => {},
+      onStart: () => { playInputSound(); },
+      onStop: () => { playStopSound(); },
       onError: (error) => {
         if (error === 'no-speech') {
           showToast("Didn't quite catch that — want to try again?");

@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 interface HeaderProps {
   userName?: string;
   todayCount?: number;
@@ -7,61 +9,77 @@ interface HeaderProps {
   onOpenCalendar?: () => void;
 }
 
-export function Header({ userName = 'Tiffany', todayCount = 0, isBirthday = false, onOpenSettings, onOpenMenu, onOpenCalendar }: HeaderProps) {
-  const currentDate = new Date();
-  const dayName = currentDate.toLocaleDateString('en-US', { weekday: 'long' });
+function buildGreetingPool(dayName: string, hour: number): string[] {
+  const isWeekend = dayName === 'Saturday' || dayName === 'Sunday';
+  const isEvening = hour >= 17;
+  const isAfternoon = hour >= 12 && hour < 17;
+  const isMonday = dayName === 'Monday';
+  const isFriday = dayName === 'Friday';
 
-  const getGreeting = () => {
-    const day = currentDate.getDay();
-    const hour = currentDate.getHours();
-    const seed = currentDate.getDate() + currentDate.getMonth() * 31;
-
-    const morning = [
-      `${dayName} looks manageable`,
-      'Good morning',
-      'Here we go',
-      `${dayName}. You've got this`,
-      'Ready when you are',
-      'A new day',
-    ];
-    const evening = [
-      'Good evening',
-      `${dayName} evening`,
-      'Nearly there',
-      'Winding down',
-    ];
-    const monday = [
-      'New week, fresh start',
-      `Monday. Let's go`,
-      `${dayName} looks manageable`,
-      `Here's to a good week`,
-    ];
-    const friday = [
-      'Almost the weekend',
-      'Friday feeling',
-      `${dayName} looks manageable`,
-      'Nearly there',
-    ];
-    const weekend = [
+  if (isWeekend) {
+    return [
       `Happy ${dayName}`,
       'Enjoy the weekend',
       `${dayName} — take it easy`,
       'Rest up',
     ];
+  }
 
-    let pool;
-    if (day === 0 || day === 6) pool = weekend;
-    else if (day === 1) pool = monday;
-    else if (day === 5) pool = friday;
-    else if (hour >= 17) pool = evening;
-    else pool = morning;
+  if (isEvening) {
+    return [
+      'Good evening',
+      `${dayName} evening`,
+      'Nearly there',
+      'Winding down',
+    ];
+  }
 
-    return pool[seed % pool.length];
-  };
+  if (isMonday) {
+    const pool = [
+      'New week, fresh start',
+      "Monday. Let's go",
+      `${dayName} looks manageable`,
+      "Here's to a good week",
+    ];
+    if (isAfternoon) pool.push('Good afternoon');
+    return pool;
+  }
+
+  if (isFriday) {
+    const pool = [
+      'Almost the weekend',
+      'Friday feeling',
+      `${dayName} looks manageable`,
+      'Nearly there',
+    ];
+    if (isAfternoon) pool.push('Good afternoon');
+    return pool;
+  }
+
+  const pool = [
+    `${dayName} looks manageable`,
+    'Good morning',
+    'Here we go',
+    `${dayName}. You've got this`,
+    'A new day',
+    'Ready when you are',
+  ];
+  if (isAfternoon) pool.push('Good afternoon');
+  return pool;
+}
+
+export function Header({ userName = 'Tiffany', todayCount = 0, isBirthday = false, onOpenSettings, onOpenMenu, onOpenCalendar }: HeaderProps) {
+  const currentDate = new Date();
+  const dayName = currentDate.toLocaleDateString('en-US', { weekday: 'long' });
   const formattedDate = currentDate.toLocaleDateString('en-US', {
     weekday: 'long',
     day: 'numeric',
     month: 'long'
+  });
+
+  const [greeting] = useState(() => {
+    const pool = buildGreetingPool(dayName, currentDate.getHours());
+    return pool[Math.floor(Math.random() * pool.length)];
   });
 
   return (
@@ -72,7 +90,7 @@ export function Header({ userName = 'Tiffany', todayCount = 0, isBirthday = fals
             {isBirthday ? (
               `Happy Birthday, ${userName}. 🎂`
             ) : (
-              <>{getGreeting()}, <em style={{color: '#C4714A', fontStyle: 'italic'}}>{userName}</em>.</>
+              <>{greeting}, <em style={{color: '#C4714A', fontStyle: 'italic'}}>{userName}</em>.</>
             )}
           </h1>
           <p className="font-ui text-sm text-muted font-light">

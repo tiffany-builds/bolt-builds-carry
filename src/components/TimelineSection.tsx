@@ -41,9 +41,10 @@ interface TimelineItemProps {
   setEditingTimeId: (id: string | null) => void;
   updateItemTitle: (itemId: string, newTitle: string) => Promise<void>;
   updateItemTime: (itemId: string, newTime: string) => Promise<void>;
+  updateItemDate: (itemId: string, newDate: string) => Promise<void>;
 }
 
-function TimelineItemCard({ item, onComplete, onDelete, swipingId, swipeOffset, onTouchStart, onTouchMove, onTouchEnd, editingId, editingText, setEditingText, setEditingId, editingTimeId, editingTimeValue, setEditingTimeValue, setEditingTimeId, updateItemTitle, updateItemTime }: TimelineItemProps) {
+function TimelineItemCard({ item, onComplete, onDelete, swipingId, swipeOffset, onTouchStart, onTouchMove, onTouchEnd, editingId, editingText, setEditingText, setEditingId, editingTimeId, editingTimeValue, setEditingTimeValue, setEditingTimeId, updateItemTitle, updateItemTime, updateItemDate }: TimelineItemProps) {
   const borderColor = getCategoryColor(item.category);
   const isCompleted = item.completed;
   const displayEmoji = item.emoji || getContextualEmoji(item.title, item.category);
@@ -101,9 +102,7 @@ function TimelineItemCard({ item, onComplete, onDelete, swipingId, swipeOffset, 
                   await Haptics.impact({ style: ImpactStyle.Light });
                   await updateItemTime(item.id, timePart);
                   if (datePart) {
-                    await supabase.from('items').update({ date: datePart, has_date_time: true }).eq('id', item.id);
-                    if (onItemUpdate) onItemUpdate(item.id, { date: datePart, has_date_time: true });
-                    if (onDateChange) onDateChange();
+                    await updateItemDate(item.id, datePart);
                   }
                   setEditingTimeId(null);
                 }}
@@ -249,17 +248,38 @@ export function TimelineSection({ items, onItemComplete, onItemDelete, onShowToa
 
   const updateItemTitle = async (itemId: string, newTitle: string) => {
     if (!newTitle.trim()) return;
-    await supabase.from('items').update({ title: newTitle.trim() }).eq('id', itemId);
+    const { error } = await supabase.from('items').update({ title: newTitle.trim() }).eq('id', itemId);
+    if (error) {
+      onShowToast("Couldn't save that change — please try again");
+      return;
+    }
     if (onItemUpdate) onItemUpdate(itemId, { title: newTitle.trim() });
   };
 
   const updateItemTime = async (itemId: string, newTime: string) => {
     const timeValue = newTime.trim() || null;
-    await supabase.from('items').update({ 
+    const { error } = await supabase.from('items').update({
       time: timeValue,
-      has_date_time: timeValue ? true : false 
+      has_date_time: timeValue ? true : false
     }).eq('id', itemId);
+    if (error) {
+      onShowToast("Couldn't save that change — please try again");
+      return;
+    }
     if (onItemUpdate) onItemUpdate(itemId, { time: timeValue, has_date_time: !!timeValue });
+  };
+
+  const updateItemDate = async (itemId: string, newDate: string) => {
+    const { error } = await supabase.from('items').update({
+      date: newDate,
+      has_date_time: true
+    }).eq('id', itemId);
+    if (error) {
+      onShowToast("Couldn't move that item — please try again");
+      return;
+    }
+    if (onItemUpdate) onItemUpdate(itemId, { date: newDate, has_date_time: true });
+    if (onDateChange) onDateChange();
   };
 
   const weekDays = getWeekDays(showAll ? 28 : 7);
@@ -342,6 +362,7 @@ export function TimelineSection({ items, onItemComplete, onItemDelete, onShowToa
                   setEditingTimeId={setEditingTimeId}
                   updateItemTitle={updateItemTitle}
                   updateItemTime={updateItemTime}
+                  updateItemDate={updateItemDate}
                 />
               ))
             )}

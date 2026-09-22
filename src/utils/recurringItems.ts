@@ -11,6 +11,7 @@ interface RecurringItem {
   recurring: boolean;
   recurring_pattern: string | null;
   recurring_day_of_week: number | null;
+  recurring_duration_days: number | null;
   user_id: string;
   type: string;
 }
@@ -84,23 +85,23 @@ function getNextMonthlyOccurrences(monthsAhead: number = 3): string[] {
   return dates;
 }
 
-async function instanceExists(
+async function getExistingInstanceDates(
   userId: string,
   parentId: string,
-  date: string
-): Promise<boolean> {
+  dates: string[]
+): Promise<Set<string>> {
   try {
     const { data, error } = await supabase
       .from('items')
-      .select('id')
+      .select('date')
       .eq('user_id', userId)
       .eq('recurring_parent_id', parentId)
-      .eq('date', date);
+      .in('date', dates);
 
-    if (error) return false;
-    return data !== null && data.length > 0;
+    if (error || !data) return new Set();
+    return new Set(data.map((row: any) => row.date));
   } catch {
-    return false;
+    return new Set();
   }
 }
 
@@ -121,78 +122,40 @@ export async function generateRecurringInstances(userId: string): Promise<void> 
     if (error || !recurringItems) return;
 
     for (const item of recurringItems as RecurringItem[]) {
+      let dates: string[] = [];
+
       if (item.recurring_pattern === 'weekly' && item.recurring_day_of_week !== null) {
-        const dates = getNextOccurrences(item.recurring_day_of_week, 4);
-
-        for (const date of dates) {
-          const exists = await instanceExists(userId, item.id, date);
-          if (!exists) {
-            await supabase.from('items').insert({
-              user_id: userId,
-              title: item.title,
-              description: item.description,
-              category: item.category,
-              emoji: item.emoji,
-              completed: false,
-              time_frame: 'anytime',
-              date: date,
-              time: item.time,
-              has_date_time: true,
-              type: item.type,
-              recurring: false,
-              recurring_parent_id: item.id,
-            });
-          }
-        }
+        dates = getNextOccurrences(item.recurring_day_of_week, 4);
+      } else if (item.recurring_pattern === 'daily') {
+        dates = getNextDailyOccurrences(item.recurring_duration_days || 14, (item as any).date);
+      } else if (item.recurring_pattern === 'monthly') {
+        dates = getNextMonthlyOccurrences(3);
       }
 
-      if (item.recurring_pattern === 'daily') {
-        const dates = getNextDailyOccurrences(14, (item as any).date);
-        for (const dateStr of dates) {
-          const exists = await instanceExists(userId, item.id, dateStr);
-          if (!exists) {
-            await supabase.from('items').insert({
-              user_id: userId,
-              title: item.title,
-              description: item.description,
-              category: item.category,
-              emoji: item.emoji,
-              completed: false,
-              time_frame: 'anytime',
-              date: dateStr,
-              time: item.time,
-              has_date_time: true,
-              type: item.type,
-              recurring: false,
-              recurring_parent_id: item.id,
-            });
-          }
-        }
-      }
+      if (dates.length === 0) continue;
 
-      if (item.recurring_pattern === 'monthly') {
-        const dates = getNextMonthlyOccurrences(3);
-        for (const dateStr of dates) {
-          const exists = await instanceExists(userId, item.id, dateStr);
-          if (!exists) {
-            await supabase.from('items').insert({
-              user_id: userId,
-              title: item.title,
-              description: item.description,
-              category: item.category,
-              emoji: item.emoji,
-              completed: false,
-              time_frame: 'anytime',
-              date: dateStr,
-              time: item.time,
-              has_date_time: true,
-              type: item.type,
-              recurring: false,
-              recurring_parent_id: item.id,
-            });
-          }
-        }
-      }
+      const existingDates = await getExistingInstanceDates(userId, item.id, dates);
+      const missingDates = dates.filter(d => !existingDates.has(d));
+
+      if (missingDates.length === 0) continue;
+
+      const rowsToInsert = missingDates.map(dateStr => ({
+        user_id: userId,
+        title: item.title,
+        description: item.description,
+        category: item.category,
+        emoji: item.emoji,
+        completed: false,
+        time_frame: 'anytime',
+        date: dateStr,
+        time: item.time,
+        has_date_time: true,
+        type: item.type,
+        recurring: false,
+        recurring_parent_id: item.id,
+      }));
+
+      await supabase.from('items').insert(rowsToInsert);
     }
   } catch (err) {
   }

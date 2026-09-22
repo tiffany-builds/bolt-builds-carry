@@ -74,14 +74,14 @@ export function useItems(userId: string | null) {
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
     try {
-      const { data, error } = await supabase
+      const { count, error } = await supabase
         .from('items')
-        .select('id', { count: 'exact' })
+        .select('id', { count: 'exact', head: true })
         .eq('user_id', userId)
         .gte('created_at', oneWeekAgo.toISOString());
 
       if (error) throw error;
-      return data?.length || 0;
+      return count || 0;
     } catch (err) {
       return 0;
     }

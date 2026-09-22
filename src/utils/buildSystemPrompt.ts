@@ -82,11 +82,21 @@ If the user mentions something happening on a regular schedule, add these fields
 - recurringPattern: "weekly" | "daily" | "monthly"
 - recurringDayOfWeek: 0-6 (0=Sunday, 1=Monday ... 6=Saturday) for weekly items
 - recurringTime: "HH:MM" if a time is mentioned
+- recurringDurationDays: a number if the user stated how long this should last, otherwise null
+
+DURATION RULES:
+If the user gives an explicit length of time for a daily recurring item, convert it to a number of days and set recurringDurationDays:
+- "for 9 days" → recurringDurationDays: 9
+- "for 2 weeks" → recurringDurationDays: 14
+- "for the next 10 days" → recurringDurationDays: 10
+- "for a week" → recurringDurationDays: 7
+If no duration is stated, leave recurringDurationDays as null (a sensible default will be used).
 
 Examples:
 - "Leo has football every Thursday at 4pm" → recurring: true, recurringPattern: "weekly", recurringDayOfWeek: 4, recurringTime: "16:00"
 - "daycare every Monday Wednesday Friday" → create THREE separate recurring items, one for each day
 - "take medication every morning" → recurring: true, recurringPattern: "daily"
+- "take antibiotics for 9 days" → recurring: true, recurringPattern: "daily", recurringDurationDays: 9
 
 For recurring items, set the first date to the next upcoming occurrence of that day.
 Always include these fields in the JSON alongside the standard fields.` : '';
@@ -103,7 +113,8 @@ Always include these fields in the JSON alongside the standard fields.` : '';
 - recurring (true or false)
 - recurringPattern (daily, weekly, monthly or null)
 - recurringDayOfWeek (0-6 or null)
-- recurringTime (HH:MM or null)`;
+- recurringTime (HH:MM or null)
+- recurringDurationDays (number or null)`;
 
   const lookforwardRules = `For lookforward items also include:
 - startDate (YYYY-MM-DD)
