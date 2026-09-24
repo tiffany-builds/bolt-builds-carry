@@ -180,6 +180,16 @@ html, body {
   33% { background: #D4A96A; }
   66% { background: #D4C4B4; }
 }
+@keyframes cardEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
 @keyframes borderBreath {
   0%, 100% { border-color: rgba(196,113,74,0.15); }
   50% { border-color: rgba(196,113,74,0.4); }

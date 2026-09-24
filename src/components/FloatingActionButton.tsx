@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Mic, Check, X, ImageUp, Keyboard } from 'lucide-react';
 import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
 import { useSpeechRecognition } from '../utils/useSpeechRecognition';
+import { CaptureCard } from './CaptureCard';
 import { Toast } from './Toast';
 import { supabase } from '../lib/supabase';
 import { buildSystemPrompt } from '../utils/buildSystemPrompt';
@@ -168,41 +169,39 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
       const recurringItems = newItems.filter((item: any) => item.recurring);
       const nonRecurringItems = newItems.filter((item: any) => !item.recurring);
 
-      // Save non-recurring items
+      // Save non-recurring items in a single batched insert instead of one round-trip per item
       savedItems = [];
-      if (userId) {
-        for (const item of nonRecurringItems) {
-          const supabaseItem = {
-            user_id: userId,
-            title: item.title,
-            description: item.description,
-            category: item.category,
-            emoji: item.emoji || null,
-            completed: false,
-            time_frame: 'anytime',
-            date: item.type === 'lookforward'
-              ? (item.start_date || item.date)
-              : (item.date || null),
-            time: item.time || null,
-            has_date_time: item.type === 'lookforward' ? true : (item.has_date_time || false),
-            type: item.type,
-            recurring: false,
-            recurring_pattern: null,
-            recurring_day_of_week: null,
-            target_month: item.target_month || null,
-            start_date: item.start_date || null,
-            end_date: item.end_date || null,
-            excitement: item.excitement || null,
-            needs_date: item.needs_date || false,
-          };
+      if (userId && nonRecurringItems.length > 0) {
+        const supabaseItems = nonRecurringItems.map((item: any) => ({
+          user_id: userId,
+          title: item.title,
+          description: item.description,
+          category: item.category,
+          emoji: item.emoji || null,
+          completed: false,
+          time_frame: 'anytime',
+          date: item.type === 'lookforward'
+            ? (item.start_date || item.date)
+            : (item.date || null),
+          time: item.time || null,
+          has_date_time: item.type === 'lookforward' ? true : (item.has_date_time || false),
+          type: item.type,
+          recurring: false,
+          recurring_pattern: null,
+          recurring_day_of_week: null,
+          target_month: item.target_month || null,
+          start_date: item.start_date || null,
+          end_date: item.end_date || null,
+          excitement: item.excitement || null,
+          needs_date: item.needs_date || false,
+        }));
 
-          const { data: inserted, error: insertError } = await supabase.from('items').insert(supabaseItem).select().single();
-          if (insertError || !inserted) {
-            await Haptics.notification({ type: NotificationType.Error });
-            showToast("Couldn't save — please try again");
-            continue;
-          }
-          savedItems.push(inserted);
+        const { data: inserted, error: insertError } = await supabase.from('items').insert(supabaseItems).select();
+        if (insertError || !inserted) {
+          await Haptics.notification({ type: NotificationType.Error });
+          showToast("Couldn't save — please try again");
+        } else {
+          savedItems = inserted;
         }
       }
 
@@ -264,9 +263,10 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
     useSpeechRecognition({
       onTranscript: handleTranscript,
       onInterimTranscript: handleInterimTranscript,
-      onStart: () => { playInputSound(); },
+      onStart: () => { setIsStartingListening(false); playInputSound(); },
       onStop: () => { playStopSound(); },
       onError: (error) => {
+        setIsStartingListening(false);
         if (error === 'no-speech') {
           showToast("Didn't quite catch that — want to try again?");
         } else {
@@ -284,7 +284,6 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
       setIsStartingListening(true);
       if (isBrowserSupported) {
         startListening();
-        setTimeout(() => setIsStartingListening(false), 1000);
       }
     }
   };
@@ -412,39 +411,37 @@ Return valid JSON array only — no explanation, no markdown.`;
       showToast(`Found ${newItems.length} thing${newItems.length > 1 ? 's' : ''} in that photo`);
 
       savedItems = [];
-      if (userId) {
-        for (const item of newItems) {
-          const supabaseItem = {
-            user_id: userId,
-            title: item.title,
-            description: item.description,
-            category: item.category,
-            emoji: item.emoji || null,
-            completed: false,
-            time_frame: 'anytime',
-            date: item.type === 'lookforward'
-              ? (item.start_date || item.date)
-              : (item.date || null),
-            time: item.time || null,
-            has_date_time: item.type === 'lookforward' ? true : (item.has_date_time || false),
-            type: item.type,
-            recurring: false,
-            recurring_pattern: null,
-            recurring_day_of_week: null,
-            target_month: item.target_month || null,
-            start_date: item.start_date || null,
-            end_date: item.end_date || null,
-            excitement: item.excitement || null,
-            needs_date: item.needs_date || false,
-          };
+      if (userId && newItems.length > 0) {
+        const supabaseItems = newItems.map((item: any) => ({
+          user_id: userId,
+          title: item.title,
+          description: item.description,
+          category: item.category,
+          emoji: item.emoji || null,
+          completed: false,
+          time_frame: 'anytime',
+          date: item.type === 'lookforward'
+            ? (item.start_date || item.date)
+            : (item.date || null),
+          time: item.time || null,
+          has_date_time: item.type === 'lookforward' ? true : (item.has_date_time || false),
+          type: item.type,
+          recurring: false,
+          recurring_pattern: null,
+          recurring_day_of_week: null,
+          target_month: item.target_month || null,
+          start_date: item.start_date || null,
+          end_date: item.end_date || null,
+          excitement: item.excitement || null,
+          needs_date: item.needs_date || false,
+        }));
 
-          const { data: inserted, error: insertError } = await supabase.from('items').insert(supabaseItem).select().single();
-          if (insertError || !inserted) {
-            await Haptics.notification({ type: NotificationType.Error });
-            showToast("Couldn't save — please try again");
-            continue;
-          }
-          savedItems.push(inserted);
+        const { data: inserted, error: insertError } = await supabase.from('items').insert(supabaseItems).select();
+        if (insertError || !inserted) {
+          await Haptics.notification({ type: NotificationType.Error });
+          showToast("Couldn't save — please try again");
+        } else {
+          savedItems = inserted;
         }
       }
 
@@ -468,14 +465,6 @@ Return valid JSON array only — no explanation, no markdown.`;
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
-
-  useEffect(() => {
-    if (!isListening) return;
-    const interval = setInterval(() => {
-      haptic(ImpactStyle.Light);
-    }, 1500);
-    return () => clearInterval(interval);
-  }, [isListening]);
 
   useEffect(() => {
     if (autoOpenFAB) {
@@ -502,169 +491,20 @@ Return valid JSON array only — no explanation, no markdown.`;
       <>
         {hiddenFileInput}
         {(isListening || liveTranscript || isProcessing || isStartingListening) && (
-          <div
-            onClick={() => { haptic(ImpactStyle.Heavy); stopListening(); }}
-            style={{
+          <div style={{
             position: 'fixed',
             top: '50%',
             left: '50%',
             transform: 'translateX(-50%)',
             width: 'calc(100% - 32px)',
-            maxWidth: '500px',
-            background: 'rgba(245,235,225,0.60)',
-            backdropFilter: 'blur(8px)',
-            borderRadius: '22px',
-            cursor: 'pointer',
-            border: '1px solid rgba(212,196,180,0.4)',
-            padding: '20px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '14px',
-            boxShadow: '0 4px 32px rgba(44,36,32,0.06)',
             zIndex: 50,
-            animation: 'borderBreath 3s ease-in-out infinite',
           }}>
-            {/* Header row */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{
-                fontSize: '14px',
-                fontWeight: 400,
-                color: '#C4714A',
-                fontFamily: 'Georgia, serif',
-                fontStyle: 'italic',
-              }}>
-                {isProcessing ? '✦ Got it — sorting now' : 'Go ahead...'}
-              </span>
-              {!isProcessing && (
-                <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                  {[0, 0.15, 0.3].map((delay, i) => (
-                    <div key={i} style={{
-                      width: '5px', height: '5px', borderRadius: '50%',
-                      background: '#C4714A',
-                      animation: `pdotPulse 1.2s ease-in-out ${delay}s infinite`,
-                    }} />
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Transcript */}
-            {liveTranscript && !isProcessing && (
-              <div style={{
-                fontFamily: 'Georgia, serif',
-                fontStyle: 'italic',
-                fontSize: '14px',
-                color: '#2C2420',
-                lineHeight: 1.6,
-                textAlign: 'center',
-                opacity: 1,
-              }}>
-                "{liveTranscript}"
-              </div>
-            )}
-            {isProcessing && processingTranscript && (
-              <div style={{
-                fontFamily: 'Georgia, serif',
-                fontStyle: 'italic',
-                fontSize: '13px',
-                color: '#2C2420',
-                lineHeight: 1.6,
-                textAlign: 'center',
-                opacity: 0.5,
-              }}>
-                "{processingTranscript}{processingTranscript.length >= 80 ? '...' : ''}"
-              </div>
-            )}
-
-            {/* Pulsing circle OR processing dots */}
-            {isProcessing ? (
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', margin: '4px 0' }}>
-                {[
-                  { bg: '#C4714A', delay: '0s' },
-                  { bg: '#D4C4B4', delay: '0.15s' },
-                  { bg: '#D4A96A', delay: '0.3s' },
-                ].map((d, i) => (
-                  <div key={i} style={{
-                    width: '10px', height: '10px', borderRadius: '50%',
-                    background: d.bg,
-                    animation: `pdotPulse 1s ease-in-out ${d.delay} infinite`,
-                  }} />
-                ))}
-              </div>
-            ) : (
-              <div style={{ position: 'relative', width: '90px', height: '90px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {/* Orbit ring */}
-                <div style={{ position: 'absolute', width: '90px', height: '90px', borderRadius: '50%', border: '1px solid rgba(196,113,74,0.12)' }} />
-                {/* Dot 1 - terra cotta, fast */}
-                <div style={{
-                  position: 'absolute', width: '8px', height: '8px',
-                  borderRadius: '50%', background: '#C4714A',
-                  top: '50%', left: '50%',
-                  marginTop: '-4px', marginLeft: '-4px',
-                  transformOrigin: '0 0',
-                  animation: 'orbit1 4s linear infinite',
-                  opacity: 0.9,
-                }} />
-                {/* Dot 2 - warm gold, medium */}
-                <div style={{
-                  position: 'absolute', width: '6px', height: '6px',
-                  borderRadius: '50%', background: '#D4A96A',
-                  top: '50%', left: '50%',
-                  marginTop: '-3px', marginLeft: '-3px',
-                  transformOrigin: '0 0',
-                  animation: 'orbit2 6s linear infinite',
-                  opacity: 0.7,
-                }} />
-                {/* Dot 3 - sand, slow */}
-                <div style={{
-                  position: 'absolute', width: '5px', height: '5px',
-                  borderRadius: '50%', background: '#D4C4B4',
-                  top: '50%', left: '50%',
-                  marginTop: '-2.5px', marginLeft: '-2.5px',
-                  transformOrigin: '0 0',
-                  animation: 'orbit3 9s linear infinite',
-                  opacity: 0.6,
-                }} />
-                {/* Centre core */}
-                <div style={{
-                  width: '16px', height: '16px',
-                  borderRadius: '50%',
-                  background: '#C4714A',
-                  position: 'relative', zIndex: 2,
-                  animation: 'colourFlow 4s ease-in-out infinite',
-                }} />
-              </div>
-            )}
-
-            {/* Stop button — only when listening, not processing */}
-            {!isProcessing && (
-              <div
-                style={{
-                  fontSize: '11px',
-                  color: '#6B5C52',
-                  border: '1px solid #D4C4B4',
-                  borderRadius: '12px',
-                  padding: '5px 16px',
-                  background: '#E8DDD0',
-                  fontFamily: 'DM Sans, sans-serif',
-                }}
-              >
-                Tap to stop
-              </div>
-            )}
-
-            {/* Processing message */}
-            {isProcessing && (
-              <div style={{
-                fontSize: '11px',
-                color: '#6B5C52',
-                fontStyle: 'italic',
-                fontFamily: 'DM Sans, sans-serif',
-              }}>
-                Just a moment...
-              </div>
-            )}
+            <CaptureCard
+              isProcessing={isProcessing}
+              liveTranscript={liveTranscript}
+              processingTranscript={processingTranscript}
+              onStop={() => { haptic(ImpactStyle.Heavy); stopListening(); }}
+            />
           </div>
         )}
 
@@ -733,9 +573,9 @@ Return valid JSON array only — no explanation, no markdown.`;
       setPendingItems(null);
       return;
     }
-    const savedItems: any[] = [];
-    for (const item of pendingItems.recurring) {
-      const supabaseItem = {
+    let savedItems: any[] = [];
+    if (pendingItems.recurring.length > 0) {
+      const supabaseItems = pendingItems.recurring.map((item: any) => ({
         user_id: userId,
         title: item.title,
         description: item.description,
@@ -755,13 +595,13 @@ Return valid JSON array only — no explanation, no markdown.`;
         end_date: item.end_date || null,
         excitement: item.excitement || null,
         needs_date: item.needs_date || false,
-      };
-      const { data: inserted, error: insertError } = await supabase.from('items').insert(supabaseItem).select().single();
+      }));
+      const { data: inserted, error: insertError } = await supabase.from('items').insert(supabaseItems).select();
       if (insertError || !inserted) {
         showToast("Couldn't save — please try again");
-        continue;
+      } else {
+        savedItems = inserted;
       }
-      savedItems.push(inserted);
     }
     if (savedItems.length > 0) {
       if (onItemsAdded) onItemsAdded(savedItems);
@@ -777,9 +617,9 @@ Return valid JSON array only — no explanation, no markdown.`;
       setPendingItems(null);
       return;
     }
-    const savedItems: any[] = [];
-    for (const item of pendingItems.recurring) {
-      const supabaseItem = {
+    let savedItems: any[] = [];
+    if (pendingItems.recurring.length > 0) {
+      const supabaseItems = pendingItems.recurring.map((item: any) => ({
         user_id: userId,
         title: item.title,
         description: item.description,
@@ -799,13 +639,13 @@ Return valid JSON array only — no explanation, no markdown.`;
         end_date: item.end_date || null,
         excitement: item.excitement || null,
         needs_date: item.needs_date || false,
-      };
-      const { data: inserted, error: insertError } = await supabase.from('items').insert(supabaseItem).select().single();
+      }));
+      const { data: inserted, error: insertError } = await supabase.from('items').insert(supabaseItems).select();
       if (insertError || !inserted) {
         showToast("Couldn't save — please try again");
-        continue;
+      } else {
+        savedItems = inserted;
       }
-      savedItems.push(inserted);
     }
     if (savedItems.length > 0) {
       if (onItemsAdded) onItemsAdded(savedItems);

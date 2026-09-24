@@ -31,7 +31,10 @@ export function useSpeechRecognition({
   const finalTranscriptRef = useRef<string>('');
   const isNativeActiveRef = useRef(false);
 
+  const sessionIdRef = useRef(0);
+
   const startListeningNative = useCallback(async () => {
+    const mySessionId = ++sessionIdRef.current;
     try {
       if (isNativeActiveRef.current) {
         try {
@@ -47,14 +50,17 @@ export function useSpeechRecognition({
       }
 
       const { available } = await NativeSpeechRecognition.available();
+      if (mySessionId !== sessionIdRef.current) return; // superseded while awaiting
       if (!available) {
         onError?.('not-supported');
         return;
       }
 
       const permission = await NativeSpeechRecognition.checkPermissions();
+      if (mySessionId !== sessionIdRef.current) return;
       if (permission.speechRecognition !== 'granted') {
         const requested = await NativeSpeechRecognition.requestPermissions();
+        if (mySessionId !== sessionIdRef.current) return;
         if (requested.speechRecognition !== 'granted') {
           onError?.('permission-denied');
           return;
@@ -74,6 +80,13 @@ export function useSpeechRecognition({
         }
       );
 
+      if (mySessionId !== sessionIdRef.current) {
+        // Cancelled while the listener was being set up — clean up and bail.
+        partialListenerRef.current?.remove();
+        partialListenerRef.current = null;
+        return;
+      }
+
       const deviceLanguage = navigator.language || 'en-US';
 
       await NativeSpeechRecognition.start({
@@ -82,6 +95,21 @@ export function useSpeechRecognition({
         partialResults: true,
         popup: false,
       });
+
+      if (mySessionId !== sessionIdRef.current) {
+        // Cancelled while the native engine was starting — stop it right back
+        // down instead of reporting a session that was already told to end.
+        try {
+          await NativeSpeechRecognition.stop();
+        } catch (e) {
+          // ignore
+        }
+        if (partialListenerRef.current) {
+          partialListenerRef.current.remove();
+          partialListenerRef.current = null;
+        }
+        return;
+      }
 
       isNativeActiveRef.current = true;
       setIsListening(true);
@@ -94,6 +122,8 @@ export function useSpeechRecognition({
   }, [onInterimTranscript, onStart, onError]);
 
   const stopListeningNative = useCallback(async () => {
+    sessionIdRef.current++; // invalidate any start still in flight
+
     try {
       await NativeSpeechRecognition.stop();
     } catch (e) {

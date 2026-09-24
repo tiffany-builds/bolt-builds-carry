@@ -25,6 +25,10 @@ export async function categorizeAndCreateItems(text: string, userId: string, car
     const { data: { session } } = await supabase.auth.getSession();
     const token = session?.access_token;
 
+    if (!token) {
+      throw new Error('no-auth-session');
+    }
+
     const response = await fetch(
       `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/categorize-items`,
       {
@@ -41,10 +45,15 @@ export async function categorizeAndCreateItems(text: string, userId: string, car
       }
     );
 
+    if (!response.ok) {
+      throw new Error(`categorize-items HTTP ${response.status}`);
+    }
+
     const { result, error: fnError } = await response.json();
     if (fnError) throw new Error(fnError);
 
-    const items = JSON.parse(result) as CategorizedItem[];
+    const cleaned = result.replace(/```json/gi, '').replace(/```/g, '').trim();
+    const items = JSON.parse(cleaned) as CategorizedItem[];
 
     if (!items || items.length === 0) {
       return [];

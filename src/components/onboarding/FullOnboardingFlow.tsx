@@ -7,6 +7,8 @@ interface FullOnboardingFlowProps {
   userId: string;
   initialName?: string;
   onComplete: (data: OnboardingData) => void;
+  onItemsAdded?: (items: any[]) => void;
+  onItemUpdate?: (itemId: string, updates: any) => void;
 }
 
 export interface OnboardingData {
@@ -16,7 +18,7 @@ export interface OnboardingData {
   initialThoughts?: string;
 }
 
-export function FullOnboardingFlow({ userId, initialName, onComplete }: FullOnboardingFlowProps) {
+export function FullOnboardingFlow({ userId, initialName, onComplete, onItemsAdded, onItemUpdate }: FullOnboardingFlowProps) {
   const appleName = localStorage.getItem('carry_apple_first_name');
   const resolvedName = initialName || appleName || null;
   const [step, setStep] = useState(resolvedName ? 1 : 0);
@@ -54,6 +56,8 @@ export function FullOnboardingFlow({ userId, initialName, onComplete }: FullOnbo
           userId={userId}
           onContinue={handleInitialThoughts}
           onSkip={handleSkip}
+          onItemsAdded={onItemsAdded}
+          onItemUpdate={onItemUpdate}
         />
       )}
     </>

@@ -20,7 +20,6 @@ import { useAuth } from './hooks/useAuth';
 import { useItems } from './hooks/useItems';
 import { UserProfile, UserCategory, TimelineItem } from './types';
 import { supabase } from './lib/supabase';
-import { categorizeAndCreateItems } from './hooks/useItemCategorization';
 import { generateRecurringInstances } from './utils/recurringItems';
 import { getTodayDateString } from './utils/dateFormatting';
 import { requestNotificationPermission, scheduleMorningBriefing, scheduleItemReminders, scheduleSundayNotification, scheduleWednesdayNotification, scheduleRecurringExpiryReminders } from './utils/notifications';
@@ -176,12 +175,6 @@ function App() {
   }, [user, authLoading, hasCompletedOnboardingThisSession, getLastWeekItemCount]);
 
   useEffect(() => {
-    if (hasCompletedOnboardingThisSession) {
-      setAutoOpenFAB(true);
-    }
-  }, [hasCompletedOnboardingThisSession]);
-
-  useEffect(() => {
     if (items.length === 0) return;
     scheduleMorningBriefing(items);
     scheduleItemReminders(items);
@@ -227,6 +220,8 @@ function App() {
       <FullOnboardingFlow
         userId={user.id}
         initialName={userName || undefined}
+        onItemsAdded={addItemsToLocalState}
+        onItemUpdate={(itemId, updates) => setItems(prev => prev.map(i => i.id === itemId ? { ...i, ...updates } : i))}
         onComplete={async (onboardingData: OnboardingData) => {
           setIsLoading(true);
 
@@ -267,13 +262,6 @@ function App() {
               setIsBirthday(checkBirthday(updatedProfile));
             }
 
-            if (onboardingData.initialThoughts) {
-              const newItems = await categorizeAndCreateItems(onboardingData.initialThoughts, user.id);
-              if (newItems && newItems.length > 0) {
-                addItemsToLocalState(newItems);
-              }
-            }
-
             const count = await getLastWeekItemCount(user.id);
             setLastWeekCount(count);
           } catch (err) {
@@ -283,6 +271,7 @@ function App() {
           setIsLoading(false);
           setHasCompletedOnboardingThisSession(true);
           setOnboardingStep('complete');
+          setCurrentView('home');
           requestNotificationPermission();
         }}
       />
