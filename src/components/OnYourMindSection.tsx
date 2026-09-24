@@ -5,9 +5,10 @@ import { addNudgesToMindItems, getContextualEmoji, type MindItem } from '../util
 interface OnYourMindSectionProps {
   items: MindItem[];
   onItemsChange: (itemId: string) => void;
+  onShowToast: (message: string) => void;
 }
 
-export function OnYourMindSection({ items, onItemsChange }: OnYourMindSectionProps) {
+export function OnYourMindSection({ items, onItemsChange, onShowToast }: OnYourMindSectionProps) {
   const mindItems = items.filter(item =>
     item.type === 'mind' ||
     item.type === 'idea' ||
@@ -26,10 +27,15 @@ export function OnYourMindSection({ items, onItemsChange }: OnYourMindSectionPro
 
   const dismissMindItem = async (itemId: string) => {
     try {
-      await supabase.from('items').update({ completed: true }).eq('id', itemId);
+      const { error } = await supabase.from('items').update({ completed: true }).eq('id', itemId);
+      if (error) {
+        onShowToast("Couldn't save that — please try again");
+        return;
+      }
+      onItemsChange(itemId);
     } catch (err) {
+      onShowToast("Couldn't save that — please try again");
     }
-    onItemsChange(itemId);
   };
 
   return (

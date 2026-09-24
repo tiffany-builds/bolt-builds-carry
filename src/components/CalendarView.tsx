@@ -146,10 +146,15 @@ export function CalendarView({ userId, items, onBack, onItemComplete, onShowToas
 
   const handleComplete = async (itemId: string) => {
     try {
-      await supabase.from('items').update({ completed: true }).eq('id', itemId);
+      const { error } = await supabase.from('items').update({ completed: true }).eq('id', itemId);
+      if (error) {
+        onShowToast("Couldn't save that — please try again");
+        return;
+      }
       onItemComplete(itemId);
       onShowToast('Done — one less thing to carry');
     } catch (err) {
+      onShowToast("Couldn't save that — please try again");
     }
   };
 

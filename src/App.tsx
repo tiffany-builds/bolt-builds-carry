@@ -315,7 +315,11 @@ function App() {
 }}
           items={items.filter(i => i.category === selectedCategory.name && !i.completed)}
           onItemComplete={async (itemId) => {
-            await supabase.from('items').update({ completed: true }).eq('id', itemId);
+            const { error } = await supabase.from('items').update({ completed: true }).eq('id', itemId);
+            if (error) {
+              setToastMessage("Couldn't mark that done — please try again");
+              return;
+            }
             setItems(prev => prev.filter(i => i.id !== itemId));
           }}
           onItemDelete={async (itemId) => {
@@ -476,6 +480,7 @@ function App() {
             <OnYourMindSection
               items={items}
               onItemsChange={removeItemFromState}
+              onShowToast={setToastMessage}
             />
           )}
           <TimelineSection

@@ -42,9 +42,10 @@ interface TimelineItemProps {
   updateItemTitle: (itemId: string, newTitle: string) => Promise<void>;
   updateItemTime: (itemId: string, newTime: string) => Promise<void>;
   updateItemDate: (itemId: string, newDate: string) => Promise<void>;
+  onShowToast: (message: string) => void;
 }
 
-function TimelineItemCard({ item, onComplete, onDelete, swipingId, swipeOffset, onTouchStart, onTouchMove, onTouchEnd, editingId, editingText, setEditingText, setEditingId, editingTimeId, editingTimeValue, setEditingTimeValue, setEditingTimeId, updateItemTitle, updateItemTime, updateItemDate }: TimelineItemProps) {
+function TimelineItemCard({ item, onComplete, onDelete, swipingId, swipeOffset, onTouchStart, onTouchMove, onTouchEnd, editingId, editingText, setEditingText, setEditingId, editingTimeId, editingTimeValue, setEditingTimeValue, setEditingTimeId, updateItemTitle, updateItemTime, updateItemDate, onShowToast }: TimelineItemProps) {
   const borderColor = getCategoryColor(item.category);
   const isCompleted = item.completed;
   const displayEmoji = item.emoji || getContextualEmoji(item.title, item.category);
@@ -56,13 +57,19 @@ function TimelineItemCard({ item, onComplete, onDelete, swipingId, swipeOffset, 
         await Haptics.impact({ style: ImpactStyle.Medium });
       }, 100);
       playCompletionSound();
-      await supabase
+      const { error } = await supabase
         .from('items')
         .update({ completed: true })
         .eq('id', item.id);
 
+      if (error) {
+        onShowToast("Couldn't mark that done — please try again");
+        return;
+      }
+
       onComplete(item.id);
     } catch (err) {
+      onShowToast("Something went wrong — please try again");
     }
   };
 
@@ -363,6 +370,7 @@ export function TimelineSection({ items, onItemComplete, onItemDelete, onShowToa
                   updateItemTitle={updateItemTitle}
                   updateItemTime={updateItemTime}
                   updateItemDate={updateItemDate}
+                  onShowToast={onShowToast}
                 />
               ))
             )}
