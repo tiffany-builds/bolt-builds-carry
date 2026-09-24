@@ -5,7 +5,6 @@ import { useSpeechRecognition } from '../utils/useSpeechRecognition';
 import { Toast } from './Toast';
 import { supabase } from '../lib/supabase';
 import { buildSystemPrompt } from '../utils/buildSystemPrompt';
-import { addItemToCalendar } from '../utils/calendar';
 import { logCycleStart, isCycleTrackingEnabled, enableCycleTracking, scheduleCycleReminder } from '../utils/cycleTracking';
 import { playInputSound, playStopSound } from '../utils/inputSound';
 
@@ -21,10 +20,9 @@ interface FloatingActionButtonProps {
   onSubmitSuccess?: () => void;
   autoOpenFAB?: boolean;
   onAutoOpenComplete?: () => void;
-  calendarPermission?: boolean;
 }
 
-export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmitSuccess, autoOpenFAB, onAutoOpenComplete, calendarPermission, onItemUpdate }: FloatingActionButtonProps) {
+export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmitSuccess, autoOpenFAB, onAutoOpenComplete, onItemUpdate }: FloatingActionButtonProps) {
   const [showInput, setShowInput] = useState(false);
   const [showTextInput, setShowTextInput] = useState(false);
   const [inputText, setInputText] = useState('');
@@ -39,7 +37,6 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
   const showNeedsDatePromptRef = useRef(false);
   const [recurringConfirmation, setRecurringConfirmation] = useState<{item: any, index: number} | null>(null);
   const [pendingItems, setPendingItems] = useState<{ recurring: any[], nonRecurring: any[] } | null>(null);
-  const [calendarPrompt, setCalendarPrompt] = useState<any | null>(null);
   const [cycleTrackingPrompt, setCycleTrackingPrompt] = useState(false);
   const [pendingCycleLog, setPendingCycleLog] = useState(false);
   const [needsDateItems, setNeedsDateItems] = useState<Array<{
@@ -206,9 +203,6 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
             continue;
           }
           savedItems.push(inserted);
-          if (inserted.date && inserted.time) {
-            setCalendarPrompt(inserted);
-          }
         }
       }
 
@@ -451,9 +445,6 @@ Return valid JSON array only — no explanation, no markdown.`;
             continue;
           }
           savedItems.push(inserted);
-          if (inserted.date && inserted.time && !calendarPrompt) {
-            setCalendarPrompt(inserted);
-          }
         }
       }
 
@@ -841,33 +832,6 @@ Return valid JSON array only — no explanation, no markdown.`;
             }
           }}
         />
-      )}
-
-      {calendarPrompt && (
-        <div className="fixed inset-0 bg-text/20 z-50 flex items-end justify-center animate-fade-up">
-          <div className="bg-surface rounded-t-3xl w-full max-w-2xl p-6 space-y-4 shadow-lg" style={{ paddingBottom: 'max(1.5rem, calc(env(safe-area-inset-bottom) + 1.5rem))' }}>
-            <p className="font-ui text-text text-center">
-              Want to add this to your calendar too?
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={async () => {
-                  await addItemToCalendar({ title: calendarPrompt.title, date: calendarPrompt.date, time: calendarPrompt.time, emoji: calendarPrompt.emoji });
-                  setCalendarPrompt(null);
-                }}
-                className="flex-1 bg-accent text-surface rounded-xl py-3 font-ui font-medium hover:bg-accent/90 transition-all active:scale-95"
-              >
-                Add to Calendar
-              </button>
-              <button
-                onClick={() => setCalendarPrompt(null)}
-                className="flex-1 bg-surface border border-border text-text rounded-xl py-3 font-ui font-medium hover:border-accent/30 transition-all active:scale-95"
-              >
-                Not now
-              </button>
-            </div>
-          </div>
-        </div>
       )}
 
       {recurringConfirmation && (

@@ -7,7 +7,6 @@ import { getCategoryDisplayName } from '../utils/categoryHelpers';
 import { parseDateString } from '../utils/dateFormatting';
 import { supabase } from '../lib/supabase';
 import { DEFAULT_CATEGORIES } from '../data/defaultCategories';
-import { removeItemFromCalendar } from '../utils/calendar';
 import { shareItem } from '../utils/shareItem';
 
 interface Item {
@@ -26,7 +25,6 @@ interface Item {
   start_date?: string | null;
   end_date?: string | null;
   emoji?: string | null;
-  calendar_event_id?: string | null;
 }
 
 interface BoxDetailViewProps {
@@ -69,7 +67,6 @@ export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onIt
   const handleTouchEnd = () => {
     if (swipeOffset > 60 && swipingItemId) {
       const item = items.find(i => i.id === swipingItemId);
-      if (item?.calendar_event_id) removeItemFromCalendar(item.calendar_event_id);
       onItemDelete(swipingItemId);
       setSwipingItemId(null);
       setSwipeOffset(0);
@@ -197,7 +194,6 @@ export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onIt
                   <div className="flex items-start gap-3">
                     <button
                       onClick={async () => {
-                        if (item.calendar_event_id) removeItemFromCalendar(item.calendar_event_id);
                         await Haptics.impact({ style: ImpactStyle.Light });
                         setTimeout(async () => {
                           await Haptics.impact({ style: ImpactStyle.Medium });

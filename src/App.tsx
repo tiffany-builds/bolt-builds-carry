@@ -24,7 +24,6 @@ import { categorizeAndCreateItems } from './hooks/useItemCategorization';
 import { generateRecurringInstances } from './utils/recurringItems';
 import { getTodayDateString } from './utils/dateFormatting';
 import { requestNotificationPermission, scheduleMorningBriefing, scheduleItemReminders, scheduleSundayNotification, scheduleWednesdayNotification, scheduleRecurringExpiryReminders } from './utils/notifications';
-import { requestCalendarPermission } from './utils/calendar';
 import { requestHealthKitPermission, isHealthKitEnabled, setHealthKitEnabled } from './utils/healthKit';
 import { Capacitor } from '@capacitor/core';
 
@@ -44,7 +43,6 @@ function App() {
   const [hasCompletedOnboardingThisSession, setHasCompletedOnboardingThisSession] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [autoOpenFAB, setAutoOpenFAB] = useState(false);
-  const [calendarPermission, setCalendarPermission] = useState(false);
   const [showNavSheet, setShowNavSheet] = useState(false);
   const [isCheckingProfile, setIsCheckingProfile] = useState(true);
   const [showReviewPrompt, setShowReviewPrompt] = useState(false);
@@ -121,7 +119,6 @@ function App() {
           const count = await getLastWeekItemCount(user.id);
           setLastWeekCount(count);
           requestNotificationPermission();
-          requestCalendarPermission().then(setCalendarPermission);
         } else {
           // Check localStorage as fallback
           const locallyOnboarded = localStorage.getItem(`carry_onboarded_${user.id}`);
@@ -287,7 +284,6 @@ function App() {
           setHasCompletedOnboardingThisSession(true);
           setOnboardingStep('complete');
           requestNotificationPermission();
-          requestCalendarPermission().then(setCalendarPermission);
         }}
       />
     );
@@ -349,7 +345,6 @@ function App() {
           onItemUpdate={(itemId, updates) => setItems(prev => prev.map(i => i.id === itemId ? { ...i, ...updates } : i))}
           autoOpenFAB={autoOpenFAB}
           onAutoOpenComplete={() => setAutoOpenFAB(false)}
-          calendarPermission={calendarPermission}
         />
       </>
     );
@@ -526,7 +521,6 @@ function App() {
         onItemUpdate={(itemId, updates) => setItems(prev => prev.map(i => i.id === itemId ? { ...i, ...updates } : i))}
         autoOpenFAB={autoOpenFAB}
         onAutoOpenComplete={() => setAutoOpenFAB(false)}
-        calendarPermission={calendarPermission}
       />
       {toastMessage && (
         <Toast
