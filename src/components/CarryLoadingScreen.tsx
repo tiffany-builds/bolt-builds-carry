@@ -1,3 +1,5 @@
+import carryMark from '../assets/carry-mark-word.svg';
+
 const LOADING_MESSAGES = [
   "Good to have you back.",
   "What's on your mind?",
@@ -11,7 +13,7 @@ export function CarryLoadingScreen() {
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: '#E8DDD0',
+      backgroundColor: '#F3E9DC',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -26,15 +28,7 @@ export function CarryLoadingScreen() {
       `}</style>
 
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <div style={{
-          fontFamily: "'Fraunces', Georgia, serif",
-          fontStyle: 'italic',
-          fontSize: '36px',
-          color: '#3B2A22',
-          fontWeight: 300,
-        }}>
-          Carry.
-        </div>
+        <img src={carryMark} alt="Carry" style={{ width: '132px', height: 'auto' }} />
 
         <div style={{
           fontSize: '13px',
@@ -54,31 +48,31 @@ export function CarryLoadingScreen() {
         }}>
           <div style={{
             position: 'absolute', borderRadius: '50%',
-            width: '22px', height: '22px', backgroundColor: '#3B2A22',
+            width: '22px', height: '22px', backgroundColor: '#A8B89A',
             left: '60px', top: '60px',
             animation: 'carry-b1 1.4s ease-in-out infinite',
           }} />
           <div style={{
             position: 'absolute', borderRadius: '50%',
-            width: '18px', height: '18px', backgroundColor: '#d4855f',
+            width: '18px', height: '18px', backgroundColor: '#E6A9A3',
             left: '100px', top: '65px',
             animation: 'carry-b2 1.4s ease-in-out infinite 0.28s',
           }} />
           <div style={{
             position: 'absolute', borderRadius: '50%',
-            width: '14px', height: '14px', backgroundColor: '#b85e3a',
+            width: '14px', height: '14px', backgroundColor: '#A0B4C0',
             left: '80px', top: '68px',
             animation: 'carry-b3 1.4s ease-in-out infinite 0.14s',
           }} />
           <div style={{
             position: 'absolute', borderRadius: '50%',
-            width: '16px', height: '16px', backgroundColor: '#e09878',
+            width: '16px', height: '16px', backgroundColor: '#D4C285',
             left: '40px', top: '66px',
             animation: 'carry-b4 1.4s ease-in-out infinite 0.42s',
           }} />
           <div style={{
             position: 'absolute', borderRadius: '50%',
-            width: '12px', height: '12px', backgroundColor: '#c97a55',
+            width: '12px', height: '12px', backgroundColor: '#B0A8C4',
             left: '118px', top: '70px',
             animation: 'carry-b5 1.4s ease-in-out infinite 0.56s',
           }} />

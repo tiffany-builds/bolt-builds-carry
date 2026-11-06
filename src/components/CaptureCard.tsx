@@ -84,8 +84,8 @@ export function CaptureCard({ isProcessing, liveTranscript, processingTranscript
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center', margin: '4px 0' }}>
           {[
             { bg: '#3B2A22', delay: '0s' },
-            { bg: '#D4C4B4', delay: '0.15s' },
-            { bg: '#D4A96A', delay: '0.3s' },
+            { bg: '#DDA09B', delay: '0.15s' },
+            { bg: '#F2C4BF', delay: '0.3s' },
           ].map((d, i) => (
             <div key={i} style={{
               width: '10px', height: '10px', borderRadius: '50%',
@@ -111,7 +111,7 @@ export function CaptureCard({ isProcessing, liveTranscript, processingTranscript
           {/* Dot 2 - warm gold, medium */}
           <div style={{
             position: 'absolute', width: '6px', height: '6px',
-            borderRadius: '50%', background: '#D4A96A',
+            borderRadius: '50%', background: '#DDA09B',
             top: '50%', left: '50%',
             marginTop: '-3px', marginLeft: '-3px',
             transformOrigin: '0 0',
@@ -121,7 +121,7 @@ export function CaptureCard({ isProcessing, liveTranscript, processingTranscript
           {/* Dot 3 - sand, slow */}
           <div style={{
             position: 'absolute', width: '5px', height: '5px',
-            borderRadius: '50%', background: '#D4C4B4',
+            borderRadius: '50%', background: '#F2C4BF',
             top: '50%', left: '50%',
             marginTop: '-2.5px', marginLeft: '-2.5px',
             transformOrigin: '0 0',
