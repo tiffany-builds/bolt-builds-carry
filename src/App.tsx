@@ -44,6 +44,7 @@ function App() {
   const [autoOpenFAB, setAutoOpenFAB] = useState(false);
   const [showNavSheet, setShowNavSheet] = useState(false);
   const [isCheckingProfile, setIsCheckingProfile] = useState(true);
+  const [retryCount, setRetryCount] = useState(0);
   const [showReviewPrompt, setShowReviewPrompt] = useState(false);
   const [recurringDeletePrompt, setRecurringDeletePrompt] = useState<{
     itemId: string;
@@ -93,6 +94,8 @@ function App() {
           .eq('id', user.id)
           .maybeSingle();
 
+        if (profileError) throw profileError;
+
         if (profile && profile.onboarding_complete) {
           setUserName(profile.first_name || '');
           setUserProfile(profile);
@@ -122,11 +125,30 @@ function App() {
             } as any);
             setOnboardingStep('complete');
           } else {
-            setOnboardingStep('welcome');
+            // No completed profile and no flag on this phone. If they already have items,
+            // they are an existing user, so skip onboarding.
+            const { count: itemCount, error: countError } = await supabase
+              .from('items')
+              .select('id', { count: 'exact', head: true })
+              .eq('user_id', user.id);
+            if (countError) throw countError;
+            if ((itemCount || 0) > 0) {
+              localStorage.setItem(`carry_onboarded_${user.id}`, 'true');
+              setUserName(profile?.first_name || '');
+              setOnboardingStep('complete');
+            } else {
+              setOnboardingStep('welcome');
+            }
           }
         }
       } catch (err) {
-        setIsCheckingProfile(false);
+        // Could not confirm who this is. Never send an existing user into onboarding.
+        if (localStorage.getItem(`carry_onboarded_${user.id}`) === 'true') {
+          setUserName(localStorage.getItem(`carry_name_${user.id}`) || '');
+          setOnboardingStep('complete');
+        } else {
+          setError("Couldn't reach Carry. Check your connection and try again.");
+        }
       }
       setIsCheckingProfile(false);
     };
@@ -161,7 +183,7 @@ function App() {
       checkExistingUser();
       fixOldCategories();
     }
-  }, [user, authLoading, hasCompletedOnboardingThisSession, getLastWeekItemCount]);
+  }, [user, authLoading, hasCompletedOnboardingThisSession, getLastWeekItemCount, retryCount]);
 
   useEffect(() => {
     if (items.length === 0) return;
@@ -194,6 +216,8 @@ function App() {
             onClick={() => {
               setError(null);
               setIsLoading(false);
+              setIsCheckingProfile(true);
+              setRetryCount(c => c + 1);
             }}
             className="bg-accent text-surface rounded-xl px-6 py-3 font-ui font-medium hover:bg-accent/90 transition-all"
           >
@@ -618,7 +642,7 @@ function App() {
               color: '#6B5C52', marginBottom: '24px', lineHeight: 1.5
             }}>
               I know you have a lot going on — but a quick review means a lot.
-              It takes 30 seconds. 🧡
+              It takes 30 seconds. 🩷
             </p>
             <button
               onClick={() => {

@@ -231,7 +231,7 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
         setRecurringConfirmation({ item: recurringItems[0], index: 0 });
       } else if (savedItems.length > 0) {
         await Haptics.notification({ type: NotificationType.Success });
-        showToast('Got it — all sorted 🧡');
+        showToast('Got it — all sorted 🩷');
       }
 
       const deadlineItems = savedItems.filter((i: any) => i.needs_date);
@@ -622,7 +622,7 @@ Return valid JSON array only — no explanation, no markdown.`;
     }
     if (savedItems.length > 0) {
       if (onItemsAdded) onItemsAdded(savedItems);
-      showToast('Got it — all sorted 🧡');
+      showToast('Got it — all sorted 🩷');
     }
     setRecurringConfirmation(null);
     setPendingItems(null);
@@ -666,7 +666,7 @@ Return valid JSON array only — no explanation, no markdown.`;
     }
     if (savedItems.length > 0) {
       if (onItemsAdded) onItemsAdded(savedItems);
-      showToast('Got it — all sorted 🧡');
+      showToast('Got it — all sorted 🩷');
     }
     setRecurringConfirmation(null);
     setPendingItems(null);
@@ -695,7 +695,7 @@ Return valid JSON array only — no explanation, no markdown.`;
         <div className="fixed inset-0 bg-text/20 z-50 flex items-end justify-center animate-fade-up">
           <div className="bg-surface rounded-t-3xl w-full max-w-2xl p-6 space-y-4 shadow-lg" style={{ paddingBottom: 'max(1.5rem, calc(env(safe-area-inset-bottom) + 1.5rem))' }}>
             <p className="font-ui text-text text-center">
-              Looks like this happens regularly. I'll remind you for the next 14 days — you can always re-add it after that. 🧡
+              Looks like this happens regularly. I'll remind you for the next 14 days — you can always re-add it after that. 🩷
             </p>
             <div className="flex gap-3">
               <button
@@ -733,7 +733,7 @@ Return valid JSON array only — no explanation, no markdown.`;
               fontFamily: 'DM Sans, sans-serif', fontSize: '14px',
               color: '#6B5C52', marginBottom: '24px', lineHeight: 1.5
             }}>
-              I can give you a gentle heads up a few days before your next period. 🧡
+              I can give you a gentle heads up a few days before your next period. 🩷
             </p>
             <button
               onClick={async () => {

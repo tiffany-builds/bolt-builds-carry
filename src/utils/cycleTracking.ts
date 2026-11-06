@@ -55,7 +55,7 @@ export async function scheduleCycleReminder(userId: string): Promise<void> {
     await LocalNotifications.schedule({
       notifications: [{
         id: 4001,
-        title: 'Carry 🧡',
+        title: 'Carry 🩷',
         body: 'Just a heads up — your period might be starting in a few days.',
         schedule: { at: nextPeriod },
         sound: 'Hello.caf',

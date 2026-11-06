@@ -54,7 +54,7 @@ export function OnboardingInitialThoughts({ userId, onContinue, onSkip, onItemsA
           return;
         }
 
-        setToastMessage('Got it — all sorted 🧡');
+        setToastMessage('Got it — all sorted 🩷');
       } else {
         setToastMessage("Didn't catch anything to save there — want to try again?");
       }
@@ -137,7 +137,7 @@ export function OnboardingInitialThoughts({ userId, onContinue, onSkip, onItemsA
       const remaining = prev.filter(i => i.id !== item.id);
       if (remaining.length === 0) {
         setMode('idle');
-        setToastMessage('Got it — all sorted 🧡');
+        setToastMessage('Got it — all sorted 🩷');
       }
       return remaining;
     });
@@ -190,10 +190,10 @@ export function OnboardingInitialThoughts({ userId, onContinue, onSkip, onItemsA
               onClick={handleMicTap}
               aria-label="Start speaking"
               className="relative w-24 h-24 rounded-full flex items-center justify-center shadow-lg"
-              style={{ background: '#2C2420' }}
+              style={{ background: '#3B2A22' }}
             >
-              <div className="absolute inset-0 rounded-full bg-text/30 animate-pulse-ring"></div>
-              <div className="absolute inset-0 rounded-full bg-text/20 animate-pulse-ring" style={{ animationDelay: '0.75s', transform: 'scale(1.15)' }}></div>
+              <div className="absolute inset-0 rounded-full animate-pulse-ring" style={{ background: 'rgba(242,196,191,0.7)', zIndex: -1 }}></div>
+              <div className="absolute inset-0 rounded-full animate-pulse-ring" style={{ background: 'rgba(242,196,191,0.5)', animationDelay: '0.75s', zIndex: -1 }}></div>
               <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#FDF9F4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ position: 'relative', zIndex: 2 }}>
                 <path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
                 <path d="M19 10v1a7 7 0 0 1-14 0v-1"></path>

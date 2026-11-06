@@ -155,7 +155,7 @@ export async function scheduleRecurringExpiryReminders(
 
       toSchedule.push({
         id: EXPIRY_ID_START + notifIndex,
-        title: 'Carry 🧡',
+        title: 'Carry 🩷',
         body: `Your "${title}" reminder is nearly up. Want to keep it going?`,
         schedule: { at: notifyDate },
         sound: 'Hello.caf',
@@ -228,40 +228,40 @@ export async function scheduleSundayNotification(
 
     // Message selection
     const cookingMessages = [
-      "You had a busy week and still made time to cook. Nice one. 🧡",
+      "You had a busy week and still made time to cook. Nice one. 🩷",
       "Meals made, week handled. Not bad at all.",
-      "Somehow you fed everyone and kept everything else moving too. 🧡",
+      "Somehow you fed everyone and kept everything else moving too. 🩷",
     ];
 
     const healthMessages = [
-      "You made time for yourself this week. That's the hardest thing to remember. 🧡",
+      "You made time for yourself this week. That's the hardest thing to remember. 🩷",
       "A walk, a week handled. Not bad at all.",
-      "You showed up for yourself this week too. 🧡",
+      "You showed up for yourself this week too. 🩷",
     ];
 
     const socialMessages = [
-      "Sounds like there were some good moments in amongst the busy this week. 🧡",
-      "You kept everyone sorted and still made time for the good stuff. 🧡",
+      "Sounds like there were some good moments in amongst the busy this week. 🩷",
+      "You kept everyone sorted and still made time for the good stuff. 🩷",
       "A busy week with some nice bits in it. Hope tonight's one of them.",
     ];
 
     const busyMessages = [
-      "You've had a busy week! Hope you can find a minute for yourself tonight. 🧡",
+      "You've had a busy week! Hope you can find a minute for yourself tonight. 🩷",
       "There's been a lot going on lately. Hope you enjoy your evening!",
       "A lot landed on your plate this week. Hope the weekend gives you a breather.",
     ];
 
     const activeMessages = [
-      "Whatever you want to tackle next week, just say it out loud and Carry's got it. 🧡",
+      "Whatever you want to tackle next week, just say it out loud and Carry's got it. 🩷",
       "The week's wrapping up. Anything still rattling around in your head? Say it out loud.",
-      "A full week. Hope there's something good planned for tonight. 🧡",
+      "A full week. Hope there's something good planned for tonight. 🩷",
     ];
 
     const universalMessages = [
-      "Another week rolling in — Carry's got you! 🧡",
+      "Another week rolling in — Carry's got you! 🩷",
       "New week incoming. Say it out loud and Carry's got it.",
-      "The week's done. Carry's holding the rest. Enjoy your evening. 🧡",
-      "Nothing urgent. Nothing pressing. Just Sunday. 🧡",
+      "The week's done. Carry's holding the rest. Enjoy your evening. 🩷",
+      "Nothing urgent. Nothing pressing. Just Sunday. 🩷",
       "Carry's got the week ahead. Tonight's yours.",
     ];
 
@@ -285,7 +285,7 @@ export async function scheduleSundayNotification(
     await LocalNotifications.schedule({
       notifications: [{
         id: SUNDAY_NOTIFICATION_ID,
-        title: 'Carry 🧡',
+        title: 'Carry 🩷',
         body: message,
         schedule: { at: nextSunday },
         sound: 'Hello.caf',
@@ -317,12 +317,12 @@ export async function scheduleWednesdayNotification(
     nextWed.setHours(21, 0, 0, 0);
 
     const messages = [
-      "Midweek already. Anything building up in your head? A good moment to get it out. 🧡",
-      "Halfway there. A great time to clear your head of anything rattling around. 🧡",
+      "Midweek already. Anything building up in your head? A good moment to get it out. 🩷",
+      "Halfway there. A great time to clear your head of anything rattling around. 🩷",
       "Wednesday check-in. How's your mental load feeling this week?",
-      "The week's half done. Anything still sitting in your head that needs a home? 🧡",
-      "Mid-point of the week — a good moment to get things out before they pile up. 🧡",
-      "Wednesday. A good moment to take stock. Anything on your mind? 🧡",
+      "The week's half done. Anything still sitting in your head that needs a home? 🩷",
+      "Mid-point of the week — a good moment to get things out before they pile up. 🩷",
+      "Wednesday. A good moment to take stock. Anything on your mind? 🩷",
     ];
 
     const pick = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
@@ -330,7 +330,7 @@ export async function scheduleWednesdayNotification(
     await LocalNotifications.schedule({
       notifications: [{
         id: WEDNESDAY_ID,
-        title: 'Carry 🧡',
+        title: 'Carry 🩷',
         body: pick(messages),
         schedule: { at: nextWed },
         sound: 'Hello.caf',
