@@ -13,36 +13,87 @@ export async function requestNotificationPermission(): Promise<boolean> {
   }
 }
 
+const MORNING_HOUR = 7;
+
+// TESTING ONLY: set to a number of minutes (e.g. 1) and the briefing covers TODAY
+// and fires that many minutes from now. MUST be null for release.
+const TEST_FIRE_IN_MINUTES: number | null = null;
+
+const pad2 = (n: number) => String(n).padStart(2, '0');
+const localDateStr = (d: Date) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+
+const LIGHT_TITLES = ['Good morning', 'Rise and shine', 'Morning', 'Here we go'];
+const BUSY_TITLES = ['Another full day', "You've got this", 'Big day ahead', "Let's do this"];
+
 export async function scheduleMorningBriefing(
-  items: Array<{ date: string | null; has_date_time: boolean; title: string }>
+  items: Array<{
+    date: string | null;
+    has_date_time: boolean;
+    title: string;
+    time?: string | null;
+    completed?: boolean;
+  }>
 ): Promise<void> {
   try {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+    const now = new Date();
+    const target = new Date();
+    let fireAt: Date;
 
-    const count = items.filter(item => item.date === tomorrowStr).length;
+    if (TEST_FIRE_IN_MINUTES !== null) {
+      fireAt = new Date(now.getTime() + TEST_FIRE_IN_MINUTES * 60 * 1000);
+    } else {
+      target.setHours(MORNING_HOUR, 0, 0, 0);
+      // Before 7am the briefing is for today, otherwise for tomorrow
+      if (now >= target) target.setDate(target.getDate() + 1);
+      fireAt = new Date(target);
+    }
+
+    const targetStr = localDateStr(target);
 
     await LocalNotifications.cancel({ notifications: [{ id: MORNING_BRIEFING_ID }] });
 
-    if (count === 0) return;
+    const day = items.filter(i => i.date === targetStr && !i.completed);
+    const n = day.length;
+    if (n === 0) return;
 
-    const scheduledAt = new Date(tomorrow);
-    scheduledAt.setHours(7, 0, 0, 0);
+    const timed = day
+      .filter(i => i.has_date_time && i.time)
+      .sort((a, b) => String(a.time).localeCompare(String(b.time)));
+    const untimed = day.filter(i => !(i.has_date_time && i.time));
+    const ordered = [...timed, ...untimed];
+
+    const describe = (i: { title: string }) => i.title.trim().replace(/[.!?…]+$/, '');
+    const pick = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
+
+    let title: string;
+    if (n >= 4) title = pick(BUSY_TITLES);
+    else if (n === 3) title = pick([...LIGHT_TITLES, "You've got this"]);
+    else title = pick(LIGHT_TITLES);
+
+    let body: string;
+    if (n === 1) {
+      body = `Just one thing today: ${describe(ordered[0])}.`;
+    } else if (n <= 3) {
+      body = `${n} things today. ${ordered.map(i => `${describe(i)}.`).join(' ')}`;
+    } else {
+      const lead = ordered.slice(0, 3).map(i => `${describe(i)}.`).join(' ');
+      const more = n - 3;
+      body = `${n} things today. ${lead} Plus ${more} more.`;
+    }
 
     await LocalNotifications.schedule({
       notifications: [
         {
           id: MORNING_BRIEFING_ID,
-          title: 'Good morning ☀️',
-          body: `You have ${count} ${count === 1 ? 'thing' : 'things'} on today`,
-          schedule: { at: scheduledAt },
+          title,
+          body,
+          schedule: { at: fireAt },
           sound: 'Hello.caf',
         },
       ],
     });
   } catch {
-    // Notifications unavailable (e.g. web/browser) — fail silently
+    // Notifications unavailable (e.g. web/browser), fail silently
   }
 }
 
@@ -303,25 +354,35 @@ export async function scheduleWednesdayNotification(
     const WEDNESDAY_ID = 1003;
     await LocalNotifications.cancel({ notifications: [{ id: WEDNESDAY_ID }] });
 
+    // Only nudge people who already use Carry
     if (items.length === 0) return;
 
-    const today = new Date();
-    const todayStr = today.toISOString().split('T')[0];
-    const addedToday = items.some(i => i.created_at && i.created_at.startsWith(todayStr));
-    if (addedToday) return;
+    const FIRE_HOUR = 12;
+    const FIRE_MINUTE = 30;
 
-    const nextWed = new Date();
-    const day = nextWed.getDay();
-    const daysUntil = (3 - day + 7) % 7 || 7;
-    nextWed.setDate(nextWed.getDate() + daysUntil);
-    nextWed.setHours(21, 0, 0, 0);
+    const now = new Date();
+    const fireAt = new Date();
+    fireAt.setHours(FIRE_HOUR, FIRE_MINUTE, 0, 0);
+
+    // Next Wednesday. Today counts if the time has not passed yet.
+    const daysUntil = (3 - now.getDay() + 7) % 7;
+    fireAt.setDate(fireAt.getDate() + daysUntil);
+    if (fireAt <= now) fireAt.setDate(fireAt.getDate() + 7);
+
+    // If it is Wednesday and they have already added something today, skip to next week
+    if (fireAt.toDateString() === now.toDateString()) {
+      const addedToday = items.some(
+        i => i.created_at && new Date(i.created_at).toDateString() === now.toDateString()
+      );
+      if (addedToday) fireAt.setDate(fireAt.getDate() + 7);
+    }
 
     const messages = [
       "Midweek already. Anything building up in your head? A good moment to get it out. 🩷",
       "Halfway there. A great time to clear your head of anything rattling around. 🩷",
       "Wednesday check-in. How's your mental load feeling this week?",
       "The week's half done. Anything still sitting in your head that needs a home? 🩷",
-      "Mid-point of the week — a good moment to get things out before they pile up. 🩷",
+      "Mid-point of the week. A good moment to get things out before they pile up. 🩷",
       "Wednesday. A good moment to take stock. Anything on your mind? 🩷",
     ];
 
@@ -332,7 +393,7 @@ export async function scheduleWednesdayNotification(
         id: WEDNESDAY_ID,
         title: 'Carry 🩷',
         body: pick(messages),
-        schedule: { at: nextWed },
+        schedule: { at: fireAt },
         sound: 'Hello.caf',
       }]
     });

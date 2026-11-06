@@ -7,6 +7,7 @@ import { useSpeechRecognition } from '../../utils/useSpeechRecognition';
 import { playInputSound, playStopSound } from '../../utils/inputSound';
 import { categorizeAndCreateItems } from '../../hooks/useItemCategorization';
 import { supabase } from '../../lib/supabase';
+import carryMark from '../../assets/carry-mark-word.svg';
 
 async function haptic(style: ImpactStyle) {
   try { await Haptics.impact({ style }); } catch {}
@@ -170,6 +171,10 @@ export function OnboardingInitialThoughts({ userId, onContinue, onSkip, onItemsA
 
       <div className="flex-1 flex items-center justify-center px-8 py-8 overflow-y-auto min-h-0">
         <div className="w-full max-w-md flex flex-col items-center gap-7 text-center">
+
+          {mode === 'idle' && (
+            <img src={carryMark} alt="Carry" style={{ width: '112px', height: 'auto' }} />
+          )}
 
           {mode === 'idle' && (
             <div className="flex flex-col gap-3 max-w-[300px]">

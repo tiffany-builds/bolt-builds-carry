@@ -65,6 +65,19 @@ function App() {
     }
   };
 
+  // When signed out, clear everything tied to the previous person
+  useEffect(() => {
+    if (!user) {
+      setUserName('');
+      setUserProfile(null);
+      setIsBirthday(false);
+      setOnboardingStep('welcome');
+      setHasCompletedOnboardingThisSession(false);
+      setIsCheckingProfile(true);
+      localStorage.removeItem('carry_apple_first_name');
+    }
+  }, [user]);
+
   const checkBirthday = (profile: UserProfile | null) => {
     if (!profile?.birthday_day || !profile?.birthday_month) return false;
     const today = new Date();
