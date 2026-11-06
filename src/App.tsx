@@ -20,10 +20,10 @@ import { useAuth } from './hooks/useAuth';
 import { useItems } from './hooks/useItems';
 import { UserProfile, UserCategory, TimelineItem } from './types';
 import { supabase } from './lib/supabase';
+import { withTimeout } from './utils/withTimeout';
 import { generateRecurringInstances } from './utils/recurringItems';
 import { getTodayDateString } from './utils/dateFormatting';
 import { requestNotificationPermission, scheduleMorningBriefing, scheduleItemReminders, scheduleSundayNotification, scheduleWednesdayNotification, scheduleRecurringExpiryReminders } from './utils/notifications';
-import { requestHealthKitPermission, isHealthKitEnabled, setHealthKitEnabled } from './utils/healthKit';
 import { Capacitor } from '@capacitor/core';
 
 type OnboardingStep = 'welcome' | 'name' | 'family' | 'ready' | 'complete';
@@ -45,8 +45,6 @@ function App() {
   const [showNavSheet, setShowNavSheet] = useState(false);
   const [isCheckingProfile, setIsCheckingProfile] = useState(true);
   const [showReviewPrompt, setShowReviewPrompt] = useState(false);
-  const [showHealthKitPrompt, setShowHealthKitPrompt] = useState(false);
-  const [healthKitEnabled, setHealthKitEnabledState] = useState(isHealthKitEnabled());
   const [recurringDeletePrompt, setRecurringDeletePrompt] = useState<{
     itemId: string;
     parentId: string | null;
@@ -63,15 +61,6 @@ function App() {
     if (newTotal >= 10 && !hasRequestedReview) {
       localStorage.setItem('carry_review_requested', 'true');
       setTimeout(() => setShowReviewPrompt(true), 2000);
-    }
-    const hasAskedHealthKit = localStorage.getItem('carry_healthkit_asked');
-    if (!hasAskedHealthKit && Capacitor.isNativePlatform()) {
-      localStorage.setItem('carry_healthkit_asked', 'true');
-      setTimeout(() => setShowHealthKitPrompt(true), 1500);
-    }
-    if (isHealthKitEnabled()) {
-      const { logMindfulMinutes } = await import('./utils/healthKit');
-      await logMindfulMinutes(2);
     }
   };
 
@@ -300,12 +289,24 @@ function App() {
 }}
           items={items.filter(i => i.category === selectedCategory.name && !i.completed)}
           onItemComplete={async (itemId) => {
-            const { error } = await supabase.from('items').update({ completed: true }).eq('id', itemId);
-            if (error) {
-              setToastMessage("Couldn't mark that done — please try again");
-              return;
+            try {
+              const { error } = await withTimeout(
+                supabase.from('items').update({ completed: true }).eq('id', itemId),
+                8000,
+                'timeout'
+              );
+              if (error) {
+                setToastMessage("Couldn't mark that done — please try again");
+                return;
+              }
+              setItems(prev => prev.filter(i => i.id !== itemId));
+            } catch (err: any) {
+              if (err?.message === 'timeout') {
+                setToastMessage("Taking too long — check your connection and try again");
+              } else {
+                setToastMessage("Couldn't mark that done — please try again");
+              }
             }
-            setItems(prev => prev.filter(i => i.id !== itemId));
           }}
           onItemDelete={async (itemId) => {
             const item = items.find(i => i.id === itemId);
@@ -594,59 +595,6 @@ function App() {
               }}
             >
               Cancel
-            </button>
-          </div>
-        </div>
-      )}
-      {showHealthKitPrompt && (
-        <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
-          zIndex: 9999, display: 'flex', alignItems: 'flex-end',
-          justifyContent: 'center', padding: '0 16px 32px'
-        }}>
-          <div style={{
-            background: '#FDF9F4', borderRadius: '24px', padding: '28px 24px',
-            width: '100%', maxWidth: '400px', textAlign: 'center'
-          }}>
-            <p style={{
-              fontFamily: 'Georgia, serif', fontStyle: 'italic',
-              fontSize: '20px', color: '#2C2420', marginBottom: '8px'
-            }}>Getting things out of your head is good for you.</p>
-            <p style={{
-              fontFamily: 'DM Sans, sans-serif', fontSize: '14px',
-              color: '#6B5C52', marginBottom: '24px', lineHeight: 1.5
-            }}>
-              Would you like Carry to log your brain dumps as Mindful Minutes 
-              in Apple Health? 🧡
-            </p>
-            <button
-              onClick={async () => {
-                const granted = await requestHealthKitPermission();
-                if (granted) {
-                  setHealthKitEnabled(true);
-                  setHealthKitEnabledState(true);
-                }
-                setShowHealthKitPrompt(false);
-              }}
-              style={{
-                width: '100%', background: '#C4714A', color: '#FDF9F4',
-                border: 'none', borderRadius: '24px', padding: '16px',
-                fontFamily: 'DM Sans, sans-serif', fontSize: '15px',
-                fontWeight: 500, cursor: 'pointer', marginBottom: '12px'
-              }}
-            >
-              Yes, log to Apple Health
-            </button>
-            <button
-              onClick={() => setShowHealthKitPrompt(false)}
-              style={{
-                width: '100%', background: 'transparent', color: '#9E8E80',
-                border: 'none', padding: '12px',
-                fontFamily: 'DM Sans, sans-serif', fontSize: '14px',
-                cursor: 'pointer'
-              }}
-            >
-              Not right now
             </button>
           </div>
         </div>

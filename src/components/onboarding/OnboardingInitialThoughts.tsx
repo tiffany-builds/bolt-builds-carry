@@ -60,7 +60,11 @@ export function OnboardingInitialThoughts({ userId, onContinue, onSkip, onItemsA
       }
     } catch (err: any) {
       const reason = err?.message || String(err);
-      setToastMessage(`Couldn't save that (${reason}) — please try again`);
+      if (reason === 'timeout') {
+        setToastMessage("Taking too long — check your connection and try again");
+      } else {
+        setToastMessage(`Couldn't save that (${reason}) — please try again`);
+      }
     }
 
     setMode('idle');

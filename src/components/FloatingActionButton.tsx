@@ -5,6 +5,7 @@ import { useSpeechRecognition } from '../utils/useSpeechRecognition';
 import { CaptureCard } from './CaptureCard';
 import { Toast } from './Toast';
 import { supabase } from '../lib/supabase';
+import { withTimeout } from '../utils/withTimeout';
 import { buildSystemPrompt } from '../utils/buildSystemPrompt';
 import { logCycleStart, isCycleTrackingEnabled, enableCycleTracking, scheduleCycleReminder } from '../utils/cycleTracking';
 import { playInputSound, playStopSound } from '../utils/inputSound';
@@ -118,20 +119,24 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
 
       const systemPrompt = buildSystemPrompt({ caringFor, includeRecurring: true });
 
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/categorize-items`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-          },
-          body: JSON.stringify({
-            text: inputText,
-            systemPrompt: systemPrompt,
-          }),
-        }
+      const response = await withTimeout(
+        fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/categorize-items`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+              'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+            },
+            body: JSON.stringify({
+              text: inputText,
+              systemPrompt: systemPrompt,
+            }),
+          }
+        ),
+        20000,
+        'timeout'
       );
 
       const responseData = await response.json();
@@ -239,10 +244,14 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
         setTimeout(() => setShowNeedsDatePromptWrapped(true), 800);
       }
 
-    } catch (err) {
+    } catch (err: any) {
       // 4. Remove optimistic items on failure and show error
       removeOptimisticItems();
-      showToast("Couldn't save — please try again");
+      if (err?.message === 'timeout') {
+        showToast("Taking too long — check your connection and try again");
+      } else {
+        showToast("Couldn't save — please try again");
+      }
     } finally {
       setIsProcessing(false);
       setProcessingTranscript('');
@@ -357,22 +366,26 @@ Return valid JSON array only — no explanation, no markdown.`;
 
       const { data: { session } } = await supabase.auth.getSession();
 
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/categorize-items`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session?.access_token}`,
-            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-          },
-          body: JSON.stringify({
-            text: 'What actionable items can you find in this image?',
-            systemPrompt: photoSystemPrompt,
-            imageBase64: base64,
-            imageType: file.type,
-          }),
-        }
+      const response = await withTimeout(
+        fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/categorize-items`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session?.access_token}`,
+              'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+            },
+            body: JSON.stringify({
+              text: 'What actionable items can you find in this image?',
+              systemPrompt: photoSystemPrompt,
+              imageBase64: base64,
+              imageType: file.type,
+            }),
+          }
+        ),
+        30000,
+        'timeout'
       );
 
       if (!response.ok) {
@@ -457,8 +470,12 @@ Return valid JSON array only — no explanation, no markdown.`;
         setTimeout(() => setShowNeedsDatePromptWrapped(true), 800);
       }
 
-    } catch (err) {
-      showToast("Couldn't read that photo — want to try again?");
+    } catch (err: any) {
+      if (err?.message === 'timeout') {
+        showToast("Taking too long — check your connection and try again");
+      } else {
+        showToast("Couldn't read that photo — want to try again?");
+      }
     } finally {
       setIsProcessing(false);
       setProcessingTranscript('');

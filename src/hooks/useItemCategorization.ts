@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { buildSystemPrompt } from '../utils/buildSystemPrompt';
+import { withTimeout } from '../utils/withTimeout';
 
 interface CategorizedItem {
   action?: string;
@@ -29,20 +30,24 @@ export async function categorizeAndCreateItems(text: string, userId: string, car
       throw new Error('no-auth-session');
     }
 
-    const response = await fetch(
-      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/categorize-items`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-        },
-        body: JSON.stringify({
-          text: text,
-          systemPrompt: systemPrompt,
-        }),
-      }
+    const response = await withTimeout(
+      fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/categorize-items`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+          },
+          body: JSON.stringify({
+            text: text,
+            systemPrompt: systemPrompt,
+          }),
+        }
+      ),
+      20000,
+      'timeout'
     );
 
     if (!response.ok) {

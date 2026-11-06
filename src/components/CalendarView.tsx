@@ -4,6 +4,7 @@ import { TimelineItem } from '../types';
 import { getContextualEmoji } from '../utils/mindNudges';
 import { parseDateString } from '../utils/dateFormatting';
 import { supabase } from '../lib/supabase';
+import { withTimeout } from '../utils/withTimeout';
 
 interface CalendarViewProps {
   userId: string;
@@ -146,15 +147,23 @@ export function CalendarView({ userId, items, onBack, onItemComplete, onShowToas
 
   const handleComplete = async (itemId: string) => {
     try {
-      const { error } = await supabase.from('items').update({ completed: true }).eq('id', itemId);
+      const { error } = await withTimeout(
+        supabase.from('items').update({ completed: true }).eq('id', itemId),
+        8000,
+        'timeout'
+      );
       if (error) {
         onShowToast("Couldn't save that — please try again");
         return;
       }
       onItemComplete(itemId);
       onShowToast('Done — one less thing to carry');
-    } catch (err) {
-      onShowToast("Couldn't save that — please try again");
+    } catch (err: any) {
+      if (err?.message === 'timeout') {
+        onShowToast("Taking too long — check your connection and try again");
+      } else {
+        onShowToast("Couldn't save that — please try again");
+      }
     }
   };
 

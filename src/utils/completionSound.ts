@@ -1,8 +1,24 @@
+let completionAudioContext: AudioContext | null = null;
+
+function getCompletionAudioContext(): AudioContext | null {
+  const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+  if (!AudioContextClass) return null;
+
+  if (!completionAudioContext) {
+    completionAudioContext = new AudioContextClass();
+  }
+
+  if (completionAudioContext.state === 'suspended') {
+    completionAudioContext.resume().catch(() => {});
+  }
+
+  return completionAudioContext;
+}
+
 export function playCompletionSound() {
   try {
-    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioContext) return;
-    const ctx = new AudioContext();
+    const ctx = getCompletionAudioContext();
+    if (!ctx) return;
 
     const playTone = (frequency: number, startTime: number, duration: number, gain: number) => {
       const oscillator = ctx.createOscillator();
@@ -34,8 +50,6 @@ export function playCompletionSound() {
     // Classic friendly ding — quick double tap, slightly bell-like
     playTone(880, now, 0.5, 0.15);           // A5 — bright and friendly
     playTone(1108.73, now + 0.18, 0.6, 0.1); // C#6 — harmonious resolution
-
-    setTimeout(() => ctx.close(), 1200);
   } catch {
     // fail silently
   }

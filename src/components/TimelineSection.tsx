@@ -19,6 +19,7 @@ import { getContextualEmoji } from '../utils/mindNudges';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { playCompletionSound } from '../utils/completionSound';
 import { supabase } from '../lib/supabase';
+import { withTimeout } from '../utils/withTimeout';
 import { Check, Share2 } from 'lucide-react';
 import { shareItem } from '../utils/shareItem';
 
@@ -57,10 +58,11 @@ function TimelineItemCard({ item, onComplete, onDelete, swipingId, swipeOffset, 
         await Haptics.impact({ style: ImpactStyle.Medium });
       }, 100);
       playCompletionSound();
-      const { error } = await supabase
-        .from('items')
-        .update({ completed: true })
-        .eq('id', item.id);
+      const { error } = await withTimeout(
+        supabase.from('items').update({ completed: true }).eq('id', item.id),
+        8000,
+        'timeout'
+      );
 
       if (error) {
         onShowToast("Couldn't mark that done — please try again");
@@ -68,8 +70,12 @@ function TimelineItemCard({ item, onComplete, onDelete, swipingId, swipeOffset, 
       }
 
       onComplete(item.id);
-    } catch (err) {
-      onShowToast("Something went wrong — please try again");
+    } catch (err: any) {
+      if (err?.message === 'timeout') {
+        onShowToast("Taking too long — check your connection and try again");
+      } else {
+        onShowToast("Something went wrong — please try again");
+      }
     }
   };
 

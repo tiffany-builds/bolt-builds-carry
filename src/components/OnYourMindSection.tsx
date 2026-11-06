@@ -1,5 +1,6 @@
 import { X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { withTimeout } from '../utils/withTimeout';
 import { addNudgesToMindItems, getContextualEmoji, type MindItem } from '../utils/mindNudges';
 
 interface OnYourMindSectionProps {
@@ -27,14 +28,22 @@ export function OnYourMindSection({ items, onItemsChange, onShowToast }: OnYourM
 
   const dismissMindItem = async (itemId: string) => {
     try {
-      const { error } = await supabase.from('items').update({ completed: true }).eq('id', itemId);
+      const { error } = await withTimeout(
+        supabase.from('items').update({ completed: true }).eq('id', itemId),
+        8000,
+        'timeout'
+      );
       if (error) {
         onShowToast("Couldn't save that — please try again");
         return;
       }
       onItemsChange(itemId);
-    } catch (err) {
-      onShowToast("Couldn't save that — please try again");
+    } catch (err: any) {
+      if (err?.message === 'timeout') {
+        onShowToast("Taking too long — check your connection and try again");
+      } else {
+        onShowToast("Couldn't save that — please try again");
+      }
     }
   };
 
