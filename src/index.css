@@ -3,12 +3,13 @@
 @tailwind utilities;
 
 :root {
-  --color-bg: #E8DDD0;
-  --color-surface: #FDF9F4;
-  --color-border: #D4C4B4;
-  --color-muted: #6B5C52;
-  --color-accent: #C4714A;
-  --color-text: #2C2420;
+  --color-bg: #F3E9DC;
+  --color-surface: #FBF6EE;
+  --color-border: #3B2A22;
+  --color-muted: #3B2A22;
+  --color-accent: #3B2A22;
+  --color-text: #3B2A22;
+  --color-highlight: #F2C4BF;
 
   --font-display: 'Fraunces', serif;
   --font-ui: 'DM Sans', sans-serif;
@@ -158,7 +159,7 @@ select:focus {
 
 /* Prevent black gap on keyboard dismiss */
 html, body {
-  background-color: #E8DDD0 !important;
+  background-color: #F3E9DC !important;
   overscroll-behavior: none;
 }
 
@@ -176,9 +177,9 @@ html, body {
   to { transform: rotate(600deg) translateX(18px); }
 }
 @keyframes colourFlow {
-  0%, 100% { background: #C4714A; }
-  33% { background: #D4A96A; }
-  66% { background: #D4C4B4; }
+  0%, 100% { background: #3B2A22; }
+  33% { background: #F2C4BF; }
+  66% { background: #F3E9DC; }
 }
 @keyframes cardEntrance {
   from {
@@ -191,8 +192,8 @@ html, body {
   }
 }
 @keyframes borderBreath {
-  0%, 100% { border-color: rgba(196,113,74,0.15); }
-  50% { border-color: rgba(196,113,74,0.4); }
+  0%, 100% { border-color: rgba(59,42,34,0.15); }
+  50% { border-color: rgba(59,42,34,0.4); }
 }
 @keyframes pdotPulse {
   0%, 100% { opacity: 0.3; transform: scale(0.8); }

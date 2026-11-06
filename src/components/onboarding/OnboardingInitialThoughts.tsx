@@ -4,7 +4,7 @@ import { ProgressDots } from './ProgressDots';
 import { CaptureCard } from '../CaptureCard';
 import { Toast } from '../Toast';
 import { useSpeechRecognition } from '../../utils/useSpeechRecognition';
-import { playInputSound, playStopSound } from '../../utils/inputSound';
+import { playInputSound, playStopSound } from '../../utils/Inputsound';
 import { categorizeAndCreateItems } from '../../hooks/useItemCategorization';
 import { supabase } from '../../lib/supabase';
 

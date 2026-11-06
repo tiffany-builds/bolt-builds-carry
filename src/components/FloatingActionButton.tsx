@@ -7,7 +7,7 @@ import { Toast } from './Toast';
 import { supabase } from '../lib/supabase';
 import { buildSystemPrompt } from '../utils/buildSystemPrompt';
 import { logCycleStart, isCycleTrackingEnabled, enableCycleTracking, scheduleCycleReminder } from '../utils/cycleTracking';
-import { playInputSound, playStopSound } from '../utils/inputSound';
+import { playInputSound, playStopSound } from '../utils/Inputsound';
 
 async function haptic(style: ImpactStyle) {
   try { await Haptics.impact({ style }); } catch {}

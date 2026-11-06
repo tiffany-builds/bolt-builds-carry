@@ -4,15 +4,16 @@ export default {
   theme: {
     extend: {
       colors: {
-        cream: '#E8DDD0',
-        surface: '#FDF9F4',
-        border: '#E8DDD0',
-        muted: '#9E8E80',
-        accent: '#C4714A',
-        text: '#2C2420',
+        cream: '#F3E9DC',
+        surface: '#FBF6EE',
+        border: '#3B2A22',
+        muted: '#3B2A22',
+        accent: '#3B2A22',
+        highlight: '#F2C4BF',
+        text: '#3B2A22',
         'category-kids': '#8BA888',
         'category-health': '#7BA5C8',
-        'category-family': '#C4714A',
+        'category-family': '#3B2A22',
         'category-errands': '#D4A574',
         'category-me': '#B8A3C8',
         'category-ideas': '#A6968A',
