@@ -32,7 +32,7 @@ export function Toast({ message, onClose, duration = 2500 }: ToastProps) {
         background: 'rgba(245,235,225,0.60)',
         backdropFilter: 'blur(8px)',
         borderRadius: '20px',
-        border: '1px solid rgba(196,113,74,0.25)',
+        border: '1px solid rgba(221,160,155,0.62)',
         padding: '14px 18px',
         display: 'flex',
         alignItems: 'center',
@@ -48,13 +48,13 @@ export function Toast({ message, onClose, duration = 2500 }: ToastProps) {
       <div style={{
         width: '32px', height: '32px',
         borderRadius: '50%',
-        background: 'rgba(196,113,74,0.12)',
+        background: 'rgba(242,196,191,0.48)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         flexShrink: 0,
         fontSize: '14px',
-        color: '#C4714A',
+        color: '#3B2A22',
         fontWeight: 600,
       }}>
         {isCompletion ? '✓' : '✦'}

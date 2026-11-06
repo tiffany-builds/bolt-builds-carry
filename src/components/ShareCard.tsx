@@ -111,7 +111,7 @@ export function ShareCard({ onClose }: ShareCardProps) {
             fontFamily: "'Fraunces', Georgia, serif",
             fontStyle: 'italic',
             fontSize: '36px',
-            color: '#C4714A',
+            color: '#3B2A22',
             lineHeight: 1,
             fontWeight: 300,
           }}>
@@ -120,7 +120,7 @@ export function ShareCard({ onClose }: ShareCardProps) {
         </div>
 
         {/* Divider */}
-        <div style={{ width: '100%', height: '1px', backgroundColor: 'rgba(196,113,74,0.2)' }} />
+        <div style={{ width: '100%', height: '1px', backgroundColor: 'rgba(242,196,191,0.7)' }} />
 
         {/* Content row: text + phone mockup */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -137,7 +137,7 @@ export function ShareCard({ onClose }: ShareCardProps) {
             </div>
             <div style={{
               fontSize: '10px',
-              color: '#C4714A',
+              color: '#3B2A22',
               fontFamily: "'DM Sans', sans-serif",
               letterSpacing: '0.02em',
               marginTop: '4px',
@@ -175,13 +175,13 @@ export function ShareCard({ onClose }: ShareCardProps) {
                 fontFamily: "'Fraunces', Georgia, serif",
                 fontStyle: 'italic',
                 fontSize: '7px',
-                color: '#C4714A',
+                color: '#3B2A22',
                 lineHeight: 1.3,
               }}>
                 Friday looks<br />good, <em>Tiffany.</em>
               </div>
-              <div style={{ height: '2px', background: 'rgba(196,113,74,0.2)', borderRadius: '2px', width: '90%', marginTop: '3px' }} />
-              <div style={{ height: '2px', background: 'rgba(196,113,74,0.1)', borderRadius: '2px', width: '65%' }} />
+              <div style={{ height: '2px', background: 'rgba(221,160,155,0.5)', borderRadius: '2px', width: '90%', marginTop: '3px' }} />
+              <div style={{ height: '2px', background: 'rgba(221,160,155,0.25)', borderRadius: '2px', width: '65%' }} />
               <div style={{ marginTop: '5px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px' }}>
                 {[['🫶', '3'], ['🏠', '2'], ['❤️', '1'], ['🛒', '4']].map(([emoji, count]) => (
                   <div key={emoji} style={{
@@ -191,7 +191,7 @@ export function ShareCard({ onClose }: ShareCardProps) {
                     textAlign: 'center',
                   }}>
                     <div style={{ fontSize: '8px' }}>{emoji}</div>
-                    <div style={{ fontSize: '5px', color: '#C4714A' }}>{count}</div>
+                    <div style={{ fontSize: '5px', color: '#3B2A22' }}>{count}</div>
                   </div>
                 ))}
               </div>
@@ -206,7 +206,7 @@ export function ShareCard({ onClose }: ShareCardProps) {
         disabled={isSharing}
         style={{
           marginTop: '24px',
-          backgroundColor: '#C4714A',
+          backgroundColor: '#3B2A22',
           color: 'white',
           border: 'none',
           borderRadius: '14px',

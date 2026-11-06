@@ -90,7 +90,7 @@ export function Header({ userName = 'Tiffany', todayCount = 0, isBirthday = fals
             {isBirthday ? (
               `Happy Birthday, ${userName}. 🎂`
             ) : (
-              <>{greeting}, <em style={{color: '#C4714A', fontStyle: 'italic'}}>{userName}</em>.</>
+              <>{greeting}, <em style={{color: '#3B2A22', fontStyle: 'italic', background: 'linear-gradient(transparent 62%, #F2C4BF 62%)', padding: '0 2px'}}>{userName}</em>.</>
             )}
           </h1>
           <p className="font-ui text-sm text-muted font-light">
@@ -116,13 +116,13 @@ export function Header({ userName = 'Tiffany', todayCount = 0, isBirthday = fals
             aria-label="Calendar"
           >
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <rect x="2" y="3.5" width="14" height="12" rx="2.5" stroke="#C4714A" strokeWidth="1.5"/>
-              <line x1="2" y1="7.5" x2="16" y2="7.5" stroke="#C4714A" strokeWidth="1.5"/>
-              <line x1="6" y1="2" x2="6" y2="5" stroke="#C4714A" strokeWidth="1.5" strokeLinecap="round"/>
-              <line x1="12" y1="2" x2="12" y2="5" stroke="#C4714A" strokeWidth="1.5" strokeLinecap="round"/>
-              <circle cx="6.5" cy="11" r="1" fill="#C4714A"/>
-              <circle cx="9.5" cy="11" r="1" fill="#C4714A"/>
-              <circle cx="12.5" cy="11" r="1" fill="#C4714A"/>
+              <rect x="2" y="3.5" width="14" height="12" rx="2.5" stroke="#3B2A22" strokeWidth="1.5"/>
+              <line x1="2" y1="7.5" x2="16" y2="7.5" stroke="#3B2A22" strokeWidth="1.5"/>
+              <line x1="6" y1="2" x2="6" y2="5" stroke="#3B2A22" strokeWidth="1.5" strokeLinecap="round"/>
+              <line x1="12" y1="2" x2="12" y2="5" stroke="#3B2A22" strokeWidth="1.5" strokeLinecap="round"/>
+              <circle cx="6.5" cy="11" r="1" fill="#3B2A22"/>
+              <circle cx="9.5" cy="11" r="1" fill="#3B2A22"/>
+              <circle cx="12.5" cy="11" r="1" fill="#3B2A22"/>
             </svg>
           </button>
           {/* Menu button */}
@@ -143,9 +143,9 @@ export function Header({ userName = 'Tiffany', todayCount = 0, isBirthday = fals
             aria-label="Menu"
           >
             <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
-              <line x1="1" y1="1" x2="17" y2="1" stroke="#C4714A" strokeWidth="1.5" strokeLinecap="round"/>
-              <line x1="1" y1="7" x2="17" y2="7" stroke="#C4714A" strokeWidth="1.5" strokeLinecap="round"/>
-              <line x1="1" y1="13" x2="17" y2="13" stroke="#C4714A" strokeWidth="1.5" strokeLinecap="round"/>
+              <line x1="1" y1="1" x2="17" y2="1" stroke="#3B2A22" strokeWidth="1.5" strokeLinecap="round"/>
+              <line x1="1" y1="7" x2="17" y2="7" stroke="#3B2A22" strokeWidth="1.5" strokeLinecap="round"/>
+              <line x1="1" y1="13" x2="17" y2="13" stroke="#3B2A22" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
           </button>
         </div>

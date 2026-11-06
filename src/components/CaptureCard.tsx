@@ -32,7 +32,7 @@ export function CaptureCard({ isProcessing, liveTranscript, processingTranscript
         <span style={{
           fontSize: '14px',
           fontWeight: 400,
-          color: '#C4714A',
+          color: '#3B2A22',
           fontFamily: 'Georgia, serif',
           fontStyle: 'italic',
         }}>
@@ -43,7 +43,7 @@ export function CaptureCard({ isProcessing, liveTranscript, processingTranscript
             {[0, 0.15, 0.3].map((delay, i) => (
               <div key={i} style={{
                 width: '5px', height: '5px', borderRadius: '50%',
-                background: '#C4714A',
+                background: '#3B2A22',
                 animation: `pdotPulse 1.2s ease-in-out ${delay}s infinite`,
               }} />
             ))}
@@ -83,7 +83,7 @@ export function CaptureCard({ isProcessing, liveTranscript, processingTranscript
       {isProcessing ? (
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center', margin: '4px 0' }}>
           {[
-            { bg: '#C4714A', delay: '0s' },
+            { bg: '#3B2A22', delay: '0s' },
             { bg: '#D4C4B4', delay: '0.15s' },
             { bg: '#D4A96A', delay: '0.3s' },
           ].map((d, i) => (
@@ -97,11 +97,11 @@ export function CaptureCard({ isProcessing, liveTranscript, processingTranscript
       ) : (
         <div style={{ position: 'relative', width: '90px', height: '90px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {/* Orbit ring */}
-          <div style={{ position: 'absolute', width: '90px', height: '90px', borderRadius: '50%', border: '1px solid rgba(196,113,74,0.12)' }} />
+          <div style={{ position: 'absolute', width: '90px', height: '90px', borderRadius: '50%', border: '1px solid rgba(221,160,155,0.3)' }} />
           {/* Dot 1 - terra cotta, fast */}
           <div style={{
             position: 'absolute', width: '8px', height: '8px',
-            borderRadius: '50%', background: '#C4714A',
+            borderRadius: '50%', background: '#3B2A22',
             top: '50%', left: '50%',
             marginTop: '-4px', marginLeft: '-4px',
             transformOrigin: '0 0',
@@ -132,7 +132,7 @@ export function CaptureCard({ isProcessing, liveTranscript, processingTranscript
           <div style={{
             width: '16px', height: '16px',
             borderRadius: '50%',
-            background: '#C4714A',
+            background: '#3B2A22',
             position: 'relative', zIndex: 2,
             animation: 'colourFlow 4s ease-in-out infinite',
           }} />

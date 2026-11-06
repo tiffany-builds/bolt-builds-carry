@@ -329,7 +329,7 @@ export function SignIn({ onSuccess }: SignInProps) {
             disabled={isLoading}
             style={{
               width: '100%',
-              background: mode === 'signup' ? '#C4714A' : '#2C2420',
+              background: mode === 'signup' ? '#3B2A22' : '#2C2420',
               color: mode === 'signup' ? '#FFFFFF' : '#FDF9F4',
               border: 'none',
               borderRadius: '24px',
@@ -350,7 +350,7 @@ export function SignIn({ onSuccess }: SignInProps) {
             <p style={{
               fontFamily: 'DM Sans, sans-serif',
               fontSize: '14px',
-              color: '#C4714A',
+              color: '#3B2A22',
               fontWeight: 300,
               margin: '0 0 16px 0',
               textAlign: 'center'

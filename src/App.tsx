@@ -577,7 +577,7 @@ function App() {
                 setRecurringDeletePrompt(null);
               }}
               style={{
-                width: '100%', background: '#C4714A', color: '#FDF9F4',
+                width: '100%', background: '#3B2A22', color: '#FDF9F4',
                 border: 'none', borderRadius: '24px', padding: '16px',
                 fontFamily: 'DM Sans, sans-serif', fontSize: '15px',
                 fontWeight: 500, cursor: 'pointer', marginBottom: '12px'
@@ -626,7 +626,7 @@ function App() {
                 setShowReviewPrompt(false);
               }}
               style={{
-                width: '100%', background: '#C4714A', color: '#FDF9F4',
+                width: '100%', background: '#3B2A22', color: '#FDF9F4',
                 border: 'none', borderRadius: '24px', padding: '16px',
                 fontFamily: 'DM Sans, sans-serif', fontSize: '15px',
                 fontWeight: 500, cursor: 'pointer', marginBottom: '12px'

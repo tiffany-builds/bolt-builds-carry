@@ -14,7 +14,7 @@ export function LoadingScreen() {
         fontSize: '48px',
         fontWeight: 200,
         fontStyle: 'italic',
-        color: '#C4714A'
+        color: '#3B2A22'
       }}>
         Carry
       </div>

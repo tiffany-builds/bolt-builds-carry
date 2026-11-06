@@ -107,8 +107,8 @@ export function EverythingYouCarry({ userId, onBack }: EverythingYouCarryProps) 
           onClick={() => toggleComplete(item.id, item.completed)}
           className="flex-shrink-0 w-6 h-6 rounded-full border-2 transition-all flex items-center justify-center mt-0.5 active:scale-95"
           style={{
-            borderColor: item.completed ? '#C4714A' : 'rgba(44,36,32,0.2)',
-            backgroundColor: item.completed ? '#C4714A' : 'transparent',
+            borderColor: item.completed ? '#3B2A22' : 'rgba(44,36,32,0.2)',
+            backgroundColor: item.completed ? '#3B2A22' : 'transparent',
           }}
         >
           {item.completed && (

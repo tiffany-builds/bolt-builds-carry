@@ -173,7 +173,7 @@ export function OnboardingInitialThoughts({ userId, onContinue, onSkip, onItemsA
 
           {mode === 'idle' && (
             <div className="flex flex-col gap-3 max-w-[300px]">
-              <h1 className="font-display font-light italic text-3xl" style={{ color: '#C4714A' }}>
+              <h1 className="font-display font-light italic text-3xl" style={{ color: '#3B2A22' }}>
                 Welcome to Carry
               </h1>
               <p className="font-ui font-medium text-text text-[15px] leading-relaxed">
@@ -222,7 +222,7 @@ export function OnboardingInitialThoughts({ userId, onContinue, onSkip, onItemsA
                 boxShadow: '0 4px 24px rgba(44,36,32,0.07)',
               }}
             >
-              <div style={{ fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#C4714A', marginBottom: '8px', fontFamily: 'DM Sans, sans-serif' }}>
+              <div style={{ fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#3B2A22', marginBottom: '8px', fontFamily: 'DM Sans, sans-serif' }}>
                 ✦ Carry noticed
               </div>
               <div style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic', fontSize: '14px', color: '#2C2420', lineHeight: 1.5, marginBottom: '12px' }}>

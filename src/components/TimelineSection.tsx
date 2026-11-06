@@ -144,8 +144,8 @@ function TimelineItemCard({ item, onComplete, onDelete, swipingId, swipeOffset, 
               onClick={handleComplete}
               className="w-5 h-5 rounded-full border-[1.5px] flex items-center justify-center transition-all duration-200 ease-in-out"
               style={{
-                borderColor: isCompleted ? '#C4714A' : 'rgba(44,36,32,0.2)',
-                backgroundColor: isCompleted ? '#C4714A' : 'transparent',
+                borderColor: isCompleted ? '#3B2A22' : 'rgba(44,36,32,0.2)',
+                backgroundColor: isCompleted ? '#3B2A22' : 'transparent',
               }}
               aria-label="Mark as complete"
             >

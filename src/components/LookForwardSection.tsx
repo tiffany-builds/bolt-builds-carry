@@ -36,11 +36,11 @@ export function LookForwardSection({ items, onRemoveItem }: LookForwardSectionPr
         <div
           key={item.id}
           style={{
-            background: 'linear-gradient(135deg, rgba(196,113,74,0.08), rgba(212,194,133,0.12))',
+            background: 'linear-gradient(135deg, rgba(242,196,191,0.32), rgba(212,194,133,0.12))',
             borderRadius: '20px',
             padding: '20px',
             marginBottom: '12px',
-            border: '1px solid rgba(196,113,74,0.15)',
+            border: '1px solid rgba(221,160,155,0.38)',
             position: 'relative',
             overflow: 'hidden'
           }}

@@ -30,7 +30,7 @@ export function CarryLoadingScreen() {
           fontFamily: "'Fraunces', Georgia, serif",
           fontStyle: 'italic',
           fontSize: '36px',
-          color: '#C4714A',
+          color: '#3B2A22',
           fontWeight: 300,
         }}>
           Carry.
@@ -54,7 +54,7 @@ export function CarryLoadingScreen() {
         }}>
           <div style={{
             position: 'absolute', borderRadius: '50%',
-            width: '22px', height: '22px', backgroundColor: '#C4714A',
+            width: '22px', height: '22px', backgroundColor: '#3B2A22',
             left: '60px', top: '60px',
             animation: 'carry-b1 1.4s ease-in-out infinite',
           }} />

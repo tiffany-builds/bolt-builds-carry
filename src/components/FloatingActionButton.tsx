@@ -746,7 +746,7 @@ Return valid JSON array only — no explanation, no markdown.`;
                 setPendingCycleLog(false);
               }}
               style={{
-                width: '100%', background: '#C4714A', color: '#FDF9F4',
+                width: '100%', background: '#3B2A22', color: '#FDF9F4',
                 border: 'none', borderRadius: '24px', padding: '16px',
                 fontFamily: 'DM Sans, sans-serif', fontSize: '15px',
                 fontWeight: 500, cursor: 'pointer', marginBottom: '12px'
@@ -787,7 +787,7 @@ Return valid JSON array only — no explanation, no markdown.`;
         }}>
           <div style={{
             fontSize: '9px', fontWeight: 700, textTransform: 'uppercase',
-            letterSpacing: '0.08em', color: '#C4714A', marginBottom: '8px',
+            letterSpacing: '0.08em', color: '#3B2A22', marginBottom: '8px',
             fontFamily: 'DM Sans, sans-serif',
           }}>✦ Carry noticed</div>
           <div style={{
@@ -875,10 +875,10 @@ Return valid JSON array only — no explanation, no markdown.`;
                         setDatePickerItemId(item.id);
                       }}
                       style={{
-                        fontSize: '12px', color: '#C4714A',
-                        border: '1px solid rgba(196,113,74,0.3)',
+                        fontSize: '12px', color: '#3B2A22',
+                        border: '1px solid rgba(221,160,155,0.75)',
                         borderRadius: '8px', padding: '8px 14px',
-                        background: 'rgba(196,113,74,0.06)',
+                        background: 'rgba(242,196,191,0.24)',
                         cursor: 'pointer', fontFamily: 'DM Sans, sans-serif',
                       }}
                     >
@@ -925,8 +925,8 @@ Return valid JSON array only — no explanation, no markdown.`;
             {isListening ? (
               <div style={{ position: 'relative', width: '52px', height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {[
-                  { size: '52px', bg: 'rgba(196,113,74,0.1)', delay: '0s' },
-                  { size: '38px', bg: 'rgba(196,113,74,0.15)', delay: '0.3s' },
+                  { size: '52px', bg: 'rgba(242,196,191,0.4)', delay: '0s' },
+                  { size: '38px', bg: 'rgba(242,196,191,0.6)', delay: '0.3s' },
                 ].map((ring, i) => (
                   <div key={i} style={{
                     position: 'absolute',
@@ -954,7 +954,7 @@ Return valid JSON array only — no explanation, no markdown.`;
                 <Mic size={24} />
               </button>
             )}
-            <span className="font-ui text-xs" style={{ color: isListening ? '#C4714A' : undefined }}>
+            <span className="font-ui text-xs" style={{ color: isListening ? '#3B2A22' : undefined }}>
               {isListening ? 'Listening' : 'Voice'}
             </span>
           </div>

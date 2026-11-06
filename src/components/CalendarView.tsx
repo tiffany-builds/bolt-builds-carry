@@ -24,7 +24,7 @@ interface CalendarDay {
 
 const CATEGORY_COLORS: Record<string, string> = {
   Family: '#A8B89A',
-  Home: '#C4714A',
+  Home: '#F2C4BF',
   Health: '#A0B4C0',
   Errands: '#D4C285',
   Me: '#B0A8C4',
@@ -201,7 +201,7 @@ export function CalendarView({ userId, items, onBack, onItemComplete, onShowToas
           >
             <ArrowLeft size={20} className="text-[#2C2420]" />
           </button>
-          <h1 className="font-serif italic text-3xl text-[#C4714A]">Calendar</h1>
+          <h1 className="font-serif italic text-3xl text-[#3B2A22]">Calendar</h1>
         </div>
 
         {/* Calendar Card */}
@@ -209,7 +209,7 @@ export function CalendarView({ userId, items, onBack, onItemComplete, onShowToas
           {/* Month Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="font-serif italic text-[28px] text-[#C4714A]">
+              <h2 className="font-serif italic text-[28px] text-[#3B2A22]">
                 {MONTH_NAMES[currentMonth]}
               </h2>
               <p className="text-[12px] text-[#8B7355]">{currentYear}</p>
@@ -253,9 +253,9 @@ export function CalendarView({ userId, items, onBack, onItemComplete, onShowToas
                     relative aspect-square flex flex-col items-center justify-center rounded-lg
                     transition-all
                     ${day.isToday ? 'bg-white border border-[rgba(44,36,32,0.15)]' : ''}
-                    ${selectedDate === day.dateString ? 'bg-[#C4714A] bg-opacity-10' : ''}
+                    ${selectedDate === day.dateString ? 'bg-[#F2C4BF] bg-opacity-40' : ''}
                     ${!day.isToday && !selectedDate ? 'hover:bg-[rgba(44,36,32,0.03)]' : ''}
-                    ${hasMultiDay && !day.isToday && selectedDate !== day.dateString ? 'bg-[#C4714A20]' : ''}
+                    ${hasMultiDay && !day.isToday && selectedDate !== day.dateString ? 'bg-[#F2C4BF66]' : ''}
                   `}
                 >
                   <span
@@ -319,7 +319,7 @@ export function CalendarView({ userId, items, onBack, onItemComplete, onShowToas
                   </div>
                   <button
                     onClick={() => handleComplete(item.id)}
-                    className="flex-shrink-0 w-5 h-5 rounded-full border-[1.5px] border-[rgba(44,36,32,0.2)] bg-transparent flex items-center justify-center transition-all duration-200 hover:border-[#C4714A]"
+                    className="flex-shrink-0 w-5 h-5 rounded-full border-[1.5px] border-[rgba(44,36,32,0.2)] bg-transparent flex items-center justify-center transition-all duration-200 hover:border-[#3B2A22]"
                   >
                     <Check size={12} className="opacity-0" />
                   </button>
@@ -335,10 +335,10 @@ export function CalendarView({ userId, items, onBack, onItemComplete, onShowToas
             {lookforwardItems.map(item => (
               <div
                 key={item.id}
-                className="bg-[#C4714A12] border border-[#C4714A30] rounded-[14px] p-4"
+                className="bg-[#F2C4BF4D] border border-[#DDA09B80] rounded-[14px] p-4"
               >
                 <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-[#C4714A20] flex items-center justify-center flex-shrink-0">
+                  <div className="w-9 h-9 rounded-lg bg-[#F2C4BF66] flex items-center justify-center flex-shrink-0">
                     <span className="text-lg">✈️</span>
                   </div>
                   <div className="flex-1 min-w-0">
