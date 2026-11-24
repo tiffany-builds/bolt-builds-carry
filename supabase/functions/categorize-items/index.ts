@@ -1,34 +1,131 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
+// Carry: categorize-items
+// Updated 24 Nov 2026 for Claude Sonnet 5.5 (Sonnet 4.5 retires 30 Nov 2026).
+//
+// What changed vs the Sonnet 4.5 version:
+// 1. Model is claude-sonnet-5-5 by default, overridable with the CARRY_MODEL secret
+//    (so you can switch model in the Supabase dashboard without touching code).
+// 2. Sonnet 5.5 thinks by default and can put a "thinking" block first in the reply.
+//    The old code read content[0].text, which comes back empty when that happens.
+//    We now turn up-front thinking off (between_tools) AND read text blocks by type.
+// 3. max_tokens raised, because on 5.x it covers thinking plus the answer.
+// 4. We pull the JSON array out and check it parses BEFORE sending it to the app.
+//    If it does not parse (or the reply was cut off), we retry once.
+// 5. Retries on overloaded / 5xx errors, a timeout, and one log line per request
+//    (model, stop reason, tokens, time) so problems show up in Supabase logs.
+// The response shape to the app is unchanged: { result: "<json array string>" }.
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey, apikey",
 };
 
+const DEFAULT_MODEL = "claude-sonnet-5-5";
+const MAX_TOKENS = 4000;
+const TIMEOUT_MS = 45000;
+
+function jsonResponse(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
+// Join every text block. Never assume the first block is text.
+function readText(data: any): string {
+  if (!data || !Array.isArray(data.content)) return "";
+  return data.content
+    .filter((b: any) => b && b.type === "text" && typeof b.text === "string")
+    .map((b: any) => b.text)
+    .join("")
+    .trim();
+}
+
+// The app reads "detail". The prompt's list rules say "description", so copy it across.
+function normalise(items: any[]): any[] {
+  return items.map((i) => {
+    if (i && typeof i === "object" && !i.detail && typeof i.description === "string") {
+      return { ...i, detail: i.description };
+    }
+    return i;
+  });
+}
+
+// Find the JSON array in the reply, even if the model wrapped it in fences or a sentence.
+function extractJsonArray(raw: string): string | null {
+  const cleaned = raw.replace(/```json/gi, "").replace(/```/g, "").trim();
+  const tryParse = (s: string) => {
+    try {
+      const parsed = JSON.parse(s);
+      if (Array.isArray(parsed)) return JSON.stringify(normalise(parsed));
+      // Some replies come back as { items: [...] }
+      if (parsed && Array.isArray(parsed.items)) return JSON.stringify(normalise(parsed.items));
+    } catch (_) { /* fall through */ }
+    return null;
+  };
+  const direct = tryParse(cleaned);
+  if (direct) return direct;
+  const first = cleaned.indexOf("[");
+  const last = cleaned.lastIndexOf("]");
+  if (first !== -1 && last > first) return tryParse(cleaned.slice(first, last + 1));
+  return null;
+}
+
+async function callClaude(apiKey: string, model: string, system: string, messages: unknown) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      signal: controller.signal,
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: MAX_TOKENS,
+        // Sonnet 5.5: lowest thinking setting, no up-front thinking. Fast, like 4.5 was.
+        // Do NOT send {"type":"disabled"} here, Sonnet 5.5 rejects it with a 400.
+        thinking: { type: "between_tools" },
+        output_config: { effort: Deno.env.get("CARRY_EFFORT") || "medium" },
+        system,
+        messages,
+      }),
+    });
+    const text = await res.text();
+    let data: any = null;
+    try { data = JSON.parse(text); } catch (_) { /* keep raw text */ }
+    return { ok: res.ok, status: res.status, data, raw: text };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200, headers: corsHeaders });
   }
+
+  const started = Date.now();
 
   try {
     const body = await req.json();
     const { text, systemPrompt, imageBase64, imageType } = body;
 
     if (!text && !imageBase64) {
-      return new Response(
-        JSON.stringify({ error: "Missing required field: text or imageBase64" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ error: "Missing required field: text or imageBase64" }, 400);
     }
 
     const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
     if (!apiKey) {
-      return new Response(
-        JSON.stringify({ error: "ANTHROPIC_API_KEY not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ error: "ANTHROPIC_API_KEY not configured" }, 500);
     }
+
+    const model = Deno.env.get("CARRY_MODEL") || DEFAULT_MODEL;
 
     const today = new Date();
     const dayName = today.toLocaleDateString('en-GB', { weekday: 'long' });
@@ -94,39 +191,59 @@ Return valid JSON only — no explanation, no markdown, no code blocks.`;
           content: text
         }];
 
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-5",
-        max_tokens: 2000,
-        system: systemPromptToUse,
-        messages,
-      }),
-    });
+    // Up to 3 attempts: retry on overloaded/5xx/timeout, and once on unparseable JSON.
+    let lastProblem = "unknown";
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      let r;
+      try {
+        r = await callClaude(apiKey, model, systemPromptToUse, messages);
+      } catch (e) {
+        lastProblem = e instanceof Error && e.name === "AbortError" ? "timeout" : `network: ${e}`;
+        console.log(JSON.stringify({ fn: "categorize-items", model, attempt, problem: lastProblem }));
+        continue;
+      }
 
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`Anthropic API error: ${error}`);
+      if (!r.ok) {
+        lastProblem = `anthropic ${r.status}: ${r.raw.slice(0, 300)}`;
+        console.log(JSON.stringify({ fn: "categorize-items", model, attempt, problem: lastProblem }));
+        // 4xx (except 429) means the request itself is wrong: retrying will not help.
+        if (r.status >= 400 && r.status < 500 && r.status !== 429) break;
+        await new Promise((res) => setTimeout(res, 600 * attempt));
+        continue;
+      }
+
+      const stop = r.data?.stop_reason;
+      const raw = readText(r.data);
+      const json = extractJsonArray(raw);
+
+      console.log(JSON.stringify({
+        fn: "categorize-items",
+        model: r.data?.model || model,
+        attempt,
+        stop_reason: stop,
+        input_tokens: r.data?.usage?.input_tokens,
+        output_tokens: r.data?.usage?.output_tokens,
+        ms: Date.now() - started,
+        parsed: json !== null,
+        image: Boolean(imageBase64),
+      }));
+
+      if (stop === "refusal") {
+        // Do not show a scary error to the user; give the app an empty list.
+        return jsonResponse({ result: "[]", note: "refusal" });
+      }
+
+      if (json !== null) {
+        return jsonResponse({ result: json });
+      }
+
+      lastProblem = `unparseable reply (stop_reason ${stop}): ${raw.slice(0, 200)}`;
     }
 
-    const data = await response.json();
-    const result = data.content[0].text;
-
-    return new Response(
-      JSON.stringify({ result }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    throw new Error(lastProblem);
 
   } catch (error) {
-    console.error("Error:", error);
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    console.error("categorize-items error:", error, "ms:", Date.now() - started);
+    return jsonResponse({ error: error instanceof Error ? error.message : "Unknown error" }, 500);
   }
 });

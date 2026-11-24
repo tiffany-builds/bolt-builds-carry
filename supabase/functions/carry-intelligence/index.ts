@@ -30,8 +30,10 @@ serve(async (req) => {
         "anthropic-version": "2023-06-01"
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 1000,
+        model: Deno.env.get("CARRY_MODEL") || "claude-sonnet-5-5",
+        max_tokens: 2000,
+        thinking: { type: "between_tools" },
+        output_config: { effort: "medium" },
         system: "You are Carry, a personal assistant for parents. Extract all items from the input and return ONLY a valid JSON array. Each item must have: title (max 6 words), category (one of: Kids, Household, Errands, Me, Ideas, Work, Projects, Other), type (event, task, reminder or idea). Return valid JSON only — no explanation, no markdown, no code blocks.",
         messages: [{ role: "user", content: input }]
       })
@@ -46,7 +48,10 @@ serve(async (req) => {
       )
     }
 
-    const text = anthropicData.content[0].text
+    const text = (anthropicData.content || [])
+      .filter((b: any) => b.type === "text")
+      .map((b: any) => b.text)
+      .join("")
 
     return new Response(
       JSON.stringify({ result: text }),
