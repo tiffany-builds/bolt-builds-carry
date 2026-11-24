@@ -181,7 +181,19 @@ For recurring items (every Monday, every day etc): set recurring true, recurring
 
 Return valid JSON only — no explanation, no markdown, no code blocks.`;
 
-    const systemPromptToUse = systemPrompt || defaultSystemPrompt;
+    // Added on the server so it applies without an App Store release.
+    const detailRules = `
+
+DETAIL AND TITLE RULES (these override anything above):
+- The date and time are stored and shown separately, so never mention WHEN in the title, detail or excitement.
+- Do not use relative time words in title, detail or excitement: today, tomorrow, tonight, this morning, this afternoon, this evening, this weekend, next week, on Saturday, in two days, and the same in any language (demain, aujourd'hui, ce soir, ce week-end, la semaine prochaine).
+- The detail describes the thing itself, in a warm natural way, so it still reads right on any day.
+  Example: "make salad dressing tomorrow" -> title: "Make salad dressing", detail: "A quick homemade dressing to go with dinner." (not "You'll make this tomorrow.")
+
+ALWAYS CAPTURE, NEVER CHAT:
+- You only ever reply with a JSON array. Never reply in sentences, never explain what you can or cannot do.
+- If the user asks a question, asks Carry to do something it cannot do (add a category, change a setting, remind someone else), or says something that is not obviously a task, still capture it as ONE item: type "mind", category "Me", title in their own words (max 6 words), detail = what they said, warmly.`;
+    const systemPromptToUse = (systemPrompt || defaultSystemPrompt) + detailRules;
 
     const messages = imageBase64
       ? [{
@@ -208,6 +220,7 @@ Return valid JSON only — no explanation, no markdown, no code blocks.`;
 
     // Up to 3 attempts: retry on overloaded/5xx/timeout, and once on unparseable JSON.
     let lastProblem = "unknown";
+    let unparseable = 0;
     for (let attempt = 1; attempt <= 3; attempt++) {
       let r;
       try {
@@ -253,6 +266,27 @@ Return valid JSON only — no explanation, no markdown, no code blocks.`;
       }
 
       lastProblem = `unparseable reply (stop_reason ${stop}): ${raw.slice(0, 200)}`;
+      unparseable++;
+      if (unparseable >= 2) break;
+    }
+
+    // Never lose what the user said: if Claude would not give us items, save their words as one note.
+    if (lastProblem.startsWith("unparseable") && text && !imageBase64) {
+      const words = String(text).trim().split(/\s+/);
+      const fallback = [{
+        title: words.slice(0, 6).join(" ") + (words.length > 6 ? "..." : ""),
+        detail: String(text).trim(),
+        category: "Me",
+        type: "mind",
+        date: null,
+        time: null,
+        hasDateTime: false,
+        needsDate: false,
+        recurring: false,
+        emoji: "\u{1F4AD}",
+      }];
+      console.log(JSON.stringify({ fn: "categorize-items", model, fallback: true, problem: lastProblem.slice(0, 200) }));
+      return jsonResponse({ result: JSON.stringify(fallback), note: "fallback" });
     }
 
     throw new Error(lastProblem);

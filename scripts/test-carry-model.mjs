@@ -58,6 +58,12 @@ const cases = [
   { name: 'long rambling brain dump (the "not listening" case)',
     text: "ok so um tomorrow I need to drop the kids at school early because of the trip, then I have the work call with the London team at ten, oh and I keep forgetting to book the car in for its service, and we're out of dishwasher tablets, and it's my mum's birthday on Saturday so I need to order flowers, and Patrick needs new football boots before Thursday, and I really want to start running again at some point, and the boiler is making that noise again so I should call someone about it",
     check: (it) => it.length >= 7 },
+  { name: 'no "tomorrow" in the note', text: 'make salad dressing tomorrow',
+    check: (it) => it.some(i => i.date === tomorrowStr) && it.every(i => !/\b(tomorrow|today|tonight)\b/i.test(`${i.title} ${i.detail || ''}`)) },
+  { name: 'no "demain" in French note', text: 'appeler le plombier demain',
+    check: (it) => it.some(i => i.date === tomorrowStr) && it.every(i => !/demain|aujourd/i.test(`${i.title} ${i.detail || ''}`)) },
+  { name: 'request to the app still gets captured', text: 'can you add a new category for my allotment',
+    check: (it) => it.length >= 1 },
   { name: 'messy speech-to-text', text: 'pick up the the prescription from from the pharmacy um after work and uh call Sarah back',
     check: (it) => it.length >= 2 },
 ];
