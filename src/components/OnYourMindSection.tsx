@@ -72,7 +72,7 @@ export function OnYourMindSection({ items, onItemsChange, onShowToast }: OnYourM
                   {item.title}
                 </h3>
                 {item.detail && (
-                  <p className="font-ui text-sm text-muted mt-1">
+                  <p className="font-ui text-sm text-muted mt-1" style={{ whiteSpace: 'pre-line' }}>
                     {item.detail}
                   </p>
                 )}

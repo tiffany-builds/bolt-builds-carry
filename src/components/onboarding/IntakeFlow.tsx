@@ -124,7 +124,7 @@ export function IntakeFlow({
                   </span>
                 </div>
                 {item.description && (
-                  <p className="text-sm text-muted font-ui font-light mb-2">
+                  <p className="text-sm text-muted font-ui font-light mb-2" style={{ whiteSpace: 'pre-line' }}>
                     {item.description}
                   </p>
                 )}

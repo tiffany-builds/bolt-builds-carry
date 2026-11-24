@@ -120,7 +120,7 @@ export function EverythingYouCarry({ userId, onBack }: EverythingYouCarryProps) 
             {item.emoji || getContextualEmoji(item.title, item.category)} {item.title}
           </h3>
           {item.description && (
-            <p className="font-ui text-sm text-muted mt-1">{item.description}</p>
+            <p className="font-ui text-sm text-muted mt-1" style={{ whiteSpace: 'pre-line' }}>{item.description}</p>
           )}
           <div className="flex items-center gap-2 mt-2">
             <span className="font-ui text-xs text-muted/70">

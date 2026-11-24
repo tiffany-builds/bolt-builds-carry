@@ -197,7 +197,7 @@ function TimelineItemCard({ item, onComplete, onDelete, swipingId, swipeOffset, 
               </h3>
             )}
             {item.detail && (
-              <p className="font-ui text-sm text-muted font-light">{item.detail}</p>
+              <p className="font-ui text-sm text-muted font-light" style={{ whiteSpace: 'pre-line' }}>{item.detail}</p>
             )}
             {item.date && (
               <p className="font-ui text-xs text-muted/70 mt-1">
