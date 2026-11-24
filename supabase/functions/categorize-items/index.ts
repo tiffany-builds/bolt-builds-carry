@@ -43,13 +43,28 @@ function readText(data: any): string {
     .trim();
 }
 
-// The app reads "detail". The prompt's list rules say "description", so copy it across.
+// The app shows "detail". For lists, Sonnet 5.5 sometimes puts the bullets in
+// "description", or returns the list as an array. Make sure the bullets end up in "detail".
 function normalise(items: any[]): any[] {
+  const hasBullets = (v: any) => typeof v === "string" && v.includes("\u2022");
   return items.map((i) => {
-    if (i && typeof i === "object" && !i.detail && typeof i.description === "string") {
-      return { ...i, detail: i.description };
+    if (!i || typeof i !== "object") return i;
+    const out = { ...i };
+    if (!hasBullets(out.detail)) {
+      if (hasBullets(out.description)) {
+        out.detail = out.description;
+      } else {
+        for (const k of ["items", "listItems", "list", "entries", "bullets"]) {
+          const arr = out[k];
+          if (Array.isArray(arr) && arr.length && arr.every((x: any) => typeof x === "string")) {
+            out.detail = arr.map((x: string) => "\u2022 " + x.replace(/^[\u2022\-*\s]+/, "")).join("\n");
+            break;
+          }
+        }
+      }
     }
-    return i;
+    if (!out.detail && typeof out.description === "string") out.detail = out.description;
+    return out;
   });
 }
 
