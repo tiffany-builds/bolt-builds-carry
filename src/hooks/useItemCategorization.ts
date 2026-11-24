@@ -64,7 +64,7 @@ export async function categorizeAndCreateItems(text: string, userId: string, car
       return [];
     }
 
-    const validCategories = ['Family', 'Home', 'Health', 'Errands', 'Me', 'Work'];
+    const validCategories = ['Family', 'Home', 'Health', 'Errands', 'Admin', 'Me', 'Work', 'Special dates'];
     const fallbackMap: Record<string, string> = {
       'Ideas': 'Me',
       'Other': 'Errands',

@@ -29,6 +29,8 @@ const CATEGORY_COLORS: Record<string, string> = {
   Errands: '#D4C285',
   Me: '#B0A8C4',
   Work: '#8B7355',
+  Admin: '#7E8C9E',
+  'Special dates': '#D9A5A0',
 };
 
 const MONTH_NAMES = [

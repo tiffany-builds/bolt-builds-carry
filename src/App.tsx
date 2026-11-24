@@ -21,7 +21,7 @@ import { useItems } from './hooks/useItems';
 import { UserProfile, UserCategory, TimelineItem } from './types';
 import { supabase } from './lib/supabase';
 import { withTimeout } from './utils/withTimeout';
-import { generateRecurringInstances } from './utils/recurringItems';
+import { generateRecurringInstances, collapseSeries } from './utils/recurringItems';
 import { getTodayDateString } from './utils/dateFormatting';
 import { requestNotificationPermission, scheduleMorningBriefing, scheduleItemReminders, scheduleSundayNotification, scheduleWednesdayNotification, scheduleRecurringExpiryReminders } from './utils/notifications';
 import { Capacitor } from '@capacitor/core';
@@ -324,7 +324,7 @@ function App() {
   setCurrentView('home');
   setSelectedCategory(null);
 }}
-          items={items.filter(i => i.category === selectedCategory.name && !i.completed)}
+          items={collapseSeries(items.filter(i => i.category === selectedCategory.name && !i.completed))}
           onItemComplete={async (itemId) => {
             try {
               const { error } = await withTimeout(
@@ -587,7 +587,7 @@ function App() {
             </p>
             <button
               onClick={async () => {
-                await supabase.from('items').delete().eq('id', recurringDeletePrompt.itemId);
+                await supabase.from('items').update({ skipped: true }).eq('id', recurringDeletePrompt.itemId);
                 removeItemFromState(recurringDeletePrompt.itemId);
                 setRecurringDeletePrompt(null);
               }}

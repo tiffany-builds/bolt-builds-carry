@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import { prepareItems, collapseSeries } from '../utils/recurringItems';
 
 interface Item {
   id: string;
@@ -40,7 +41,7 @@ export function useItems(userId: string | null) {
 
       if (error) throw error;
 
-      setItems(data || []);
+      setItems(prepareItems(data || []));
     } catch (err) {
     } finally {
       setIsLoading(false);
@@ -57,7 +58,7 @@ export function useItems(userId: string | null) {
 
   const getCategoryCounts = useCallback(() => {
     const counts: Record<string, number> = {};
-    items.forEach(item => {
+    collapseSeries(items).forEach(item => {
       if ((item as any).isOptimistic) return;
       counts[item.category] = (counts[item.category] || 0) + 1;
     });

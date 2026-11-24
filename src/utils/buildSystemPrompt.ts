@@ -23,21 +23,33 @@ export function buildSystemPrompt(options: {
 
   const categoryRules = `CATEGORIES — choose exactly one:
 - Family: ${hasChildren ? 'children, school,' : ''} ${hasPets ? 'pets, vet,' : ''} anyone this person cares for
-- Home: household tasks, cleaning, maintenance, repairs, home admin
+- Home: household tasks, cleaning, maintenance, repairs
 - Health: medical appointments, medication, fitness, therapy, wellbeing
-- Errands: shopping, admin, tasks outside the home
+- Errands: buying, collecting or dropping off everyday things (shopping, returns, parcels, dry cleaning, bottle bank)
+- Admin: paperwork, forms, official documents, bills, payments, banking, taxes, insurance, subscriptions, accounts, address changes, solicitors, the council or mairie
 - Me: personal time, hobbies, social plans
-- Work: professional tasks and meetings`;
+- Work: professional tasks and meetings
+- Special dates: birthdays, anniversaries and other personal dates (the date itself only, never tasks)
 
-  const birthdayRules = `BIRTHDAY RULES:
-- Child's birthday → Family
-- Pet → Family
-- Own birthday → Me
-- Partner/spouse birthday → Me
-- Parent/sibling birthday → Me
-- Friend's birthday → Me
-- Colleague's birthday → Work
-- Default if unclear → Me`;
+ADMIN RULES:
+- Sort by what the task is ABOUT, not where you have to go. "Pick up immigration card" and "go to the bank" are Admin, even though they mean going out.
+- Anything that sounds like it needs a form, paperwork, an official document, an account or a payment is Admin: passports, visas, ID cards, residence permits, driving licence, tax, insurance, mortgage, utility and phone bills, medical bills, medical certificates, cancelling or changing subscriptions and memberships, direct debits, renewals.
+- Passports, visas and ID are Admin whoever they belong to, including children.
+- EXCEPTION, school and children's activities stay in Family: school forms, school trips, school fees, consent forms, sign-ups and fees for kids' clubs and sports.
+- Work paperwork (invoices, contracts, expenses) stays in Work.
+- Medical APPOINTMENTS stay in Health. Medical BILLS and certificates are Admin.
+- Errands is only for buying, collecting or dropping off everyday things. The bottle bank is Errands.
+- Examples: "pick up immigration card" -> Admin. "go to the bank" -> Admin. "pay hospital bill" -> Admin. "cancel gym membership" -> Admin. "sign Archie's school form" -> Family. "pay for rugby club" -> Family. "send invoice to client" -> Work. "return the parcel" -> Errands. "take glass to the bottle bank" -> Errands.`;
+
+  const birthdayRules = `SPECIAL DATES RULES:
+- Special dates holds ONLY the date itself: birthdays, wedding and other anniversaries, and any other date that is personal to someone (a name day, the anniversary of someone's passing).
+- This applies to everyone's birthday: your own, your child's, your partner's, a friend's, a colleague's.
+- Birthdays and anniversaries repeat every year: set recurring true and recurringPattern "yearly", with date = the next time it happens.
+- For a special date use type "event", set the date, and hasDateTime true. Never use type "lookforward" for a birthday or anniversary.
+- Title it simply, e.g. "Dad's birthday", "Our wedding anniversary".
+- Tasks connected to a special date are NOT Special dates. Sort them by what the task is: buying or ordering a present, card or flowers -> Errands; texting or calling someone to say happy birthday -> Me; planning a child's party -> Family; booking a restaurant -> Me.
+- If the user mentions a special date AND a task in one go, create TWO items: the date (Special dates) and the task (its own category).
+  Example: "it's Mum's birthday on Saturday, I need to order flowers" -> "Mum's birthday" (Special dates, event, Saturday's date) and "Order flowers for Mum" (Errands).`;
 
   const reminderRules = `REMINDER RULES:
 - "Remind me to..." → strip the reminder framing, treat as a normal item
@@ -79,7 +91,7 @@ needsDate should be true or false.`;
 RECURRING ITEM RULES:
 If the user mentions something happening on a regular schedule, add these fields:
 - recurring: true
-- recurringPattern: "weekly" | "daily" | "monthly"
+- recurringPattern: "weekly" | "daily" | "monthly" | "yearly"
 - recurringDayOfWeek: 0-6 (0=Sunday, 1=Monday ... 6=Saturday) for weekly items
 - recurringTime: "HH:MM" if a time is mentioned
 - recurringDurationDays: a number if the user stated how long this should last, otherwise null
@@ -104,14 +116,14 @@ Always include these fields in the JSON alongside the standard fields.` : '';
   const outputFields = `Extract all items from the input and return ONLY a valid JSON array. Each item must have:
 - title (max 6 words, no "remind me to" prefix)
 - detail (one warm conversational sentence)
-- category (exactly one of: Family, Home, Health, Errands, Me, Work)
+- category (exactly one of: Family, Home, Health, Errands, Admin, Me, Work, Special dates)
 - type (event, task, reminder, idea, mind or lookforward)
 - date (YYYY-MM-DD or null)
 - time (HH:MM or null)
 - hasDateTime (true or false)
 - needsDate (true if item needs a date but none was given — for appointments, renewals, payments, bookings, gifts)
 - recurring (true or false)
-- recurringPattern (daily, weekly, monthly or null)
+- recurringPattern (daily, weekly, monthly, yearly or null)
 - recurringDayOfWeek (0-6 or null)
 - recurringTime (HH:MM or null)
 - recurringDurationDays (number or null)`;
@@ -152,7 +164,7 @@ LANGUAGE RULES:
 - Detect the language the user is writing or speaking in
 - Respond with title and detail fields in the same language as the user's input
 - If the user mixes languages (e.g. French and English), use the dominant language
-- Category names must always be in English: Family, Home, Health, Errands, Me, Work
+- Category names must always be in English: Family, Home, Health, Errands, Admin, Me, Work, Special dates
 - All other fields (title, detail, excitement) should match the user's language
 - Never translate the user's input into English if they wrote in another language
 

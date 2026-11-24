@@ -231,7 +231,7 @@ export function BoxDetailView({ categoryName, categoryEmoji, items, onBack, onIt
                               color: 'var(--muted)',
                               marginLeft: '6px',
                               opacity: 0.7
-                            }}>↻</span>
+                            }}>↻ {(item as any).repeat_label || ''}</span>
                           )}
                         </h3>
                       )}

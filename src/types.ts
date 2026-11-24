@@ -32,7 +32,7 @@ export interface Nudge {
   suggestion: string;
 }
 
-export type Category = 'Family' | 'Health' | 'Errands' | 'Me' | 'Ideas' | 'Household' | 'Shopping';
+export type Category = 'Family' | 'Home' | 'Health' | 'Errands' | 'Admin' | 'Work' | 'Me' | 'Special dates' | 'Ideas' | 'Household' | 'Shopping';
 
 export interface UserProfile {
   id: string;

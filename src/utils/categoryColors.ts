@@ -9,6 +9,10 @@ export const getCategoryColor = (category: Category): string => {
     Ideas: '#A6968A',
     Household: '#A6968A',
     Shopping: '#D4A574',
+    Home: '#C4714A',
+    Work: '#8B7355',
+    Admin: '#7E8C9E',
+    'Special dates': '#D9A5A0',
   };
   return colors[category] || '#A6968A';
 };

@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { Mic, Check, X, ImageUp, Keyboard } from 'lucide-react';
 import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
 import { useSpeechRecognition } from '../utils/useSpeechRecognition';
+import { repeatLabel, createCopiesFor, prepareItems } from '../utils/recurringItems';
+import { getTodayDateString } from '../utils/dateFormatting';
 import { CaptureCard } from './CaptureCard';
 import { Toast } from './Toast';
 import { supabase } from '../lib/supabase';
@@ -167,6 +169,7 @@ export function FloatingActionButton({ userId, caringFor, onItemsAdded, onSubmit
         recurring: item.recurring || false,
         recurring_pattern: item.recurringPattern || null,
         recurring_day_of_week: item.recurringDayOfWeek ?? null,
+        recurring_duration_days: item.recurringDurationDays ?? null,
         needs_date: item.needsDate || false,
         isCycleLog: item.isCycleLog || false,
       }));
@@ -347,14 +350,16 @@ CATEGORIES — choose exactly one:
 - Family: children's activities, school letters, sports, childcare, pets
 - Home: household tasks, maintenance, deliveries
 - Health: medical, dental, prescriptions, fitness
-- Errands: shopping lists, returns, admin
+- Errands: shopping lists, returns, parcels
+- Admin: forms, official documents, bills, payments, banking, tax, insurance, passports, visas, subscriptions (but school letters and kids' activities stay in Family)
 - Me: personal events, social plans, self-care
 - Work: work events, meetings, deadlines
+- Special dates: birthdays and anniversaries (the date itself only; a party invitation or present to buy is not a special date)
 
 For each item found return a JSON object with:
 - title (max 6 words, clear and specific)
 - detail (one warm sentence describing what it is)
-- category (exactly one of the 6 above)
+- category (exactly one of the 8 above)
 - type (event, task, reminder, or lookforward)
 - date (YYYY-MM-DD if found, otherwise null)
 - time (HH:MM if found, otherwise null)
@@ -600,13 +605,14 @@ Return valid JSON array only — no explanation, no markdown.`;
         emoji: item.emoji || null,
         completed: false,
         time_frame: 'anytime',
-        date: item.date || null,
+        date: item.date || (item.recurring_pattern === 'daily' ? getTodayDateString() : null),
         time: item.time || null,
         has_date_time: item.has_date_time || true,
         type: item.type,
         recurring: true,
         recurring_pattern: item.recurring_pattern || null,
         recurring_day_of_week: item.recurring_day_of_week ?? null,
+        recurring_duration_days: item.recurring_duration_days ?? null,
         target_month: item.target_month || null,
         start_date: item.start_date || null,
         end_date: item.end_date || null,
@@ -618,6 +624,12 @@ Return valid JSON array only — no explanation, no markdown.`;
         showToast("Couldn't save — please try again");
       } else {
         savedItems = inserted;
+        // Create the upcoming days straight away, so they show in the feed now (not tomorrow)
+        try {
+          const copies = await createCopiesFor(userId, inserted);
+          savedItems = prepareItems([...inserted, ...copies]);
+        } catch (e) {
+        }
       }
     }
     if (savedItems.length > 0) {
@@ -695,14 +707,14 @@ Return valid JSON array only — no explanation, no markdown.`;
         <div className="fixed inset-0 bg-text/20 z-50 flex items-end justify-center animate-fade-up">
           <div className="bg-surface rounded-t-3xl w-full max-w-2xl p-6 space-y-4 shadow-lg" style={{ paddingBottom: 'max(1.5rem, calc(env(safe-area-inset-bottom) + 1.5rem))' }}>
             <p className="font-ui text-text text-center">
-              Looks like this happens regularly. I'll remind you for the next 14 days — you can always re-add it after that. 🩷
+              {(() => { const l = repeatLabel(recurringConfirmation.item.recurring_pattern, recurringConfirmation.item.recurring_day_of_week, recurringConfirmation.item.recurring_duration_days); return l === 'Repeats' ? 'Looks like this happens regularly.' : `Looks like this one repeats ${l.charAt(0).toLowerCase() + l.slice(1)}.`; })()} Want me to keep it coming back for you? 🧡
             </p>
             <div className="flex gap-3">
               <button
                 onClick={handleRecurringYes}
                 className="flex-1 bg-accent text-surface rounded-xl py-3 font-ui font-medium hover:bg-accent/90 transition-all active:scale-95"
               >
-                Yes, remind me
+                Yes, keep it coming
               </button>
               <button
                 onClick={handleRecurringNo}

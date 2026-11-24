@@ -72,6 +72,9 @@ export function getCategoryEmoji(category: string): string {
     Health: '❤️',
     Ideas: '✨',
     Work: '💼',
+    Home: '🏠',
+    Admin: '🗂️',
+    'Special dates': '🎁',
     Projects: '📋',
     Other: '📌'
   };
@@ -187,6 +190,9 @@ export function getContextualEmoji(title: string, category: string): string {
     Health: '❤️',
     Ideas: '✨',
     Work: '💼',
+    Home: '🏠',
+    Admin: '🗂️',
+    'Special dates': '🎁',
     Projects: '📋',
     Shopping: '🛒',
     Other: '📌'
